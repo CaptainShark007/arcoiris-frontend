@@ -1,35 +1,51 @@
 import type { CarouselSlide, Category, Product } from '../types/home.types';
-import banner1 from '../../../assets/images/banner/banner1.jpg';
-import banner2 from '../../../assets/images/banner/banner2.jpg';
-import banner3 from '../../../assets/images/banner/banner_example1.png';
+//import banner1 from '../../../assets/images/banner/banner1.jpg';
+//import banner2 from '../../../assets/images/banner/banner2.jpg';
+//import banner3 from '../../../assets/images/banner/b1.png';
+
+import bannerDesktop from '../../../assets/images/banner/bpd.png';
+import bannerMovil from '../../../assets/images/banner/bpc.png';
+
 import product1 from '../../../assets/images/img-default.png';
+import img1 from '../../../assets/images/products/img4.jpg';
+import img2 from '../../../assets/images/products/img5.png';
+import cat1 from '../../../assets/images/categories/cat1.png';
 
 export const carouselSlides: CarouselSlide[] = [
-  {
-    id: 1,
-    image: banner1,
-    title: "Otoño 2024",
-    subtitle: "Nueva colección disponible",
-    buttonText: "Descubrir"
+    {
+    id: "1",
+    image: bannerDesktop,
+    mobileImage: bannerMovil,
+    title: "Otoño 2024", // Solo para el alt text
+    subtitle: "", // Vacío
+    buttonText: "", // Vacío
+    mobilePosition: "center center",
+    desktopPosition: "center center"
   },
   {
-    id: 2,
-    image: banner2,
-    title: "Hasta 50% OFF",
-    subtitle: "En electrónicos seleccionados",
-    buttonText: "Comprar Ahora"
+    id: "2",
+    image: bannerDesktop, 
+    mobileImage: bannerMovil,
+    title: "Ofertas Especiales",
+    subtitle: "",
+    buttonText: "",
+    mobilePosition: "center center",
+    desktopPosition: "center center"
   },
   {
-    id: 3,
-    image: banner3,
+    id: "3",
+    image: bannerDesktop,
+    mobileImage: bannerMovil,
     title: "Envío Gratis",
-    subtitle: "En compras mayores a $100",
-    buttonText: "Ver Ofertas"
+    subtitle: "",
+    buttonText: "",
+    mobilePosition: "center center",
+    desktopPosition: "center center"
   }
 ];
 
 export const categories: Category[] = [
-  { id: 1, name: "Descuentos", image: product1 },
+  { id: 1, name: "Pinturas", image: cat1 },
   { id: 2, name: "Internacionales", image: product1 },
   { id: 3, name: "Cafeteras", image: product1 },
   { id: 4, name: "Cocinas", image: product1 },
@@ -46,8 +62,8 @@ export const categories: Category[] = [
 ];
 
 export const allProducts: Product[] = [
-  { id: 1, name: 'Smartphone Pro', price: 799.99, image: product1, discount: 0, isNew: true },
-  { id: 2, name: 'Auriculares Inalámbricos', price: 199.99, image: product1, discount: 10, isNew: true },
+  { id: 1, name: 'Latex Exterior Loxon Mate Blanco 1 Lt Sherwin Williams', price: 16325.00, image: img1, discount: 10, isNew: true },
+  { id: 2, name: 'Canilla 1/2 PVC Esferica Manija Larga DUKE', price: 3500.50, image: img2, discount: 10, isNew: true },
   { id: 3, name: 'Tablet Elite', price: 459.99, image: product1, discount: 0, isNew: true },
   { id: 4, name: 'Smart TV 4K', price: 899.99, image: product1, discount: 5, isNew: true },
   { id: 5, name: 'Drone Pro', price: 1299.99, image: product1, discount: 0, isNew: true },

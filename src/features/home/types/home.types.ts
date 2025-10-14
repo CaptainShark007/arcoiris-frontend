@@ -14,12 +14,24 @@ export interface Category {
   image: string;
 }
 
-export interface CarouselSlide {
+/* export interface CarouselSlide {
   id: number;
   image: string;
   title: string;
   subtitle: string;
   buttonText: string;
+} */
+
+// En tu archivo home.types.ts
+export interface CarouselSlide {
+  id: string;
+  image: string;
+  mobileImage?: string;
+  title: string; // Solo para accesibilidad (alt text)
+  subtitle: string; // Puede estar vacío
+  buttonText: string; // Puede estar vacío
+  mobilePosition?: string;
+  desktopPosition?: string;
 }
 
 export interface ProductSectionProps {
