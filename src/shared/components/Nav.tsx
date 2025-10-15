@@ -89,11 +89,11 @@ export const Navbar = () => {
             </Button>
             <Button
               component={Link}
-              to="/productos"
+              to="/tienda"
               color="inherit"
               sx={navButtonStyle}
             >
-              Productos
+              Tienda Virtual
             </Button>
             <Button
               color="inherit"
