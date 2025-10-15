@@ -14,6 +14,8 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Snackbar,
+  Alert as MuiAlert,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -34,6 +36,16 @@ export const Navbar = () => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => setAnchorEl(null);
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  
+  const handleFavoriteClick = () => {
+    setOpenSnackbar(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+  };
 
   const navButtonStyle = {
     textTransform: "none",
@@ -151,6 +163,7 @@ export const Navbar = () => {
             <IconButton
               color="inherit"
               sx={{ display: { xs: "none", sm: "flex" } }}
+              onClick={handleFavoriteClick}
             >
               <FavoriteBorderIcon />
             </IconButton>
@@ -187,6 +200,7 @@ export const Navbar = () => {
             <IconButton
               color="inherit"
               sx={{ display: { xs: "flex", sm: "none" } }}
+              onClick={handleFavoriteClick}
             >
               <FavoriteBorderIcon />
             </IconButton>
@@ -291,6 +305,19 @@ export const Navbar = () => {
           </Box>
         </Box>
       </Modal>
+
+      {/* Snackbar para notificaciones */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={2500}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <MuiAlert onClose={handleSnackbarClose} severity="info" sx={{ width: "100%" }}>
+          Próximamente
+        </MuiAlert>
+      </Snackbar>
+
     </>
   );
 };
