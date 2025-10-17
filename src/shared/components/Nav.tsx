@@ -5,17 +5,17 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Modal,
-  TextField,
+  //Modal,
+  //TextField,
   Toolbar,
-  Typography,
+  //Typography,
   Drawer,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
-  Snackbar,
-  Alert as MuiAlert,
+  //Snackbar,
+  //Alert as MuiAlert,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -26,6 +26,8 @@ import LoginIcon from '@mui/icons-material/Login';
 import { useState, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/images/logo_comercio_v2.png";
+import { LoginModal } from "./LoginModal";
+import { NotificationPopup } from "./PopupNotification";
 
 export const Navbar = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -39,7 +41,7 @@ export const Navbar = () => {
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   
-  const handleFavoriteClick = () => {
+  const handleSnackbarClick = () => {
     setOpenSnackbar(true);
   };
 
@@ -57,7 +59,7 @@ export const Navbar = () => {
     },
   };
 
-  const modalStyle = {
+  /* const modalStyle = {
     position: "absolute" as const,
     top: "50%",
     left: "50%",
@@ -67,7 +69,7 @@ export const Navbar = () => {
     boxShadow: 24,
     p: 4,
     width: 380,
-  };
+  }; */
 
   return (
     <>
@@ -157,19 +159,21 @@ export const Navbar = () => {
             <IconButton
               color="inherit"
               sx={{ display: { xs: "none", sm: "flex" } }}
+              onClick={handleSnackbarClick}
             >
               <ShoppingCartIcon />
             </IconButton>
             <IconButton
               color="inherit"
               sx={{ display: { xs: "none", sm: "flex" } }}
-              onClick={handleFavoriteClick}
+              onClick={handleSnackbarClick}
             >
               <FavoriteBorderIcon />
             </IconButton>
             <IconButton
               color="inherit"
               sx={{ display: { xs: "none", sm: "flex" } }}
+              onClick={handleSnackbarClick}
             >
               <SearchIcon />
             </IconButton>
@@ -193,6 +197,7 @@ export const Navbar = () => {
             <IconButton
               color="inherit"
               sx={{ display: { xs: "flex", sm: "none" } }}
+              onClick={handleSnackbarClick}
             >
               <ShoppingCartIcon />
             </IconButton>
@@ -200,7 +205,7 @@ export const Navbar = () => {
             <IconButton
               color="inherit"
               sx={{ display: { xs: "flex", sm: "none" } }}
-              onClick={handleFavoriteClick}
+              onClick={handleSnackbarClick}
             >
               <FavoriteBorderIcon />
             </IconButton>
@@ -277,46 +282,16 @@ export const Navbar = () => {
         </List>
       </Drawer>
 
-      {/* Modal Login */}
-      <Modal open={openLogin} onClose={() => setOpenLogin(false)}>
-        <Box sx={modalStyle}>
-          <Typography variant="h6" sx={{ mb: 2, textAlign: "center" }}>
-            Iniciar Sesión
-          </Typography>
-          <Box
-            component="form"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-            }}
-          >
-            <TextField label="Correo electrónico" type="email" fullWidth />
-            <TextField label="Contraseña" type="password" fullWidth />
-            <Button variant="contained" color="primary" sx={{ mt: 1 }}>
-              Ingresar
-            </Button>
-            <Typography variant="body2" sx={{ textAlign: "center", mt: 1 }}>
-              ¿No tienes una cuenta?{" "}
-              <Link to="#" style={{ color: "#1976d2", textDecoration: "none" }}>
-                Registrate
-              </Link>
-            </Typography>
-          </Box>
-        </Box>
-      </Modal>
+      {/* Modal de inicio de sesión */}
+      <LoginModal open={openLogin} onClose={() => setOpenLogin(false)} />
 
       {/* Snackbar para notificaciones */}
-      <Snackbar
+      <NotificationPopup
         open={openSnackbar}
-        autoHideDuration={2500}
+        message="Próximamente"
+        severity="info"
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <MuiAlert onClose={handleSnackbarClose} severity="info" sx={{ width: "100%" }}>
-          Próximamente
-        </MuiAlert>
-      </Snackbar>
+      />
 
     </>
   );
