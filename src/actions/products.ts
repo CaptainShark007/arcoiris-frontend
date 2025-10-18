@@ -60,10 +60,12 @@ import { supabase } from '@/supabase/client';
 export const getFilteredProducts = async ({
   page = 1,
   brands = [],
+  categoriesIds = [], // cambiar a ids - nuevo
   itemsPerPage = 8, // nuevo
 }: {
   page: number;
   brands?: string[];
+  categoriesIds?: string[]; // uuids - nuevo
   itemsPerPage?: number; // nuevo
 }) => {
   // logica de paginacion
@@ -74,13 +76,17 @@ export const getFilteredProducts = async ({
   // consulta base
   let query = supabase
     .from('products')
-    .select('*, variants (*)', { count: 'exact' })
+    .select('*, variants (*), categories(id, name, slug)', { count: 'exact' }) // nuevo: obtener categorias relacionadas
     .order('created_at', { ascending: false })
     .range(from, to);
 
   // validacion para los filtros
   if (brands.length > 0) {
     query = query.in('brand', brands); // columna, valores
+  }
+
+  if (categoriesIds.length > 0) {
+    query = query.in('category_id', categoriesIds);
   }
 
   // resolver la promesa
@@ -139,5 +145,79 @@ export const getBrands = async (): Promise<string[]> => {
 };
 
 // metodo para obtener los productos recientes
+export const getRecentProducts = async () => {
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants (*)')
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.log('Error fetching recent products:', error.message);
+    throw new Error('Error fetching recent products');
+  }
+
+  // Mapear productos con precio mínimo - adaptado
+  const products = data?.map((p) => {
+    const prices = p.variants?.map((v: any) => v.price).filter((price: number) => price > 0) || [];
+    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    
+    return {
+      ...p,
+      image: p.images?.[0] ?? "/assets/images/img-default.png",
+      price: minPrice,
+    };
+  });
+
+  return products;
+}
+
+// metodo para obtener productos aleatorios
+export const getRandomProducts = async () => {
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants (*)')
+    .limit(20);
+
+  if (error) {
+    console.log('Error fetching recent products:', error.message);
+    throw new Error('Error fetching recent products');
+  }
+
+  // Mapear productos con precio mínimo
+  const productsWithPrice = data?.map((p) => {
+    const prices = p.variants?.map((v: any) => v.price).filter((price: number) => price > 0) || [];
+    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    
+    return {
+      ...p,
+      image: p.images?.[0] ?? "/assets/images/img-default.png",
+      price: minPrice,
+    };
+  });
+
+  // seleccionar 4 productos al azar
+  const randomProducts = productsWithPrice.sort(() => 0.5 - Math.random()).slice(0, 8);
+
+  return randomProducts;
+}
+
 // metodo para obtener los productos destacados
 // metodo para obtener los productos por categoria
+export const getCategories = async () => {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.log('Error fetching categories:', error.message);
+    throw new Error('Error fetching categories');
+  }
+
+  return data;
+};
+
