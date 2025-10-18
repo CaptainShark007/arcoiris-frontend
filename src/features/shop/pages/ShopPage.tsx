@@ -8,6 +8,7 @@ const ShopPage = () => {
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8); // nuevo
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const {
     data: products = [],
@@ -16,6 +17,7 @@ const ShopPage = () => {
   } = useFilteredProducts({
     page,
     brands: selectedBrands,
+    categoriesIds: selectedCategories, // nuevo
     itemsPerPage // nuevo
   });
 
@@ -33,6 +35,8 @@ const ShopPage = () => {
       totalProducts={totalProducts}
       selectedBrands={selectedBrands}
       setSelectedBrands={setSelectedBrands}
+      selectedCategories={selectedCategories}
+      setSelectedCategories={setSelectedCategories}
     />
   );
 };

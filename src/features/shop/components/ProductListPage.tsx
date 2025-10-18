@@ -28,6 +28,8 @@ interface ProductListPageProps {
   setItemsPerPage: React.Dispatch<React.SetStateAction<number>>; // nuevo
   selectedBrands: string[];
   setSelectedBrands: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedCategories: string[]; // nuevo
+  setSelectedCategories: React.Dispatch<React.SetStateAction<string[]>>; // nuevo
 }
 
 export const ProductListPage = ({
@@ -40,6 +42,8 @@ export const ProductListPage = ({
   setItemsPerPage, // nuevo
   selectedBrands,
   setSelectedBrands,
+  selectedCategories, // nuevo
+  setSelectedCategories, // nuevo
 }: ProductListPageProps) => {
 
   /* const [page, setPage] = useState(0);
@@ -65,6 +69,8 @@ export const ProductListPage = ({
         <ProductFilters
           selectedBrands={selectedBrands}
           setSelectedBrands={setSelectedBrands}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
         />
       </Box>
 
