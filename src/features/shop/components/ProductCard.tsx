@@ -9,6 +9,7 @@ import {
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import type { Product } from "../types/product.type";
+import { formatPrice } from "@/helpers";
 
 interface ProductCardProps {
   product: Product;
@@ -43,10 +44,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           objectFit: "contain",
           borderRadius: 1,
           mb: 1,
-          /* backgroundColor: "#f3f4f6", */
         }}
       />
-
       <CardContent
         sx={{
           p: 0,
@@ -82,13 +81,25 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             mt: "auto",
           }}
         >
-          <Typography
-            variant="subtitle1"
-            fontWeight="bold"
-            color="primary.main"
-          >
-            ${product.price.toFixed(2)}
-          </Typography>
+          <Box>
+            {/* Mostrar "Desde" si hay múltiples precios */}
+            {product.hasMultiplePrices && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", fontSize: "0.7rem" }}
+              >
+                Desde
+              </Typography>
+            )}
+            <Typography
+              variant="subtitle1"
+              fontWeight="bold"
+              color="primary.main"
+            >
+              {formatPrice(product.price)}
+            </Typography>
+          </Box>
 
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton
@@ -100,7 +111,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             >
               <ShoppingCartIcon fontSize="small" />
             </IconButton>
-
             <IconButton
               size="small"
               color="error"
@@ -116,4 +126,3 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     </Card>
   );
 };
-

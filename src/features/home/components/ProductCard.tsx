@@ -6,6 +6,7 @@ import {
   Box,
   Button,
 } from "@mui/material";
+import { formatPrice } from "@/helpers";
 import type { Product } from "../types/home.types";
 
 interface ProductCardProps {
@@ -15,12 +16,15 @@ interface ProductCardProps {
 
 export const ProductCard = ({
   product,
-  showOriginalPrice = false,
+  //showOriginalPrice = false,
 }: ProductCardProps) => {
-  const discountedPrice =
-    product.discount > 0
-      ? (product.price * (1 - product.discount / 100)).toFixed(2)
-      : product.price.toFixed(2);
+  // Calcular si es nuevo (productos de menos de 30 días)
+  const isNew = () => {
+    const productDate = new Date(product.created_at);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return productDate > thirtyDaysAgo;
+  };
 
   return (
     <Card
@@ -32,7 +36,7 @@ export const ProductCard = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        mx: 'auto', // Centrar la card
+        mx: 'auto',
       }}
     >
       {/* Imagen */}
@@ -40,94 +44,69 @@ export const ProductCard = ({
         component="img"
         image={product.image}
         alt={product.name}
-        sx={{ height: 200, objectFit: "contain" }}
+        sx={{ height: 200, objectFit: "contain", p: 1 }}
       />
 
-      {/* Badges */}
-      <Box
-        sx={{ position: "absolute", top: 8, left: 8, display: "flex", gap: 1 }}
-      >
-        {product.isNew && (
-          <Box
-            sx={{
-              bgcolor: "primary.main",
-              color: "white",
-              px: 1,
-              borderRadius: 1,
-              fontSize: 12,
-            }}
-          >
-            Nuevo
-          </Box>
-        )}
-        {product.discount > 0 && (
-          <Box
-            sx={{
-              bgcolor: "error.main",
-              color: "white",
-              px: 1,
-              borderRadius: 1,
-              fontSize: 12,
-            }}
-          >
-            -{product.discount}%
-          </Box>
-        )}
-      </Box>
+      {/* Badge de Nuevo */}
+      {isNew() && (
+        <Box
+          sx={{ 
+            position: "absolute", 
+            top: 8, 
+            left: 8, 
+            bgcolor: "primary.main",
+            color: "white",
+            px: 1,
+            py: 0.5,
+            borderRadius: 1,
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          Nuevo
+        </Box>
+      )}
 
       {/* Información */}
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
         <Typography
-          variant="h6"
+          variant="body1"
           sx={{
             mb: 1,
             overflow: "hidden",
             textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            width: "100%",
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            minHeight: 48,
+            fontWeight: 500,
           }}
         >
           {product.name}
         </Typography>
 
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 1,
-            mb: 2,
-            alignItems: "baseline",
-          }}
+        {/* <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ mb: 2 }}
         >
-          <Typography variant="h6" color="primary">
-            ${discountedPrice}
-          </Typography>
-          {showOriginalPrice && product.originalPrice && (
-            <Typography
-              variant="body2"
-              sx={{ textDecoration: "line-through", color: "gray" }}
-            >
-              ${product.originalPrice}
-            </Typography>
-          )}
-          {!showOriginalPrice && product.discount > 0 && (
-            <Typography
-              variant="body2"
-              sx={{ textDecoration: "line-through", color: "gray" }}
-            >
-              ${product.price}
-            </Typography>
-          )}
-        </Box>
+          {product.brand}
+        </Typography> */}
 
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{ mt: 'auto' }}
-          onClick={() => console.log(`Agregar ${product.name} al carrito`)}
-        >
-          Agregar al Carrito
-        </Button>
+        <Box sx={{ mt: 'auto' }}>
+          <Typography variant="h6" color="primary" sx={{ mb: 2, fontWeight: 600 }}>
+            {formatPrice(product.price)}
+          </Typography>
+
+          <Button
+            variant="contained"
+            fullWidth
+            size="small"
+            onClick={() => console.log(`Agregar ${product.name} al carrito`)}
+          >
+            Agregar al Carrito
+          </Button>
+        </Box>
       </CardContent>
     </Card>
   );

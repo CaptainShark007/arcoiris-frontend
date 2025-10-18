@@ -1,31 +1,30 @@
-import { Box, Container, Typography } from "@mui/material";
-import { 
-  carouselSlides, 
-  categories, 
-  allProducts,
-} from '../data/mockData'
+import { Box, Container, Typography, CircularProgress } from "@mui/material";
+import { carouselSlides, categories } from '../data/mockData'
 import { CategoryCarousel, HeroCarousel, ProductCarousel } from '../components';
+import { useHomeProducts } from '../hooks/products/useHomeProducts';
 
 const HomePage = () => {
+  const { recentProducts, popularProducts, isLoading, isError } = useHomeProducts();
+
+  if (isError) {
+    return (
+      <Container>
+        <Typography color="error" sx={{ py: 4, textAlign: 'center' }}>
+          Error al cargar los productos
+        </Typography>
+      </Container>
+    );
+  }
+
   return (
     <Box className="homepage">
-      {/* Carrusel inicial - sin padding para que ocupe todo el ancho */}
+      {/* Carrusel inicial */}
       <HeroCarousel slides={carouselSlides} />
       
-      {/* Contenedor con padding para el resto del contenido */}
+      {/* Contenedor con padding */}
       <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
         {/* Categorias */}
         <Box sx={{ mb: { xs: 4, md: 6 } }}>
-          {/* <Typography 
-            variant="h4" 
-            sx={{ 
-              mb: 3, 
-              fontWeight: 600,
-              fontSize: { xs: '1.5rem', md: '2rem' }
-            }}
-          >
-            Categorías
-          </Typography> */}
           <CategoryCarousel categories={categories} />
         </Box>
 
@@ -42,13 +41,20 @@ const HomePage = () => {
           >
             Nuevos Ingresos
           </Typography>
-          <ProductCarousel 
-            products={allProducts}
-            showOriginalPrice={false}
-          />
+          
+          {isLoading ? (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <ProductCarousel 
+              products={recentProducts || []}
+              showOriginalPrice={false}
+            />
+          )}
         </Box>
 
-        {/* Los Más Vendidos */}
+        {/* Productos Populares */}
         <Box sx={{ mb: { xs: 4, md: 6 } }}>
           <Typography 
             variant="h4" 
@@ -59,31 +65,19 @@ const HomePage = () => {
               marginLeft: 5
             }}
           >
-            Los Más Vendidos
+            Productos Populares
           </Typography>
-          <ProductCarousel 
-            products={allProducts}
-            showOriginalPrice={false}
-          />
-        </Box>
-
-        {/* Ofertas Especiales */}
-        <Box sx={{ mb: { xs: 4, md: 6 } }}>
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              mb: 3, 
-              fontWeight: 600,
-              fontSize: { xs: '1.5rem', md: '2rem' },
-              marginLeft: 5
-            }}
-          >
-            Ofertas Especiales
-          </Typography>
-          <ProductCarousel 
-            products={allProducts}
-            showOriginalPrice={true}
-          />
+          
+          {isLoading ? (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <ProductCarousel 
+              products={popularProducts || []}
+              showOriginalPrice={false}
+            />
+          )}
         </Box>
       </Container>
     </Box>
