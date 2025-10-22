@@ -10,6 +10,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import type { Product } from "../types/product.type";
 import { formatPrice } from "@/helpers";
+import { Link } from "react-router";
 
 interface ProductCardProps {
   product: Product;
@@ -18,6 +19,8 @@ interface ProductCardProps {
 export const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <Card
+      component={Link}
+      to={`/tienda/${product.slug}`}
       sx={{
         textAlign: "center",
         p: 2,

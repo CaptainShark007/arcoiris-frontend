@@ -221,3 +221,20 @@ export const getCategories = async () => {
   return data;
 };
 
+// metodo para buscar el producto por su slug
+export const getProductBySlug = async (slug: string) => {
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants (*)')
+    .eq('slug', slug)
+    .single(); // seleccionar un solo registro
+
+    if (error) {
+      console.log('Error fetching product by slug:', error.message);
+      throw new Error('Error fetching product by slug');
+    }
+
+  return data;
+
+}
