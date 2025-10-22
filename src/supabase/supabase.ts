@@ -296,6 +296,7 @@ export type Database = {
         Row: {
           color: string
           color_name: string
+          finish: string | null
           id: string
           price: number
           product_id: string
@@ -305,6 +306,7 @@ export type Database = {
         Insert: {
           color: string
           color_name: string
+          finish?: string | null
           id?: string
           price: number
           product_id: string
@@ -314,6 +316,7 @@ export type Database = {
         Update: {
           color?: string
           color_name?: string
+          finish?: string | null
           id?: string
           price?: number
           product_id?: string
