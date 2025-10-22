@@ -16,3 +16,5 @@ export * from './LoadingButton';
 export * from './PopupMenu';
 export * from './ProductCard';
 export * from './Tooltip';
+export * from './Tag';
+export * from './Loader';
