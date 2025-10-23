@@ -21,7 +21,7 @@ import { useState, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo_comercio_v2.png';
 import { NotificationPopup } from './PopupNotification';
-import { useUsers } from '@shared/hooks';
+import { useCustomer, useUsers } from '@shared/hooks';
 import { Loader } from './Loader';
 import LoginIcon from '@mui/icons-material/Login';
 
@@ -32,6 +32,10 @@ export const Navbar = () => {
   const { session, isLoading } = useUsers();
 
   const userId = session?.user?.id;
+
+  const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
+
+  const initial = customer?.full_name?.[0]?.toUpperCase() || 'U';
 
   const handleOpen = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -207,7 +211,7 @@ export const Navbar = () => {
                   },
                 }}
               >
-                D
+                {isLoadingCustomer ? "?" : initial}
               </Box>
             ) : (
               <>
