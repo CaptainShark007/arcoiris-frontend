@@ -115,3 +115,20 @@ export const getSession = async () => {
   }
   return data;
 }
+
+// metodo para obtener el cliente logueado
+export const getCustomerByUserId = async (userId: string) => {
+
+  const { data, error } = await supabase
+    .from("customers")
+    .select("id, full_name, phone, email")
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Error al obtener los datos del cliente");
+  }
+
+  return data;
+}

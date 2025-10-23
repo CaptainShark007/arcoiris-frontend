@@ -5,10 +5,12 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useRegister } from "../hooks";
-import { useFormWithSchema } from "@shared/hooks";
+import { useFormWithSchema, useUsers } from "@shared/hooks";
 import { RegisterFormData, registerSchema } from "../schemas/registerSchema";
+import { Loader } from "@shared/components";
+
 
 const RegisterPage = () => {
   const {
@@ -26,11 +28,16 @@ const RegisterPage = () => {
   });
 
   const { mutate, isPending } = useRegister();
+  const { session, isLoading } = useUsers();
 
   const onRegister = handleSubmit((data) => {
     const { email, password, fullName, phoneNumber } = data;
     mutate({ email, password, fullName, phoneNumber });
   });
+
+  if (isLoading) return <Loader />
+
+  if (session) return <Navigate to="/" />
 
   return (
     <Box

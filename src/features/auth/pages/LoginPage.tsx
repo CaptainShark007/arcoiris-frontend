@@ -6,18 +6,25 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useLogin } from "../hooks";
+import { useUsers } from "@shared/hooks";
+import { Loader } from "@shared/components";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { mutate, isPending } = useLogin();
+  const { session, isLoading } = useUsers();
 
   const onLogin = (e: React.FormEvent) => {
     e.preventDefault();
     mutate({ email, password });
   };
+
+  if (isLoading) return <Loader />
+
+  if (session) return <Navigate to="/" />
 
   return (
     <Box

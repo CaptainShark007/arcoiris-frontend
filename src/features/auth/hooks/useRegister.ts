@@ -10,7 +10,7 @@ export const useRegister = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: signUp,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"]})
+      queryClient.invalidateQueries({ queryKey: ["users"]})
       navigate("/");
     },
     onError: (err) => {
