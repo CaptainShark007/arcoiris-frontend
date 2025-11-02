@@ -2,7 +2,7 @@ import { Error404 } from '@shared/components/Error404';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import { ClientLayout } from '../layout/ClientLayout';
-import { ContactPage, HomePage, LoginPage, OrderUserPage, ProductPage, RegisterPage, ShopPage } from './lazy';
+import { ContactPage, HomePage, LoginPage, OrderUserPage, ProductPage, RegisterPage, ShopPage, CartPage } from './lazy';
 
 export default function Router() {
   return (
@@ -16,6 +16,7 @@ export default function Router() {
         <Route path='contacto' element={<ContactPage />} />
         <Route path='acceder' element={<LoginPage />} />
         <Route path='registrarse' element={<RegisterPage />} />
+        <Route path='carrito' element={<CartPage />} />
 
         {/* Rutas protegidas del cliente */}
         <Route path='cuenta' element={<ClientLayout />}>
