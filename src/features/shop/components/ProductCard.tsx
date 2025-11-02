@@ -6,17 +6,35 @@ import {
   Box,
   IconButton,
 } from "@mui/material";
+import toast from "react-hot-toast";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import type { Product } from "../types/product.type";
 import { formatPrice } from "@/helpers";
 import { Link } from "react-router";
+import { useCartStore } from "@/storage/useCartStore";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
+  const addItem = useCartStore((state) => state.addItem);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // esta porqueria evita que el Link se active
+    e.stopPropagation(); // y esta porqueria evita la propagación del evento
+    
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+
+    toast.success('Producto agregado al carrito');
+  };
+
   return (
     <Card
       component={Link}
@@ -85,7 +103,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           }}
         >
           <Box>
-            {/* Mostrar "Desde" si hay múltiples precios */}
+            {/* esto muestra "Desde" si hay múltiples precios */}
             {product.hasMultiplePrices && (
               <Typography
                 variant="caption"
@@ -108,6 +126,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <IconButton
               size="small"
               color="primary"
+              onClick={handleAddToCart}
               sx={{
                 "&:hover": { backgroundColor: "primary.main", color: "#fff" },
               }}

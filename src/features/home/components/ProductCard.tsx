@@ -6,8 +6,10 @@ import {
   Box,
   Button,
 } from "@mui/material";
+import toast from "react-hot-toast";
 import { formatPrice } from "@/helpers";
 import type { Product } from "../types/home.types";
+import { useCartStore } from "@/storage/useCartStore";
 
 interface ProductCardProps {
   product: Product;
@@ -16,9 +18,21 @@ interface ProductCardProps {
 
 export const ProductCard = ({
   product,
-  //showOriginalPrice = false,
 }: ProductCardProps) => {
-  // Calcular si es nuevo (productos de menos de 30 días)
+  const addItem = useCartStore((state) => state.addItem);
+
+  const handleAddToCart = () => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+
+    toast.success('Producto agregado al carrito');
+  };
+
+  // esto calcula si es nuevo osea productos de menos de 30 días
   const isNew = () => {
     const productDate = new Date(product.created_at);
     const thirtyDaysAgo = new Date();
@@ -47,7 +61,7 @@ export const ProductCard = ({
         sx={{ height: 200, objectFit: "contain", p: 1 }}
       />
 
-      {/* Badge de Nuevo */}
+      {/* Badgecito que dice Nuevo */}
       {isNew() && (
         <Box
           sx={{ 
@@ -85,14 +99,6 @@ export const ProductCard = ({
           {product.name}
         </Typography>
 
-        {/* <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ mb: 2 }}
-        >
-          {product.brand}
-        </Typography> */}
-
         <Box sx={{ mt: 'auto' }}>
           <Typography variant="h6" color="primary" sx={{ mb: 2, fontWeight: 600 }}>
             {formatPrice(product.price)}
@@ -102,7 +108,7 @@ export const ProductCard = ({
             variant="contained"
             fullWidth
             size="small"
-            onClick={() => console.log(`Agregar ${product.name} al carrito`)}
+            onClick={handleAddToCart}
           >
             Agregar al Carrito
           </Button>

@@ -1,11 +1,13 @@
 // /src/features/product/pages/ProductPage.tsx
 import { useParams } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useProduct } from '../hooks/useProduct';
 import { GridImages, ProductDescription } from '../components';
 import { VariantProduct } from '../types/product.type';
 import { formatPrice } from '@/helpers';
 import { Tag, Loader } from '@/shared/components';
+import { useCartStore } from '@/storage/useCartStore';
 
 import {
   Box,
@@ -31,6 +33,7 @@ interface Acc {
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { product, isLoading, isError } = useProduct(slug || '');
+  const addItem = useCartStore((state) => state.addItem);
 
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedStorage, setSelectedStorage] = useState<string | null>(null);
@@ -105,6 +108,33 @@ const ProductPage = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1);
     }
+  };
+
+  const handleAddToCart = () => {
+    if (!product || !selectedVariant) {
+      toast.error('Por favor selecciona una variante del producto');
+      return;
+    }
+
+    if (isOutOfStock) {
+      toast.error('Producto sin stock');
+      return;
+    }
+
+    // Agregar el producto al carrito
+    for (let i = 0; i < quantity; i++) {
+      addItem({
+        id: selectedVariant.id,
+        name: product.name,
+        price: selectedVariant.price,
+        image: product.images?.[0] || '/assets/images/img-default.png',
+      });
+    }
+
+    toast.success(`${quantity} ${quantity === 1 ? 'producto agregado' : 'productos agregados'} al carrito`);
+    
+    // Resetear cantidad
+    setQuantity(1);
   };
 
   if (isLoading) return <Loader />;
@@ -259,6 +289,8 @@ const ProductPage = () => {
                   variant='contained'
                   color='primary'
                   fullWidth
+                  onClick={handleAddToCart}
+                  disabled={isOutOfStock}
                   sx={{
                     height: 48,
                     borderRadius: 2,
@@ -267,7 +299,7 @@ const ProductPage = () => {
                     fontSize: '1rem',
                   }}
                 >
-                  Agregar al carrito
+                  {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
                 </Button>
               </Stack>
             )}
