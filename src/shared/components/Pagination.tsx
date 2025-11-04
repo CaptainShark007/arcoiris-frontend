@@ -11,18 +11,18 @@ interface Props {
   totalItems: number;
   page: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
-  itemsPerPage: number; // nuevo
-  setItemsPerPage: React.Dispatch<React.SetStateAction<number>>; // nuevo
-  itemsPerPageOptions?: number[]; // nuevo (opcional)
+  itemsPerPage: number; 
+  setItemsPerPage: React.Dispatch<React.SetStateAction<number>>; 
+  itemsPerPageOptions?: number[]; 
 }
 
 export const Pagination = ({
   totalItems,
   page,
   setPage,
-  itemsPerPage, // nuevo
-  setItemsPerPage, // nuevo
-  itemsPerPageOptions = [4, 8, 12, 16, 20], // nuevo
+  itemsPerPage, 
+  setItemsPerPage, 
+  itemsPerPageOptions = [4, 8, 12, 16, 20], 
 }: Props) => {
   //const itemsPerPage = 8;
   

@@ -3,7 +3,7 @@ import { Fab, Tooltip } from "@mui/material";
 
 export const WhatsappButton = () => {
   const handleClick = () => {
-    window.open("https://wa.me/5493624836208", "_blank");
+    window.open("https://w.app/zo5esm", "_blank");
   };
 
   return (

@@ -7,3 +7,4 @@ export const ProductPage = lazy(() => import('../features/product/pages/ProductP
 export const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'));
 export const RegisterPage = lazy(() => import('../features/auth/pages/RegisterPage'));
 export const OrderUserPage = lazy(() => import('../features/orders/pages/OrderUserPage'));
+export const CartPage = lazy(() => import('../features/cart/pages/CartPage'));

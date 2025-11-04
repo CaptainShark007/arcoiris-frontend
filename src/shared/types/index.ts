@@ -46,3 +46,6 @@ export interface User {
   avatar?: string;
   role?: string;
 }
+
+// Tipos del carrito
+export * from './cart';

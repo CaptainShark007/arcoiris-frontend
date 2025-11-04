@@ -11,6 +11,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Badge,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -24,12 +25,18 @@ import { NotificationPopup } from './PopupNotification';
 import { useCustomer, useUsers } from '@shared/hooks';
 import { Loader } from './Loader';
 import LoginIcon from '@mui/icons-material/Login';
+import { useCartStore } from '../../storage/useCartStore';
+import { CartSidebar } from './CartSidebar';
+import { HeaderSearch } from './HeaderSearch';
 
 export const Navbar = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [cartSidebarOpen, setCartSidebarOpen] = useState(false);
+  const [searchAnchorEl, setSearchAnchorEl] = useState<null | HTMLElement>(null);
 
   const { session, isLoading } = useUsers();
+  const totalQuantity = useCartStore((state) => state.totalQuantity);
 
   const userId = session?.user?.id;
 
@@ -50,6 +57,14 @@ export const Navbar = () => {
 
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
+  };
+
+  const handleSearchOpen = (event: MouseEvent<HTMLButtonElement>) => {
+    setSearchAnchorEl(event.currentTarget);
+  };
+
+  const handleSearchClose = () => {
+    setSearchAnchorEl(null);
   };
 
   const navButtonStyle = {
@@ -151,9 +166,11 @@ export const Navbar = () => {
             <IconButton
               color='inherit'
               sx={{ display: { xs: 'none', sm: 'flex' } }}
-              onClick={handleSnackbarClick}
+              onClick={() => setCartSidebarOpen(true)}
             >
-              <ShoppingCartIcon />
+              <Badge badgeContent={totalQuantity} color='error'>
+                <ShoppingCartIcon />
+              </Badge>
             </IconButton>
             <IconButton
               color='inherit'
@@ -165,7 +182,7 @@ export const Navbar = () => {
             <IconButton
               color='inherit'
               sx={{ display: { xs: 'none', sm: 'flex' } }}
-              onClick={handleSnackbarClick}
+              onClick={handleSearchOpen}
             >
               <SearchIcon />
             </IconButton>
@@ -174,9 +191,11 @@ export const Navbar = () => {
             <IconButton
               color='inherit'
               sx={{ display: { xs: 'flex', sm: 'none' } }}
-              onClick={handleSnackbarClick}
+              onClick={() => setCartSidebarOpen(true)}
             >
-              <ShoppingCartIcon />
+              <Badge badgeContent={totalQuantity} color='error'>
+                <ShoppingCartIcon />
+              </Badge>
             </IconButton>
             <IconButton
               color='inherit'
@@ -310,6 +329,19 @@ export const Navbar = () => {
         message='Próximamente'
         severity='info'
         onClose={handleSnackbarClose}
+      />
+
+      {/* Cart Sidebar */}
+      <CartSidebar
+        isOpen={cartSidebarOpen}
+        onClose={() => setCartSidebarOpen(false)}
+      />
+
+      {/* Header Search */}
+      <HeaderSearch
+        anchorEl={searchAnchorEl}
+        open={Boolean(searchAnchorEl)}
+        onClose={handleSearchClose}
       />
     </>
   );
