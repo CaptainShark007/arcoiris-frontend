@@ -64,8 +64,21 @@ export const ProductFilters = ({
   return (
     <>
       {/* Filtro por Categorías */}
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+      <Accordion 
+        defaultExpanded
+        //defaultExpanded
+        //disableGutters // Quita el borde superior que aparece por defecto
+        elevation={0}
+        sx={{
+          border: '1px solid #E5E7EB',
+          boxShadow: 'none',
+          '&:before': { display: 'none' },
+          borderRadius: 1,
+          mb: 1,
+          //bgcolor: 'red',
+        }}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon color='primary' />}>
           <Typography fontWeight={600}>Categorías</Typography>
         </AccordionSummary>
         <AccordionDetails>
@@ -94,7 +107,7 @@ export const ProductFilters = ({
       {/* Filtros por marcas */}
       <Accordion
         //defaultExpanded
-        disableGutters
+        //disableGutters
         elevation={0}
         sx={{
           border: '1px solid #E5E7EB',
@@ -102,7 +115,7 @@ export const ProductFilters = ({
           '&:before': { display: 'none' },
           borderRadius: 1,
           mb: 1,
-          bgcolor: 'background.paper',
+          //bgcolor: 'red',
         }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon color='primary' />}>
