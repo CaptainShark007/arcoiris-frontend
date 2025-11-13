@@ -131,8 +131,9 @@ const ProductPage = () => {
       });
     }
 
-    toast.success(`${quantity} ${quantity === 1 ? 'producto agregado' : 'productos agregados'} al carrito`);
-    
+    //toast.success(`${quantity} ${quantity === 1 ? 'producto agregado' : 'productos agregados'} al carrito`);
+    toast.success('Producto agregado al carrito', { position: 'bottom-right' });
+
     // Resetear cantidad
     setQuantity(1);
   };

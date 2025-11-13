@@ -2,7 +2,7 @@ import { Error404 } from '@shared/components/Error404';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import { ClientLayout } from '../layout/ClientLayout';
-import { ContactPage, HomePage, LoginPage, OrderUserPage, ProductPage, RegisterPage, ShopPage, CartPage } from './lazy';
+import { ContactPage, HomePage, LoginPage, OrderUserPage, ProductPage, RegisterPage, ShopPage, CartPage, CheckoutPage } from './lazy';
 
 export default function Router() {
   return (
@@ -23,6 +23,9 @@ export default function Router() {
           <Route index element={<Navigate to='pedidos' replace />} />
           <Route path='pedidos' element={<OrderUserPage />} />
         </Route>
+
+        {/* Página de checkout */}
+        <Route path='verificar' element={<CheckoutPage />} />
 
         {/* Página 404 */}
         <Route path='*' element={<Error404 />} />

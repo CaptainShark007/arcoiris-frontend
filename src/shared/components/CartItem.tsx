@@ -1,5 +1,12 @@
 import { memo } from 'react';
-import { Box, IconButton, Typography, Card, CardMedia, CardContent } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  Typography,
+  Card,
+  CardMedia,
+  CardContent,
+} from '@mui/material';
 import { Add, Remove, Delete } from '@mui/icons-material';
 import { useCartStore } from '../../storage/useCartStore';
 import type { CartItem as CartItemType } from '../types/cart';
@@ -26,15 +33,33 @@ export const CartItem = memo(({ item }: CartItemProps) => {
   };
 
   return (
-    <Card sx={{ display: 'flex', mb: 2, position: 'relative' }}>
+    <Card
+      sx={{
+        display: 'flex',
+        position: 'relative',
+        boxShadow: 'none',
+        borderBottom: 1,
+        bgcolor: 'background.default',
+        borderRadius: 0,
+        borderColor: 'divider',
+      }}
+    >
       <CardMedia
         component='img'
         sx={{ width: 120, height: 120, objectFit: 'cover' }}
         image={item.image}
         alt={item.name}
       />
-      
-      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+
+      <CardContent
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          bgcolor: 'background.default',
+        }}
+      >
         <Box>
           <Typography variant='h6' component='h3' sx={{ mb: 0.5 }}>
             {item.name}
@@ -45,21 +70,24 @@ export const CartItem = memo(({ item }: CartItemProps) => {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-          <IconButton 
-            size='small' 
+          <IconButton
+            size='small'
             onClick={handleDecrement}
             aria-label='Disminuir cantidad'
             sx={{ border: 1, borderColor: 'divider' }}
           >
             <Remove fontSize='small' />
           </IconButton>
-          
-          <Typography variant='body1' sx={{ minWidth: 30, textAlign: 'center' }}>
+
+          <Typography
+            variant='body1'
+            sx={{ minWidth: 30, textAlign: 'center' }}
+          >
             {item.quantity}
           </Typography>
-          
-          <IconButton 
-            size='small' 
+
+          <IconButton
+            size='small'
             onClick={handleIncrement}
             aria-label='Aumentar cantidad'
             sx={{ border: 1, borderColor: 'divider' }}

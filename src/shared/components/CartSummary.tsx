@@ -4,8 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useCartStore } from '../../storage/useCartStore';
 import { formatPrice } from '@/helpers';
+import { ChevronRight, ChevronLeft } from '@mui/icons-material';
 
-export const CartSummary = memo(() => {
+interface CartSummaryProps {
+  activeStep?: number;
+  onNext?: () => void;
+  onBack?: () => void;
+  onReset?: () => void;
+}
+
+export const CartSummary = memo(({ activeStep = 0, onNext, onBack, onReset }: CartSummaryProps) => {
   const navigate = useNavigate();
   const { totalQuantity, totalPrice, clearCart } = useCartStore(
     useShallow((state) => ({
@@ -19,33 +27,170 @@ export const CartSummary = memo(() => {
     navigate('/tienda');
   };
 
-  const handleCheckout = () => {
-    // aca agregar la lógica de finalizar compra 
-    console.log('Proceder al checkout');
-    // navigate('/checkout');
+  /* const handleGoToCart = () => {
+    navigate('/carrito');
+  };
+
+  const handleGoToShipping = () => {
+    navigate('/verificar');
+  }; */
+
+  // Renderiza los botones según el paso activo
+  const renderButtons = () => {
+    switch (activeStep) {
+      case 0: // Revisar orden
+        return (
+          <>
+            <Button
+              variant='contained'
+              size='large'
+              fullWidth
+              onClick={onNext}
+              disabled={totalQuantity === 0}
+              endIcon={<ChevronRight />}
+            >
+              Finalizar compra
+            </Button>
+
+            <Divider>
+              <Typography variant='caption' color='text.secondary'>
+                o
+              </Typography>
+            </Divider>
+
+            <Button
+              variant='outlined'
+              size='large'
+              fullWidth
+              onClick={handleContinueShopping}
+              startIcon={<ChevronLeft />}
+            >
+              Seguir comprando
+            </Button>
+          </>
+        );
+
+      case 1: // Entrega
+        return (
+          <>
+            <Button
+              variant='contained'
+              size='large'
+              fullWidth
+              onClick={onNext}
+              endIcon={<ChevronRight />}
+            >
+              Confirmar
+            </Button>
+
+            <Divider>
+              <Typography variant='caption' color='text.secondary'>
+                o
+              </Typography>
+            </Divider>
+
+            <Button
+              variant='outlined'
+              size='large'
+              fullWidth
+              onClick={onBack}
+              startIcon={<ChevronLeft />}
+            >
+              Volver al carrito
+            </Button>
+          </>
+        );
+
+      case 2: // Pago
+        return (
+          <>
+            <Button
+              variant='contained'
+              size='large'
+              fullWidth
+              onClick={onNext}
+            >
+              Finalizar compra
+            </Button>
+
+            <Divider>
+              <Typography variant='caption' color='text.secondary'>
+                o
+              </Typography>
+            </Divider>
+
+            <Button
+              variant='outlined'
+              size='large'
+              fullWidth
+              onClick={onBack}
+              startIcon={<ChevronLeft />}
+            >
+              Volver a las entregas
+            </Button>
+          </>
+        );
+
+      case 3: // Confirmación
+        return (
+          <>
+            <Button
+              variant='contained'
+              size='large'
+              fullWidth
+              onClick={() => window.location.href = '/orders/12345'}
+            >
+              Ver detalles de la orden
+            </Button>
+
+            <Divider>
+              <Typography variant='caption' color='text.secondary'>
+                o
+              </Typography>
+            </Divider>
+
+            <Button
+              variant='outlined'
+              size='large'
+              fullWidth
+              onClick={onReset}
+            >
+              Volver a inicio
+            </Button>
+          </>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
-    <Paper elevation={2} sx={{ p: 3, position: 'sticky', top: 100 }}>
+    <Paper
+      elevation={2}
+      sx={{
+        p: 3,
+        position: 'sticky',
+        top: 20,
+        bgcolor: 'background.default',
+        border: 1,
+        borderColor: 'divider',
+        boxShadow: 'none',
+      }}
+    >
       <Typography variant='h5' gutterBottom>
-        Resumen del pedido
+        Resumen de la orden
       </Typography>
 
       <Divider sx={{ my: 2 }} />
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant='body1'>
-          Productos ({totalQuantity})
-        </Typography>
-        <Typography variant='body1'>
-          {formatPrice(totalPrice)}
-        </Typography>
+        <Typography variant='body1'>Productos ({totalQuantity})</Typography>
+        <Typography variant='body1'>{formatPrice(totalPrice)}</Typography>
       </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant='body1'>
-          Envío
-        </Typography>
+        <Typography variant='body1'>Envío</Typography>
         <Typography variant='body1' color='success.main'>
           Gratis
         </Typography>
@@ -63,32 +208,16 @@ export const CartSummary = memo(() => {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        <Button
-          variant='contained'
-          size='large'
-          fullWidth
-          onClick={handleCheckout}
-          disabled={totalQuantity === 0}
-        >
-          Finalizar Compra
-        </Button>
-        
-        <Button
-          variant='outlined'
-          size='large'
-          fullWidth
-          onClick={handleContinueShopping}
-        >
-          Seguir Comprando
-        </Button>
+        {renderButtons()}
 
-        {totalQuantity > 0 && (
+        {totalQuantity > 0 && activeStep === 0 && (
           <Button
             variant='text'
             size='medium'
             fullWidth
             onClick={clearCart}
             color='error'
+            sx={{ mt: 1 }}
           >
             Vaciar Carrito
           </Button>

@@ -1,61 +1,5 @@
 import { supabase } from '@/supabase/client';
 
-// ejemplo usado en el video
-/* export const getProducts = async () => {
-  const { data: products, error } = await supabase
-    .from('products')
-    .select('*, variants (*)')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.log('Error fetching products:', error.message);
-    throw new Error('Error fetching products');
-  }
-
-  return products;
-};
- */
-
-// ejemplo usado en el video pero adaptado al formato actual de nuestro proyecto
-/* export const getProducts = async () => {
-  const { data, error } = await supabase
-    .from('products')
-    .select(`
-      id,
-      name,
-      brand,
-      slug,
-      images,
-      description,
-      features,
-      created_at,
-      variants (
-        id,
-        product_id,
-        price,
-        stock,
-        color,
-        color_name,
-        storage
-      )
-    `)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.log('Error fetching products:', error.message);
-    throw new Error('Error fetching products');
-  }
-
-  // transformar para usar el mismo formato que el mock
-  const products = data?.map((p) => ({
-    ...p,
-    price: p.variants?.[0]?.price ?? 0, // primer precio disponible
-    image: p.images?.[0] ?? "/assets/images/img-default.png", // imagen por defecto
-  }));
-
-  return products;
-}; */
-
 // Nuevo metodo para listar productos con variantes paginados y con filtros varios - video
 export const getFilteredProducts = async ({
   page = 1,
@@ -96,20 +40,6 @@ export const getFilteredProducts = async ({
     console.log('Error fetching filtered products:', error.message);
     throw new Error('Error fetching filtered products');
   }
-
-  // NO hacer consultas innesesarias al storage para obtener las URLs de las imagenes
-  /* const products = data?.map((p) => ({
-    ...p,
-    image: p.images?.[0]
-      ? supabase.storage.from('product-images').getPublicUrl(p.images[0]).data.publicUrl
-      : "/assets/images/img-default.png",
-  })); */
-
-  // obtiene la url publica de las imagenes directamente de la tabla products
-  /* const products = data?.map((p) => ({
-    ...p,
-    image: p.images?.[0] ?? '/assets/images/img-default.png', // en caso de que no tenga imagen asignar una por defecto
-  })); */
 
   const products = data?.map((p) => {
     // Obtener precios de las variantes

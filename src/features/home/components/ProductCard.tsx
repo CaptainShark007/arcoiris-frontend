@@ -29,7 +29,7 @@ export const ProductCard = ({
       image: product.image,
     });
 
-    toast.success('Producto agregado al carrito');
+    toast.success('Producto agregado al carrito', { position: 'bottom-right' });
   };
 
   // esto calcula si es nuevo osea productos de menos de 30 días
