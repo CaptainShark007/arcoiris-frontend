@@ -25,13 +25,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   const [openModal, setOpenModal] = useState(false);
 
-  const isOutOfStock = !loading && variants.length === 0;
+  const isOutOfStock = !loading && variants.every((v) => Number(v.stock) <= 0);
 
   const handleAddToCart = () => {
     if (loading) return;
 
-    if (variants.length === 0) {
-      toast.error('Sin stock disponible', { position: 'bottom-right' });
+    if (variants.every((v) => Number(v.stock) <= 0)) {
+      toast.error('Sin stock disponible');
       return;
     }
 
