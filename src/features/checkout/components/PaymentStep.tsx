@@ -25,14 +25,9 @@ export const PaymentStep = ({
 
   const { mutate: createOrder, isPending } = useCreateOrder();
   const { items, totalPrice, clearCart } = useCartStore();
-  const { shippingInfo, clearCheckout } = useCheckoutStore();
+  const { shippingInfo, clearCheckout, setOrderId } = useCheckoutStore();
 
   const handleConfirm = () => {
-    console.log('🔍 handleConfirm ejecutado');
-    console.log('📦 shippingInfo:', shippingInfo);
-    console.log('🛒 items:', items);
-    console.log('💰 totalPrice:', totalPrice);
-    
     if (!shippingInfo) {
       toast.error('Por favor, completa la información de envío antes de continuar.', {
         position: 'bottom-right',
@@ -42,6 +37,9 @@ export const PaymentStep = ({
 
     const orderData = {
       address: {
+        name: shippingInfo.name,
+        email: shippingInfo.email,
+        phone: shippingInfo.phone,
         addressLine1: shippingInfo.addressLine1,
         addressLine2: '',
         city: shippingInfo.city,
@@ -58,21 +56,18 @@ export const PaymentStep = ({
     };
 
     createOrder(orderData, {
-      onSuccess: () => {
+      onSuccess: (data) => {
+        setOrderId(data.id);
         clearCart();
-        clearCheckout();
         onNext();
       },
     });
   };
 
-  // Exponer la función handleConfirm al componente padre a través del ref
   useEffect(() => {
     if (onConfirmOrderRef) {
       onConfirmOrderRef.current = handleConfirm;
     }
-    // No agregamos dependencias para que siempre tenga la versión más reciente
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shippingInfo, items, totalPrice, createOrder, clearCart, clearCheckout, onNext])
 
   // Sincronizar el estado de procesamiento

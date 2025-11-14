@@ -9,11 +9,10 @@ interface ConfirmationStepProps {
 }
 
 export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
-  const orderNumber = '12345';
   const estimatedDelivery = '3-5 días hábiles';
 
   const { clearCart } = useCartStore();
-  const { clearCheckout } = useCheckoutStore();
+  const { orderId, clearCheckout } = useCheckoutStore();
 
   const handleReset = () => {
     clearCart();
@@ -45,7 +44,7 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Receipt color="primary" />
           <Typography variant="h6">
-            Orden #{orderNumber}
+            Orden #{orderId || 'N/A'}
           </Typography>
         </Box>
         
@@ -106,8 +105,9 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
       <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 2 }}>
         <Button 
           variant="contained" 
-          onClick={() => window.location.href = `/orders/${orderNumber}`}
+          onClick={() => window.location.href = `/orders/${orderId}`}
           fullWidth
+          disabled={!orderId}
         >
           Ver detalles de la orden
         </Button>

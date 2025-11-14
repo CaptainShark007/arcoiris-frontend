@@ -13,12 +13,16 @@ interface ShippingInfo {
 
 interface CheckoutState {
   shippingInfo: ShippingInfo | null;
+  orderId: number | null;
   setShippingInfo: (info: ShippingInfo) => void;
+  setOrderId: (id: number) => void; // ← Cambiado a number
   clearCheckout: () => void;
 }
 
 export const useCheckoutStore = create<CheckoutState>((set) => ({
   shippingInfo: null,
+  orderId: null,
   setShippingInfo: (info) => set({ shippingInfo: info }),
-  clearCheckout: () => set({ shippingInfo: null }),
+  setOrderId: (id: number) => set({ orderId: id }),
+  clearCheckout: () => set({ shippingInfo: null, orderId: null }),
 }));
