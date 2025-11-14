@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect, MutableRefObject } from 'react';
 import { 
   Box, Typography, Button, TextField, Stack, 
   Radio, Card, CardActionArea, Collapse 
 } from '@mui/material';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
+import toast from 'react-hot-toast';
 
 interface ShippingStepProps {
   onNext: () => void;
   onBack: () => void;
+  onValidateAndSaveRef?: MutableRefObject<(() => boolean) | null>;
 }
 
-export const ShippingStep = ({ onNext, onBack }: ShippingStepProps) => {
+export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingStepProps) => {
 
   const [form, setForm] = useState({
     addressLine1: '',
@@ -29,16 +31,61 @@ export const ShippingStep = ({ onNext, onBack }: ShippingStepProps) => {
 
   const setShippingInfo = useCheckoutStore((state) => state.setShippingInfo);
 
-  const handleNext = () => {
+  const validateAndSave = (): boolean => {
+    // Si seleccionó retiro, guardar información básica
+    if (selected === 'retiro') {
+      setShippingInfo({
+        addressLine1: 'Retiro en sucursal',
+        city: 'Resistencia',
+        state: 'Chaco',
+        postalCode: '3500',
+        country: 'Argentina',
+        name: 'Retiro en sucursal',
+        email: '',
+        phone: '',
+      });
+      return true;
+    }
+
+    // Si seleccionó acordar, validar que el formulario esté completo
     if (selected === 'acordar') {
+      const { addressLine1, city, name, email, phone } = form;
+      
+      if (!addressLine1 || !city || !name || !email || !phone) {
+        toast.error('Por favor, completa todos los campos obligatorios.', {
+          position: 'bottom-right',
+        });
+        return false;
+      }
+
       setShippingInfo({
         ...form,
         state: 'Chaco',
         country: 'Argentina',
       });
-    };
-    onNext();
-  }
+      return true;
+    }
+
+    // No seleccionó ninguna opción
+    toast.error('Por favor, selecciona un método de envío.', {
+      position: 'bottom-right',
+    });
+    return false;
+  };
+
+  const handleNext = () => {
+    if (validateAndSave()) {
+      onNext();
+    }
+  };
+
+  // Exponer la función de validación al componente padre
+  useEffect(() => {
+    if (onValidateAndSaveRef) {
+      onValidateAndSaveRef.current = validateAndSave;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, form]);
 
   const updateForm = (field: keyof typeof form, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -125,10 +172,6 @@ export const ShippingStep = ({ onNext, onBack }: ShippingStepProps) => {
                 </Typography>
               </Box>
             </Box>
-
-            {/* <Typography variant="h6" fontWeight="bold">
-              Acordar
-            </Typography> */}
           </Stack>
         </CardActionArea>
       </Card>

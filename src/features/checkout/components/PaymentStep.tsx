@@ -1,6 +1,6 @@
 import { Box, Typography, Button, Radio, Stack, Card, CardActionArea } from '@mui/material';
 import { RadioButtonChecked } from '@mui/icons-material';
-import { useState } from 'react';
+import { useState, useEffect, MutableRefObject } from 'react';
 import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
@@ -10,9 +10,17 @@ interface PaymentStepProps {
   onNext: () => void;
   onBack: () => void;
   onEditAddress?: () => void;
+  onConfirmOrderRef?: MutableRefObject<(() => void) | null>;
+  isProcessingRef?: MutableRefObject<boolean>;
 }
 
-export const PaymentStep = ({ onNext, onBack, onEditAddress }: PaymentStepProps) => {
+export const PaymentStep = ({ 
+  onNext, 
+  onBack, 
+  onEditAddress,
+  onConfirmOrderRef,
+  isProcessingRef
+}: PaymentStepProps) => {
   const [selected, setSelected] = useState<'acordar'>('acordar');
 
   const { mutate: createOrder, isPending } = useCreateOrder();
@@ -20,7 +28,11 @@ export const PaymentStep = ({ onNext, onBack, onEditAddress }: PaymentStepProps)
   const { shippingInfo, clearCheckout } = useCheckoutStore();
 
   const handleConfirm = () => {
-
+    console.log('🔍 handleConfirm ejecutado');
+    console.log('📦 shippingInfo:', shippingInfo);
+    console.log('🛒 items:', items);
+    console.log('💰 totalPrice:', totalPrice);
+    
     if (!shippingInfo) {
       toast.error('Por favor, completa la información de envío antes de continuar.', {
         position: 'bottom-right',
@@ -52,8 +64,23 @@ export const PaymentStep = ({ onNext, onBack, onEditAddress }: PaymentStepProps)
         onNext();
       },
     });
-
   };
+
+  // Exponer la función handleConfirm al componente padre a través del ref
+  useEffect(() => {
+    if (onConfirmOrderRef) {
+      onConfirmOrderRef.current = handleConfirm;
+    }
+    // No agregamos dependencias para que siempre tenga la versión más reciente
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shippingInfo, items, totalPrice, createOrder, clearCart, clearCheckout, onNext])
+
+  // Sincronizar el estado de procesamiento
+  useEffect(() => {
+    if (isProcessingRef) {
+      isProcessingRef.current = isPending;
+    }
+  }, [isPending]);
 
   return (
     <Box>
@@ -66,7 +93,6 @@ export const PaymentStep = ({ onNext, onBack, onEditAddress }: PaymentStepProps)
           borderColor: 'primary.main',
           borderRadius: 1,
           bgcolor: 'info.light',
-          //boxShadow: 1,
         }}
       >
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
@@ -136,7 +162,7 @@ export const PaymentStep = ({ onNext, onBack, onEditAddress }: PaymentStepProps)
         </CardActionArea>
       </Card>
 
-      {/* Botones inferiores */}
+      {/* Botones inferiores - solo en móvil */}
       <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 2, mt: 2 }}>
         <Button variant="outlined" onClick={onBack} fullWidth>
           Volver

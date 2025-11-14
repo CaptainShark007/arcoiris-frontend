@@ -11,9 +11,18 @@ interface CartSummaryProps {
   onNext?: () => void;
   onBack?: () => void;
   onReset?: () => void;
+  onConfirmOrder?: () => void; // Nueva prop para confirmar orden
+  isProcessing?: boolean; // Nueva prop para estado de carga
 }
 
-export const CartSummary = memo(({ activeStep = 0, onNext, onBack, onReset }: CartSummaryProps) => {
+export const CartSummary = memo(({ 
+  activeStep = 0, 
+  onNext, 
+  onBack, 
+  onReset,
+  onConfirmOrder,
+  isProcessing = false
+}: CartSummaryProps) => {
   const navigate = useNavigate();
   const { totalQuantity, totalPrice, clearCart } = useCartStore(
     useShallow((state) => ({
@@ -26,14 +35,6 @@ export const CartSummary = memo(({ activeStep = 0, onNext, onBack, onReset }: Ca
   const handleContinueShopping = () => {
     navigate('/tienda');
   };
-
-  /* const handleGoToCart = () => {
-    navigate('/carrito');
-  };
-
-  const handleGoToShipping = () => {
-    navigate('/verificar');
-  }; */
 
   // Renderiza los botones según el paso activo
   const renderButtons = () => {
@@ -101,16 +102,17 @@ export const CartSummary = memo(({ activeStep = 0, onNext, onBack, onReset }: Ca
           </>
         );
 
-      case 2: // Pago
+      case 2: // Pago - AQUÍ ESTÁ EL CAMBIO PRINCIPAL
         return (
           <>
             <Button
               variant='contained'
               size='large'
               fullWidth
-              onClick={onNext}
+              onClick={onConfirmOrder} // Ahora llama a la función de confirmar orden
+              disabled={isProcessing}
             >
-              Finalizar compra
+              {isProcessing ? 'Procesando...' : 'Confirmar orden'}
             </Button>
 
             <Divider>
@@ -125,6 +127,7 @@ export const CartSummary = memo(({ activeStep = 0, onNext, onBack, onReset }: Ca
               fullWidth
               onClick={onBack}
               startIcon={<ChevronLeft />}
+              disabled={isProcessing}
             >
               Volver a las entregas
             </Button>
