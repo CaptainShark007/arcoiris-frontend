@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { ProductCard } from "../components/ProductCard";
-import type { Product } from "../types/product.type";
+import { Product } from "@shared/types";
 
 interface ProductGridProps {
   products: Product[];

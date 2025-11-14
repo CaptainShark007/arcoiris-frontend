@@ -1,6 +1,10 @@
 import { Box, Typography, Button, Radio, Stack, Card, CardActionArea } from '@mui/material';
 import { RadioButtonChecked } from '@mui/icons-material';
 import { useState } from 'react';
+import { useCreateOrder } from '@features/orders';
+import { useCartStore } from '@/storage/useCartStore';
+import { useCheckoutStore } from '@/storage/useCheckoutStore';
+import toast from 'react-hot-toast';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -10,6 +14,46 @@ interface PaymentStepProps {
 
 export const PaymentStep = ({ onNext, onBack, onEditAddress }: PaymentStepProps) => {
   const [selected, setSelected] = useState<'acordar'>('acordar');
+
+  const { mutate: createOrder, isPending } = useCreateOrder();
+  const { items, totalPrice, clearCart } = useCartStore();
+  const { shippingInfo, clearCheckout } = useCheckoutStore();
+
+  const handleConfirm = () => {
+
+    if (!shippingInfo) {
+      toast.error('Por favor, completa la información de envío antes de continuar.', {
+        position: 'bottom-right',
+      });
+      return;
+    }
+
+    const orderData = {
+      address: {
+        addressLine1: shippingInfo.addressLine1,
+        addressLine2: '',
+        city: shippingInfo.city,
+        state: shippingInfo.state,
+        postalCode: shippingInfo.postalCode,
+        country: shippingInfo.country,
+      },
+      cartItems: items.map((item) => ({
+        variantId: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      totalAmount: totalPrice,
+    };
+
+    createOrder(orderData, {
+      onSuccess: () => {
+        clearCart();
+        clearCheckout();
+        onNext();
+      },
+    });
+
+  };
 
   return (
     <Box>
@@ -97,8 +141,13 @@ export const PaymentStep = ({ onNext, onBack, onEditAddress }: PaymentStepProps)
         <Button variant="outlined" onClick={onBack} fullWidth>
           Volver
         </Button>
-        <Button variant="contained" onClick={onNext} fullWidth>
-          Confirmar orden
+        <Button
+          variant="contained"
+          onClick={handleConfirm}
+          fullWidth
+          disabled={isPending}
+        >
+          {isPending ? 'Procesando...' : 'Confirmar orden'}
         </Button>
       </Box>
     </Box>

@@ -1,5 +1,5 @@
+import { CHECKOUT_STEPS } from '@shared/types';
 import { useState, useCallback } from 'react';
-import { CHECKOUT_STEPS } from '../types/checkoutSteps';
 
 export const useCheckoutFlow = () => {
   const [activeStep, setActiveStep] = useState(0);

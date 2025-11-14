@@ -3,6 +3,7 @@ import {
   Box, Typography, Button, TextField, Stack, 
   Radio, Card, CardActionArea, Collapse 
 } from '@mui/material';
+import { useCheckoutStore } from '@/storage/useCheckoutStore';
 
 interface ShippingStepProps {
   onNext: () => void;
@@ -10,10 +11,37 @@ interface ShippingStepProps {
 }
 
 export const ShippingStep = ({ onNext, onBack }: ShippingStepProps) => {
+
+  const [form, setForm] = useState({
+    addressLine1: '',
+    city: '',
+    postalCode: '',
+    name: '',
+    email: '',
+    phone: '',
+  });
+
   const [selected, setSelected] = useState<'retiro' | 'acordar' | null>(null);
 
   const handleSelect = (option: 'retiro' | 'acordar') => {
     setSelected(option);
+  };
+
+  const setShippingInfo = useCheckoutStore((state) => state.setShippingInfo);
+
+  const handleNext = () => {
+    if (selected === 'acordar') {
+      setShippingInfo({
+        ...form,
+        state: 'Chaco',
+        country: 'Argentina',
+      });
+    };
+    onNext();
+  }
+
+  const updateForm = (field: keyof typeof form, value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -107,33 +135,65 @@ export const ShippingStep = ({ onNext, onBack }: ShippingStepProps) => {
 
       {/* Formulario condicional */}
       <Collapse in={selected === 'acordar'}>
-
-        {/* Informacion de la entrega */}
         <Box sx={{ mt: 3 }}>
           <Typography variant="h6" gutterBottom>
             Información de entrega
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, my: 2 }}>
-            <TextField label="Dirección" fullWidth required />
-            <TextField label="Ciudad" fullWidth required />
-            <TextField label="Código postal" fullWidth required />
+            <TextField 
+              label="Dirección" 
+              fullWidth 
+              required 
+              value={form.addressLine1}
+              onChange={(e) => updateForm('addressLine1', e.target.value)}
+            />
+            <TextField 
+              label="Ciudad" 
+              fullWidth 
+              required 
+              value={form.city}
+              onChange={(e) => updateForm('city', e.target.value)}
+            />
+            <TextField 
+              label="Código postal" 
+              fullWidth 
+              value={form.postalCode}
+              onChange={(e) => updateForm('postalCode', e.target.value)}
+            />
           </Box>
         </Box>
 
-        {/* Informacion de contacto */}
         <Box sx={{ mt: 3 }}>
           <Typography variant="h6" gutterBottom>
             Información de contacto
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, my: 2 }}>
-            <TextField label="Nombre" fullWidth required />
-            <TextField label="Correo electrónico" fullWidth required />
-            <TextField label="Teléfono" fullWidth required />
+            <TextField 
+              label="Nombre" 
+              fullWidth 
+              required 
+              value={form.name}
+              onChange={(e) => updateForm('name', e.target.value)}
+            />
+            <TextField 
+              label="Correo electrónico" 
+              fullWidth 
+              required 
+              type="email"
+              value={form.email}
+              onChange={(e) => updateForm('email', e.target.value)}
+            />
+            <TextField 
+              label="Teléfono" 
+              fullWidth 
+              required 
+              value={form.phone}
+              onChange={(e) => updateForm('phone', e.target.value)}
+            />
           </Box>
         </Box>
-
       </Collapse>
 
       {/* Botones móviles */}
@@ -143,7 +203,7 @@ export const ShippingStep = ({ onNext, onBack }: ShippingStepProps) => {
         </Button>
         <Button
           variant="contained"
-          onClick={onNext}
+          onClick={handleNext}
           fullWidth
           disabled={!selected}
         >

@@ -6,6 +6,9 @@ export interface OrderInput {
     state: string;
     postalCode?: string;
     country: string;
+    name: string;
+    email: string;
+    phone: string;
   };
   cartItems: {
     variantId: string;

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useProduct } from '../hooks/useProduct';
 import { GridImages, ProductDescription } from '../components';
-import { VariantProduct } from '../types/product.type';
 import { formatPrice } from '@/helpers';
 import { Tag, Loader } from '@/shared/components';
 import { useCartStore } from '@/storage/useCartStore';
@@ -21,6 +20,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
+import { VariantProduct } from '@shared/types';
 
 interface Acc {
   [key: string]: {

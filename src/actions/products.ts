@@ -168,3 +168,19 @@ export const getProductBySlug = async (slug: string) => {
   return data;
 
 }
+
+// metodo para obtener las variantes de un producto
+export const getProductVariants = async (productId: string) => {
+  const { data, error } = await supabase
+    .from('variants')
+    .select('id, color, color_name, stock, price, storage, finish')
+    .eq('product_id', productId);
+    // ⬅️ QUITAMOS .gt('stock', 0)
+
+  if (error) {
+    console.log('Error al obtener variantes de producto:', error.message);
+    throw new Error(error.message);
+  }
+
+  return data || [];
+}

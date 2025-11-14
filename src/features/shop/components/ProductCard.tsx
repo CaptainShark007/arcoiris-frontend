@@ -10,11 +10,11 @@ import {
 import toast from "react-hot-toast";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import type { Product } from "../types/product.type";
 import { formatPrice } from "@/helpers";
 import { Link } from "react-router";
 import { useCartStore } from "@/storage/useCartStore";
 import { NotificationPopup } from "@shared/components/PopupNotification";
+import { Product } from "@shared/types";
 
 interface ProductCardProps {
   product: Product;
@@ -41,8 +41,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
-      image: product.image,
+      price: product.variants[0]?.price,
+      image: product.images[0],
     });
 
     toast.success('Producto agregado al carrito', { position: 'bottom-right' });
@@ -80,7 +80,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <CardMedia
           component="img"
           height="160"
-          image={product.image}
+          image={product.images[0]}
           alt={product.name}
           sx={{
             objectFit: "contain",
@@ -125,7 +125,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           >
             <Box>
               {/* esto muestra "Desde" si hay múltiples precios */}
-              {product.hasMultiplePrices && (
+              {product.variants.length > 1 && (
                 <Typography
                   variant="caption"
                   color="text.secondary"
@@ -139,7 +139,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 fontWeight="bold"
                 color="primary.main"
               >
-                {formatPrice(product.price)}
+                {formatPrice(product.variants[0]?.price)}
               </Typography>
             </Box>
 

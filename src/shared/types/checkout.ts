@@ -2,7 +2,7 @@ export interface CheckoutStep {
   id: string;
   label: string;
   description: string;
-  icon?: string; // Nombre del ícono de MUI
+  icon?: string;
 }
 
 export const CHECKOUT_STEPS: CheckoutStep[] = [

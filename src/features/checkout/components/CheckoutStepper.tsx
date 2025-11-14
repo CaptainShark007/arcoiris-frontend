@@ -1,5 +1,5 @@
 import { Stepper, Step, StepLabel } from '@mui/material';
-import { CHECKOUT_STEPS } from '../types/checkoutSteps';
+import { CHECKOUT_STEPS } from '@shared/types';
 
 interface CheckoutStepperProps {
   activeStep: number;

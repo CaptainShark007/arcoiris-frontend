@@ -1,6 +1,9 @@
 import { Box, Typography, Button, Paper, Divider } from '@mui/material';
 import { CheckCircle, Receipt, LocalShipping, Email } from '@mui/icons-material';
 
+import { useCartStore } from '@/storage/useCartStore';
+import { useCheckoutStore } from '@/storage/useCheckoutStore';
+
 interface ConfirmationStepProps {
   onReset: () => void;
 }
@@ -8,6 +11,15 @@ interface ConfirmationStepProps {
 export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
   const orderNumber = '12345';
   const estimatedDelivery = '3-5 días hábiles';
+
+  const { clearCart } = useCartStore();
+  const { clearCheckout } = useCheckoutStore();
+
+  const handleReset = () => {
+    clearCart();
+    clearCheckout();
+    onReset(); // vuelve al step inicial
+  };
 
   return (
     <Box>
@@ -99,9 +111,10 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
         >
           Ver detalles de la orden
         </Button>
+
         <Button 
           variant="outlined" 
-          onClick={onReset}
+          onClick={handleReset}
           fullWidth
         >
           Volver al inicio
