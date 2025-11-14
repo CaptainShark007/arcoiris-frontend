@@ -1,11 +1,19 @@
-import { Card, CardContent, CardMedia, Typography, Box, Button } from "@mui/material";
-import toast from "react-hot-toast";
-import { formatPrice } from "@/helpers";
-import { useCartStore } from "@/storage/useCartStore";
-import { useProductVariants } from "../hooks";
-import { useState } from "react";
-import { Product } from "@shared/types";
-import { VariantSelectModal } from "@shared/components";
+import {
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  Box,
+  Button,
+} from '@mui/material';
+import toast from 'react-hot-toast';
+import { formatPrice } from '@/helpers';
+import { useCartStore } from '@/storage/useCartStore';
+import { useProductVariants } from '../hooks';
+import { useState } from 'react';
+import { Product } from '@shared/types';
+import { ProductBadge, VariantSelectModal } from '@shared/components';
+import { Link } from 'react-router';
 
 interface ProductCardProps {
   product: Product;
@@ -13,20 +21,20 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const addItem = useCartStore((state) => state.addItem);
-  const { variants, loading } = useProductVariants(product.id); // variants ahora es VariantProduct[]
+  const { variants, loading } = useProductVariants(product.id);
 
   const [openModal, setOpenModal] = useState(false);
+
+  const isOutOfStock = !loading && variants.length === 0;
 
   const handleAddToCart = () => {
     if (loading) return;
 
-    // Si NO hay variantes → error lógico
     if (variants.length === 0) {
-      toast.error("Sin stock disponible", { position: "bottom-right" });
+      toast.error('Sin stock disponible', { position: 'bottom-right' });
       return;
     }
 
-    // Si solo tiene UNA variante → agregar directo
     if (variants.length === 1) {
       const variant = variants[0];
 
@@ -35,47 +43,64 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         name: product.name,
         price: variant.price,
         image: product.images[0],
+        variant: {
+          color: variant.color_name,
+          storage: variant.storage,
+          finish: variant.finish,
+          colorHex: variant.color,
+        },
       });
 
-      toast.success("Producto agregado al carrito", { position: "bottom-right" });
+      toast.success('Producto agregado al carrito', {
+        position: 'bottom-right',
+      });
       return;
     }
 
-    // Si tiene más variantes → abrir modal
     setOpenModal(true);
   };
 
   return (
     <>
       <Card
+        component={Link}
+        to={`/tienda/${product.slug}`}
         sx={{
-          width: "100%",
+          width: '100%',
           maxWidth: 280,
-          textAlign: "center",
-          position: "relative",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          mx: "auto",
+          textAlign: 'center',
+          position: 'relative',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          mx: 'auto',
+          opacity: isOutOfStock ? 0.55 : 1,
+          pointerEvents: isOutOfStock ? 'none' : 'auto',
+          textDecoration: 'none',
         }}
       >
+        {/* Badge AGOTADO */}
+        {isOutOfStock && <ProductBadge type='agotado' />}
+
         <CardMedia
-          component="img"
+          component='img'
           image={product.images[0]}
           alt={product.name}
-          sx={{ height: 200, objectFit: "contain", p: 1 }}
+          sx={{ height: 200, objectFit: 'contain', p: 1 }}
         />
 
-        <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", p: 2 }}>
+        <CardContent
+          sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 2 }}
+        >
           <Typography
-            variant="body1"
+            variant='body1'
             sx={{
               mb: 1,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: "-webkit-box",
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
               WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
+              WebkitBoxOrient: 'vertical',
               minHeight: 48,
               fontWeight: 500,
             }}
@@ -83,30 +108,54 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             {product.name}
           </Typography>
 
-          <Box sx={{ mt: "auto" }}>
-            <Typography variant="h6" color="primary" sx={{ mb: 2, fontWeight: 600 }}>
+          <Box sx={{ mt: 'auto' }}>
+            <Typography
+              variant='h6'
+              color='primary'
+              sx={{ mb: 2, fontWeight: 600 }}
+            >
               {formatPrice(product.variants[0]?.price)}
             </Typography>
 
-            <Button
+            {/* <Button
               variant="contained"
               fullWidth
               size="small"
               onClick={handleAddToCart}
-              disabled={loading}
+              disabled={loading || isOutOfStock}
             >
-              {loading ? "Cargando..." : "Agregar al Carrito"}
+              {isOutOfStock
+                ? "Sin stock"
+                : loading
+                ? "Cargando..."
+                : "Agregar al Carrito"}
+            </Button> */}
+            <Button
+              variant='contained'
+              fullWidth
+              size='small'
+              onClick={(event) => {
+                event.preventDefault(); // evita navegar por el link
+                event.stopPropagation(); // evita que el click suba al Card
+                handleAddToCart();
+              }}
+              disabled={loading || isOutOfStock}
+            >
+              {isOutOfStock
+                ? 'Sin stock'
+                : loading
+                ? 'Cargando...'
+                : 'Agregar al Carrito'}
             </Button>
           </Box>
         </CardContent>
       </Card>
 
-      {/* MODAL - Ahora variants es compatible directamente */}
       {variants.length > 1 && (
         <VariantSelectModal
           open={openModal}
           onClose={() => setOpenModal(false)}
-          variants={variants} // Ya es VariantProduct[]
+          variants={variants}
           product={product}
         />
       )}

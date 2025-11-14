@@ -25,3 +25,4 @@ export * from './CartSidebar';
 export * from './CartSearch';
 export * from './HeaderSearch';
 export * from './VariantSelectModal';
+export * from './ProductBadge';
