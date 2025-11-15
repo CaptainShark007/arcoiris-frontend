@@ -1,4 +1,3 @@
-//import React, { useState, useMemo } from 'react';
 import React from 'react';
 import {
   Box,
@@ -8,15 +7,8 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { ProductFilters, ProductGrid } from '../components';
-//import { mockProducts } from "../data/mock.products";
-//import CustomPagination from '../../../shared/components/CustomPagination';
-import { Product } from '../types/product.type';
 import { Pagination } from '@shared/components/Pagination';
-
-/* interface ProductListPageProps {
-  products: Product[];
-  isLoading?: boolean;
-} */
+import { Product } from '@shared/types';
 
 interface ProductListPageProps {
   products: Product[];
@@ -38,24 +30,13 @@ export const ProductListPage = ({
   totalProducts,
   page,
   setPage,
-  itemsPerPage, // nuevo
-  setItemsPerPage, // nuevo
+  itemsPerPage, 
+  setItemsPerPage,
   selectedBrands,
   setSelectedBrands,
-  selectedCategories, // nuevo
-  setSelectedCategories, // nuevo
+  selectedCategories, 
+  setSelectedCategories,
 }: ProductListPageProps) => {
-
-  /* const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(8); */
-
-  // Filtrar los productos visibles según la página
-  /* const paginatedProducts = useMemo(() => {
-    const start = page * rowsPerPage;
-    return products.slice(start, start + rowsPerPage);
-  }, [page, rowsPerPage, products]);
-
-  const totalPages = Math.ceil(products.length / rowsPerPage); */
 
   return (
     <Box

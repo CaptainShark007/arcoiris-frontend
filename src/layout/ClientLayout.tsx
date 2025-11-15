@@ -8,7 +8,7 @@ import { AppBar, Box, Button, Container, Toolbar } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
 
 export const ClientLayout = () => {
-  const { session, isLoading: isLoadingSession } = useUsers();
+  const { isLoading: isLoadingSession } = useUsers(); // session, 
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();

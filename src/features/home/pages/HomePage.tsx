@@ -1,7 +1,7 @@
 import { Box, Container, Typography, CircularProgress } from "@mui/material";
 import { carouselSlides, categories } from '../data/mockData'
 import { CategoryCarousel, HeroCarousel, ProductCarousel } from '../components';
-import { useHomeProducts } from '../hooks/products/useHomeProducts';
+import { useHomeProducts } from '../hooks/useHomeProducts';
 
 const HomePage = () => {
   const { recentProducts, popularProducts, isLoading, isError } = useHomeProducts();

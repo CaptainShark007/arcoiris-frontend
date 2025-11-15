@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { CartItem, CartState } from '../shared/types/cart';
 
 interface CartActions {
-  addItem: (item: Omit<CartItem, 'quantity'>) => void;
+  addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -31,16 +31,17 @@ export const useCartStore = create<CartStore>()(
           let newItems: CartItem[];
           if (existingItem) {
             // Si el item ya existe, incrementa su cantidad
+            const quantityToAdd = item.quantity || 1;
             newItems = state.items.map((i) =>
-              i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+              i.id === item.id ? { ...i, quantity: i.quantity + quantityToAdd } : i
             );
           } else {
-            // Si es nuevo, agrégalo con cantidad 1
-            newItems = [...state.items, { ...item, quantity: 1 }];
+            // Si es nuevo, agrégalo con la cantidad especificada o 1 por defecto
+            newItems = [...state.items, { ...item, quantity: item.quantity || 1 }];
           }
 
           const totals = calculateTotals(newItems);
-          console.log('🛒 Cart Updated:', { items: newItems, ...totals });
+          console.log('Carrito actualizado', { items: newItems, ...totals });
           return { items: newItems, ...totals };
         }),
 
@@ -65,7 +66,7 @@ export const useCartStore = create<CartStore>()(
             item.id === id ? { ...item, quantity } : item
           );
           const totals = calculateTotals(newItems);
-          console.log('🛒 Cart Updated (quantity):', { items: newItems, ...totals });
+          console.log('Carrito actualizado (cantidad):', { items: newItems, ...totals });
           return { items: newItems, ...totals };
         }),
 

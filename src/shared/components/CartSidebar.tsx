@@ -23,7 +23,7 @@ export const CartSidebar = memo(({ isOpen, onClose }: CartSidebarProps) => {
   );
 
   const handleGoToCart = () => {
-    navigate('/carrito');
+    navigate('/verificar'); // verificar | carrito
     onClose();
   };
 
