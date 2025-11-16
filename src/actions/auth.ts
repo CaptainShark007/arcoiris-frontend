@@ -116,7 +116,22 @@ export const getSession = async () => {
   return data;
 }
 
-// metodo para obtener el cliente logueado
+export const getUserRole = async (userId: string) => {
+
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Error al obtener el rol del usuario");
+  }
+
+  return data.role;
+}
+
 export const getCustomerByUserId = async (userId: string) => {
 
   const { data, error } = await supabase

@@ -3,6 +3,12 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import { ClientLayout } from '../layout/ClientLayout';
 import { ContactPage, HomePage, LoginPage, OrderUserPage, ProductPage, RegisterPage, ShopPage, CartPage, CheckoutPage } from './lazy';
+import { DashboardLayout } from '../layouts/DashboardLayout';
+import { DashboardProductsPage } from '@/pages/dashboard/DashboardProductsPage';
+import { DashboardNewProductPage } from '@/pages/dashboard/DashboardNewProductPage';
+import { DashboardProductSlugPage } from '@/pages/dashboard/DashboardProductSlugPage';
+import { DashboardOrdersPage } from '@/pages/dashboard/DashboardOrdersPage';
+import { DashboardOrderPage } from '@/pages/dashboard/DashboardOrderPage';
 
 export default function Router() {
   return (
@@ -29,6 +35,16 @@ export default function Router() {
 
         {/* Página 404 */}
         <Route path='*' element={<Error404 />} />
+      </Route>
+
+      {/* Rutas del dashboard */}
+      <Route path='dashboard' element={<DashboardLayout />}>
+        <Route index element={<Navigate to='productos' replace />} />
+        <Route path='productos' element={<DashboardProductsPage />} />
+        <Route path='productos/new' element={<DashboardNewProductPage />} />
+        <Route path='productos/editar/:slug' element={<DashboardProductSlugPage />} />
+        <Route path='ordenes' element={<DashboardOrdersPage />} />
+        <Route path='ordenes/:id' element={<DashboardOrderPage />} />
       </Route>
     </Routes>
   );

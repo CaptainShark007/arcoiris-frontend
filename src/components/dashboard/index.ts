@@ -1,0 +1,11 @@
+export { Sidebar } from "./Sidebar";
+export { TableProduct } from "./products/TableProduct";
+export { CellTableProduct } from "./products/CellTableProduct";
+export { TableOrdersAdmin } from "./orders/TableOrdersAdmin";
+export { FormProduct } from "./products/FormProduct";
+export { SectionFormProduct } from "./products/SectionFormProduct";
+export { InputForm } from "./products/InputForm";
+export { FeaturesInput } from "./products/FeaturesInput";
+export { VariantsInput } from "./products/VariantsInput";
+export { UploaderImages } from "./products/UploaderImages";
+export { Editor } from "./products/Editor";
