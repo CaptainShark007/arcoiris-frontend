@@ -5,6 +5,7 @@ import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
+//import { enviarEmailOrden } from '@/services/emailService';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -56,9 +57,23 @@ export const PaymentStep = ({
     };
 
     createOrder(orderData, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         setOrderId(data.id);
         clearCart();
+
+        // FUNCIONA PERO SE COMENTA PARA EVITAR COSTOS INNECESARIOS EN ENVÍOS DE EMAILS DURANTE PRUEBAS
+        /* await enviarEmailOrden({
+          id: data.id,
+          email: shippingInfo.email,
+          nombreCliente: shippingInfo.name,
+          total: totalPrice,
+          items: items.map(item => ({
+            nombre: item.name,
+            cantidad: item.quantity,
+            precio: item.price,
+          })),
+        }); */
+
         onNext();
       },
     });
