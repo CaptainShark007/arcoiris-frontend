@@ -5,14 +5,15 @@ import { useShallow } from 'zustand/react/shallow';
 import { useCartStore } from '../../storage/useCartStore';
 import { formatPrice } from '@/helpers';
 import { ChevronRight, ChevronLeft } from '@mui/icons-material';
+import { useCheckoutStore } from '@/storage/useCheckoutStore';
 
 interface CartSummaryProps {
   activeStep?: number;
   onNext?: () => void;
   onBack?: () => void;
   onReset?: () => void;
-  onConfirmOrder?: () => void; // Nueva prop para confirmar orden
-  isProcessing?: boolean; // Nueva prop para estado de carga
+  onConfirmOrder?: () => void;
+  isProcessing?: boolean;
 }
 
 export const CartSummary = memo(({ 
@@ -31,9 +32,17 @@ export const CartSummary = memo(({
       clearCart: state.clearCart,
     }))
   );
+  const { clearCheckout } = useCheckoutStore();
 
   const handleContinueShopping = () => {
     navigate('/tienda');
+  };
+
+  const handleResetDesktop = () => {
+    clearCart();
+    clearCheckout();
+    onReset?.();
+    navigate('/', { replace: true });
   };
 
   // Renderiza los botones según el paso activo
@@ -156,7 +165,7 @@ export const CartSummary = memo(({
               variant='outlined'
               size='large'
               fullWidth
-              onClick={onReset}
+              onClick={handleResetDesktop}
             >
               Volver a inicio
             </Button>

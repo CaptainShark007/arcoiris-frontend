@@ -26,8 +26,10 @@ export const PaymentStep = ({
 
   const { mutate: createOrder, isPending } = useCreateOrder();
   const { items, totalPrice, clearCart } = useCartStore();
-  const { shippingInfo, clearCheckout, setOrderId } = useCheckoutStore();
-
+  // DESCOMENTAR para el funcionamiento real de la creacion orden
+  //const { shippingInfo, clearCheckout, setOrderId } = useCheckoutStore(); 
+  const { shippingInfo, clearCheckout } = useCheckoutStore(); // comentar cuando se descomente la linea de arriba
+  
   const handleConfirm = () => {
     if (!shippingInfo) {
       toast.error('Por favor, completa la información de envío antes de continuar.', {
@@ -36,7 +38,15 @@ export const PaymentStep = ({
       return;
     }
 
-    const orderData = {
+    // DESCOMENTAR para el funcionamiento real de la creacion orden
+    /* toast.loading('Procesando tu orden...', {
+      id: 'order-processing',
+      position: 'bottom-right',
+      duration: 4000,
+    }); */
+
+    // DESCOMENTAR para el funcionamiento real de la creacion orden
+    /* const orderData = {
       address: {
         name: shippingInfo.name,
         email: shippingInfo.email,
@@ -54,29 +64,45 @@ export const PaymentStep = ({
         price: item.price,
       })),
       totalAmount: totalPrice,
-    };
+    }; */
 
-    createOrder(orderData, {
+    // DESCOMENTAR para el funcionamiento real de la creacion orden
+    /* createOrder(orderData, {
       onSuccess: async (data) => {
         setOrderId(data.id);
         clearCart();
 
+        toast.success('¡Orden creada con éxito!', {
+          id: 'order-processing',
+          position: 'bottom-right',
+        });
+
+        // DESCOMENTAR para el funcionamiento real de la creacion orden
         // FUNCIONA PERO SE COMENTA PARA EVITAR COSTOS INNECESARIOS EN ENVÍOS DE EMAILS DURANTE PRUEBAS
-        /* await enviarEmailOrden({
-          id: data.id,
-          email: shippingInfo.email,
-          nombreCliente: shippingInfo.name,
-          total: totalPrice,
-          items: items.map(item => ({
-            nombre: item.name,
-            cantidad: item.quantity,
-            precio: item.price,
-          })),
-        }); */
+        //await enviarEmailOrden({
+        //  id: data.id,
+        //  email: shippingInfo.email,
+        //  nombreCliente: shippingInfo.name,
+        //  total: totalPrice,
+        //  items: items.map(item => ({
+        //    nombre: item.name,
+        //    cantidad: item.quantity,
+        //   precio: item.price,
+        //  })),
+        //});
 
         onNext();
       },
-    });
+      onError: () => {
+        toast.error('Hubo un error al crear la orden. Por favor, intenta nuevamente.', {
+          id: 'order-processing',
+          position: 'bottom-right',
+        });
+      }
+    }); */
+    // Simulación de creación de orden para evitar costos de email durante pruebas
+    // SOLO PARA SIMULAR EL FLUJO DE CREACIÓN DE ORDEN
+    onNext(); // comentar cuando se descomente la creación real de orden
   };
 
   useEffect(() => {
@@ -174,7 +200,12 @@ export const PaymentStep = ({
 
       {/* Botones inferiores - solo en móvil */}
       <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 2, mt: 2 }}>
-        <Button variant="outlined" onClick={onBack} fullWidth>
+        <Button 
+          variant="outlined" 
+          onClick={onBack} 
+          fullWidth
+          disabled={isPending}
+        >
           Volver
         </Button>
         <Button
@@ -183,7 +214,7 @@ export const PaymentStep = ({
           fullWidth
           disabled={isPending}
         >
-          {isPending ? 'Procesando...' : 'Confirmar orden'}
+          Confirmar orden
         </Button>
       </Box>
     </Box>
