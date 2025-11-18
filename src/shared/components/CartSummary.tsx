@@ -6,6 +6,7 @@ import { useCartStore } from '../../storage/useCartStore';
 import { formatPrice } from '@/helpers';
 import { ChevronRight, ChevronLeft } from '@mui/icons-material';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
+import { useUsers } from '@shared/hooks';
 
 interface CartSummaryProps {
   activeStep?: number;
@@ -24,7 +25,10 @@ export const CartSummary = memo(({
   onConfirmOrder,
   isProcessing = false
 }: CartSummaryProps) => {
+
   const navigate = useNavigate();
+  const { session, isLoading } = useUsers();
+
   const { totalQuantity, totalPrice, clearCart } = useCartStore(
     useShallow((state) => ({
       totalQuantity: state.totalQuantity,
@@ -45,6 +49,19 @@ export const CartSummary = memo(({
     navigate('/', { replace: true });
   };
 
+  // Maneja el click en "Finalizar compra" con validación de login
+  const handleFinalizarCompra = () => {
+    if (!session) {
+      // Usuario no está logueado, redirigir a login
+      // Guardar la ruta de redirección después del login
+      sessionStorage.setItem('redirectAfterLogin', '/verificar');
+      navigate('/acceder');
+    } else {
+      // Usuario está logueado, proceder al siguiente paso
+      onNext?.();
+    }
+  }
+
   // Renderiza los botones según el paso activo
   const renderButtons = () => {
     switch (activeStep) {
@@ -55,8 +72,8 @@ export const CartSummary = memo(({
               variant='contained'
               size='large'
               fullWidth
-              onClick={onNext}
-              disabled={totalQuantity === 0}
+              onClick={handleFinalizarCompra}
+              disabled={totalQuantity === 0 || isLoading}
               endIcon={<ChevronRight />}
             >
               Finalizar compra
