@@ -5,6 +5,8 @@ import {
 } from '@mui/material';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
+import * as yup from 'yup';
+import { shippingSchema } from '../schemas/shoppingSchema';
 
 interface ShippingStepProps {
   onNext: () => void;
@@ -23,10 +25,13 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
     phone: '',
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<'retiro' | 'acordar' | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const handleSelect = (option: 'retiro' | 'acordar') => {
     setSelected(option);
+    setErrors({});
   };
 
   const setShippingInfo = useCheckoutStore((state) => state.setShippingInfo);
@@ -40,30 +45,44 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
         state: 'Chaco',
         postalCode: '3500',
         country: 'Argentina',
-        name: 'Retiro en sucursal',
+        name: '',
         email: '',
         phone: '',
       });
       return true;
     }
 
-    // Si seleccionó acordar, validar que el formulario esté completo
+    // Si seleccionó acordar, validar con Yup (síncrono)
     if (selected === 'acordar') {
-      const { addressLine1, city, name, email, phone } = form;
-      
-      if (!addressLine1 || !city || !name || !email || !phone) {
-        toast.error('Por favor, completa todos los campos obligatorios.', {
-          position: 'bottom-right',
+      try {
+        shippingSchema.validateSync(form, { abortEarly: false });
+        setErrors({});
+        
+        setShippingInfo({
+          ...form,
+          state: 'Chaco',
+          country: 'Argentina',
         });
+        return true;
+      } catch (err) {
+        if (err instanceof yup.ValidationError) {
+          const newErrors: Record<string, string> = {};
+          err.inner.forEach((error) => {
+            if (error.path) {
+              newErrors[error.path] = error.message;
+            }
+          });
+          setErrors(newErrors);
+          
+          // Marcar todos los campos como touched
+          const allTouched = Object.keys(form).reduce((acc, key) => {
+            acc[key] = true;
+            return acc;
+          }, {} as Record<string, boolean>);
+          setTouched(allTouched);
+        }
         return false;
       }
-
-      setShippingInfo({
-        ...form,
-        state: 'Chaco',
-        country: 'Argentina',
-      });
-      return true;
     }
 
     // No seleccionó ninguna opción
@@ -89,6 +108,18 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
 
   const updateForm = (field: keyof typeof form, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
+    // Limpiar error cuando el usuario empieza a escribir
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleBlur = (field: keyof typeof form) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
   };
 
   return (
@@ -190,6 +221,9 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
               required 
               value={form.addressLine1}
               onChange={(e) => updateForm('addressLine1', e.target.value)}
+              onBlur={() => handleBlur('addressLine1')}
+              error={touched.addressLine1 && !!errors.addressLine1}
+              helperText={touched.addressLine1 && errors.addressLine1}
             />
             <TextField 
               label="Ciudad" 
@@ -197,12 +231,16 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
               required 
               value={form.city}
               onChange={(e) => updateForm('city', e.target.value)}
+              onBlur={() => handleBlur('city')}
+              error={touched.city && !!errors.city}
+              helperText={touched.city && errors.city}
             />
             <TextField 
               label="Código postal" 
               fullWidth 
               value={form.postalCode}
               onChange={(e) => updateForm('postalCode', e.target.value)}
+              onBlur={() => handleBlur('postalCode')}
             />
           </Box>
         </Box>
@@ -219,6 +257,9 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
               required 
               value={form.name}
               onChange={(e) => updateForm('name', e.target.value)}
+              onBlur={() => handleBlur('name')}
+              error={touched.name && !!errors.name}
+              helperText={touched.name && errors.name}
             />
             <TextField 
               label="Correo electrónico" 
@@ -227,6 +268,9 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
               type="email"
               value={form.email}
               onChange={(e) => updateForm('email', e.target.value)}
+              onBlur={() => handleBlur('email')}
+              error={touched.email && !!errors.email}
+              helperText={touched.email && errors.email}
             />
             <TextField 
               label="Teléfono" 
@@ -234,6 +278,9 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
               required 
               value={form.phone}
               onChange={(e) => updateForm('phone', e.target.value)}
+              onBlur={() => handleBlur('phone')}
+              error={touched.phone && !!errors.phone}
+              helperText={touched.phone && errors.phone}
             />
           </Box>
         </Box>
