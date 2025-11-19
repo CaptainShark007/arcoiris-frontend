@@ -5,14 +5,16 @@ import { useShallow } from 'zustand/react/shallow';
 import { useCartStore } from '../../storage/useCartStore';
 import { formatPrice } from '@/helpers';
 import { ChevronRight, ChevronLeft } from '@mui/icons-material';
+import { useCheckoutStore } from '@/storage/useCheckoutStore';
+import { useUsers } from '@shared/hooks';
 
 interface CartSummaryProps {
   activeStep?: number;
   onNext?: () => void;
   onBack?: () => void;
   onReset?: () => void;
-  onConfirmOrder?: () => void; // Nueva prop para confirmar orden
-  isProcessing?: boolean; // Nueva prop para estado de carga
+  onConfirmOrder?: () => void;
+  isProcessing?: boolean;
 }
 
 export const CartSummary = memo(({ 
@@ -23,18 +25,47 @@ export const CartSummary = memo(({
   onConfirmOrder,
   isProcessing = false
 }: CartSummaryProps) => {
+
   const navigate = useNavigate();
-  const { totalQuantity, totalPrice, clearCart } = useCartStore(
+  const { session, isLoading } = useUsers();
+
+  const { totalQuantity, clearCart } = useCartStore(
     useShallow((state) => ({
       totalQuantity: state.totalQuantity,
       totalPrice: state.totalPrice,
       clearCart: state.clearCart,
     }))
   );
+  const { clearCheckout, orderSummary } = useCheckoutStore();
 
   const handleContinueShopping = () => {
     navigate('/tienda');
   };
+
+  const handleClearReviewOrderDesktop = () => {
+    clearCart();
+    clearCheckout();
+  };
+
+  const handleResetDesktop = () => {
+    clearCart();
+    clearCheckout();
+    onReset?.();
+    navigate('/', { replace: true });
+  };
+
+  // Maneja el click en "Finalizar compra" con validación de login
+  const handleFinalizarCompra = () => {
+    if (!session) {
+      // Usuario no está logueado, redirigir a login
+      // Guardar la ruta de redirección después del login
+      sessionStorage.setItem('redirectAfterLogin', '/verificar');
+      navigate('/acceder');
+    } else {
+      // Usuario está logueado, proceder al siguiente paso
+      onNext?.();
+    }
+  }
 
   // Renderiza los botones según el paso activo
   const renderButtons = () => {
@@ -46,8 +77,8 @@ export const CartSummary = memo(({
               variant='contained'
               size='large'
               fullWidth
-              onClick={onNext}
-              disabled={totalQuantity === 0}
+              onClick={handleFinalizarCompra}
+              disabled={totalQuantity === 0 || isLoading}
               endIcon={<ChevronRight />}
             >
               Finalizar compra
@@ -156,7 +187,7 @@ export const CartSummary = memo(({
               variant='outlined'
               size='large'
               fullWidth
-              onClick={onReset}
+              onClick={handleResetDesktop}
             >
               Volver a inicio
             </Button>
@@ -188,16 +219,18 @@ export const CartSummary = memo(({
       <Divider sx={{ my: 2 }} />
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant='body1'>Productos ({totalQuantity})</Typography>
-        <Typography variant='body1'>{formatPrice(totalPrice)}</Typography>
+        <Typography variant='body1'>Productos ({orderSummary?.totalItems ?? 0})</Typography>
+        <Typography variant='body1'>{formatPrice(orderSummary?.totalPrice ?? 0)}</Typography>
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant='body1'>Envío</Typography>
+      {/* acordeon con la lista de productos del carrito */}
+
+      {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant='body1'>Metodo de envío</Typography>
         <Typography variant='body1' color='success.main'>
-          Gratis
+          {shippingMethod === 'retiro' ? 'Retiro en sucursal' : 'Envío a domicilio'}
         </Typography>
-      </Box>
+      </Box> */}
 
       <Divider sx={{ my: 2 }} />
 
@@ -206,7 +239,7 @@ export const CartSummary = memo(({
           Total
         </Typography>
         <Typography variant='h6' fontWeight='bold' color='primary'>
-          {formatPrice(totalPrice)}
+          {formatPrice(orderSummary?.totalPrice ?? 0)}
         </Typography>
       </Box>
 
@@ -218,7 +251,7 @@ export const CartSummary = memo(({
             variant='text'
             size='medium'
             fullWidth
-            onClick={clearCart}
+            onClick={handleClearReviewOrderDesktop}
             color='error'
             sx={{ mt: 1 }}
           >
