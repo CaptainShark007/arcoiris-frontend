@@ -36,23 +36,20 @@ export const CartSummary = memo(({
       clearCart: state.clearCart,
     }))
   );
-  const { clearCheckout, orderSummary } = useCheckoutStore(); // setOrderSummary
+  const { clearCheckout, orderSummary } = useCheckoutStore();
 
   const handleContinueShopping = () => {
     navigate('/tienda');
   };
 
-  /* const orderSummaryEmpty = {
-    totalItems: 0,
-    totalPrice: 0,
-    items: [],
-  }; */
+  const handleClearReviewOrderDesktop = () => {
+    clearCart();
+    clearCheckout();
+  };
 
   const handleResetDesktop = () => {
     clearCart();
     clearCheckout();
-    // resetear el orden item y precio
-    //setOrderSummary(orderSummaryEmpty);
     onReset?.();
     navigate('/', { replace: true });
   };
@@ -254,7 +251,7 @@ export const CartSummary = memo(({
             variant='text'
             size='medium'
             fullWidth
-            onClick={clearCart}
+            onClick={handleClearReviewOrderDesktop}
             color='error'
             sx={{ mt: 1 }}
           >

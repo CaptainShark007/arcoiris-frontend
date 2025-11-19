@@ -5,7 +5,7 @@ import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
-import { enviarEmailOrden } from '@/services/emailService';
+//import { enviarEmailOrden } from '@/services/emailService';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -26,7 +26,10 @@ export const PaymentStep = ({
 
   const { mutate: createOrder, isPending, } = useCreateOrder();
   const { clearCart } = useCartStore();
-  const { shippingInfo, shippingMethod, setOrderId, orderSummary } = useCheckoutStore();
+  // DESCOMENTAR para el funcionamiento real de la creacion orden
+  //const { shippingInfo, shippingMethod, setOrderId, orderSummary } = useCheckoutStore();
+  const { shippingInfo, shippingMethod, setOrderId } = useCheckoutStore(); // comentar esta linea para el funcionamiento real
+  
   
   const handleConfirm = () => {
     if (!shippingInfo) {
@@ -37,14 +40,14 @@ export const PaymentStep = ({
     }
 
     // DESCOMENTAR para el funcionamiento real de la creacion orden
-    toast.loading('Procesando tu orden...', {
+    /* toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'bottom-right',
       duration: 4000,
-    });
+    }); */
 
     // DESCOMENTAR para el funcionamiento real de la creacion orden
-    const orderData = {
+    /* const orderData = {
       address: {
         name: shippingInfo.name,
         email: shippingInfo.email,
@@ -62,26 +65,28 @@ export const PaymentStep = ({
         price: item.price,
       })) ?? [],
       totalAmount: orderSummary?.totalPrice ?? 0,
-    };
+    }; */
 
     // DESCOMENTAR para el funcionamiento real de la creacion orden
-    createOrder(orderData, {
+    /* createOrder(orderData, {
       onSuccess: async (data) => {
         setOrderId(data.id);
         clearCart();
 
-        // FUNCIONA PERO SE COMENTA PARA EVITAR COSTOS INNECESARIOS EN ENVÍOS DE EMAILS DURANTE PRUEBAS
-        await enviarEmailOrden({
-          id: data.id,
-          email: shippingInfo.email,
-          nombreCliente: shippingInfo.name,
-          total: orderSummary?.totalPrice ?? 0,
-          items: (orderSummary?.items ?? []).map(item => ({
-            nombre: item.name,
-            cantidad: item.quantity,
-            precio: item.price,
-          })),
-        });
+        // SE COMENTA PARA EVITAR COSTOS INNECESARIOS EN ENVÍOS DE EMAILS DURANTE PRUEBAS
+        // FUNCIONA UNICAMENTE SI SELECCIONA METODO DE ENVIO 'ACORDAR'
+        // REVISAR PORQUE NO MANDA EL EMAIL CUANDO SELECCIONA 'RETIRO POR SUCURSAL'
+        //await enviarEmailOrden({
+        //  id: data.id,
+        //  email: shippingInfo.email,
+        //  nombreCliente: shippingInfo.name,
+        //  total: orderSummary?.totalPrice ?? 0,
+        //  items: (orderSummary?.items ?? []).map(item => ({
+        //    nombre: item.name,
+        //    cantidad: item.quantity,
+        //    precio: item.price,
+        //  })),
+        //});
 
         toast.success('¡Orden creada con éxito!', {
           id: 'order-processing',
@@ -96,11 +101,12 @@ export const PaymentStep = ({
           position: 'bottom-right',
         });
       }
-    });
+    }); */
 
     // Simulación de creación de orden para evitar costos de email durante pruebas
-    //clearCart();
-    //onNext();
+    // commentar este bloque para el funcionamiento real
+    clearCart();
+    onNext();
   };
 
   const handleEditDelivery = () => {
