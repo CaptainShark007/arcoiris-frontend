@@ -29,22 +29,30 @@ export const CartSummary = memo(({
   const navigate = useNavigate();
   const { session, isLoading } = useUsers();
 
-  const { totalQuantity, totalPrice, clearCart } = useCartStore(
+  const { totalQuantity, clearCart } = useCartStore(
     useShallow((state) => ({
       totalQuantity: state.totalQuantity,
       totalPrice: state.totalPrice,
       clearCart: state.clearCart,
     }))
   );
-  const { clearCheckout } = useCheckoutStore();
+  const { clearCheckout, orderSummary } = useCheckoutStore(); // setOrderSummary
 
   const handleContinueShopping = () => {
     navigate('/tienda');
   };
 
+  /* const orderSummaryEmpty = {
+    totalItems: 0,
+    totalPrice: 0,
+    items: [],
+  }; */
+
   const handleResetDesktop = () => {
     clearCart();
     clearCheckout();
+    // resetear el orden item y precio
+    //setOrderSummary(orderSummaryEmpty);
     onReset?.();
     navigate('/', { replace: true });
   };
@@ -214,16 +222,18 @@ export const CartSummary = memo(({
       <Divider sx={{ my: 2 }} />
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant='body1'>Productos ({totalQuantity})</Typography>
-        <Typography variant='body1'>{formatPrice(totalPrice)}</Typography>
+        <Typography variant='body1'>Productos ({orderSummary?.totalItems ?? 0})</Typography>
+        <Typography variant='body1'>{formatPrice(orderSummary?.totalPrice ?? 0)}</Typography>
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant='body1'>Envío</Typography>
+      {/* acordeon con la lista de productos del carrito */}
+
+      {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant='body1'>Metodo de envío</Typography>
         <Typography variant='body1' color='success.main'>
-          Gratis
+          {shippingMethod === 'retiro' ? 'Retiro en sucursal' : 'Envío a domicilio'}
         </Typography>
-      </Box>
+      </Box> */}
 
       <Divider sx={{ my: 2 }} />
 
@@ -232,7 +242,7 @@ export const CartSummary = memo(({
           Total
         </Typography>
         <Typography variant='h6' fontWeight='bold' color='primary'>
-          {formatPrice(totalPrice)}
+          {formatPrice(orderSummary?.totalPrice ?? 0)}
         </Typography>
       </Box>
 

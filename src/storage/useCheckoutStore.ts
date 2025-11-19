@@ -11,18 +11,42 @@ interface ShippingInfo {
   phone: string;
 }
 
+interface OrderSummary {
+  totalItems: number;
+  totalPrice: number;
+  items: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+  }>;
+}
+
 interface CheckoutState {
   shippingInfo: ShippingInfo | null;
+  shippingMethod: 'retiro' | 'acordar' | null;
   orderId: number | null;
+  orderSummary: OrderSummary | null;
   setShippingInfo: (info: ShippingInfo) => void;
-  setOrderId: (id: number) => void; // ← Cambiado a number
+  setShippingMethod: (method: 'retiro' | 'acordar') => void;
+  setOrderId: (id: number) => void;
+  setOrderSummary: (summary: OrderSummary) => void;
   clearCheckout: () => void;
 }
 
 export const useCheckoutStore = create<CheckoutState>((set) => ({
   shippingInfo: null,
+  shippingMethod: null,
   orderId: null,
+  orderSummary: null,
   setShippingInfo: (info) => set({ shippingInfo: info }),
-  setOrderId: (id: number) => set({ orderId: id }),
-  clearCheckout: () => set({ shippingInfo: null, orderId: null }),
+  setShippingMethod: (method) => set({ shippingMethod: method }),
+  setOrderId: (id) => set({ orderId: id }),
+  setOrderSummary: (summary) => set({ orderSummary: summary }),
+  clearCheckout: () => set({ 
+    shippingInfo: null, 
+    shippingMethod: null, 
+    orderId: null, 
+    orderSummary: null 
+  }),
 }));

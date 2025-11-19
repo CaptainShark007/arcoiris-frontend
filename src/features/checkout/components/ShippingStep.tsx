@@ -34,7 +34,7 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
     setErrors({});
   };
 
-  const setShippingInfo = useCheckoutStore((state) => state.setShippingInfo);
+  const { setShippingInfo, setShippingMethod } = useCheckoutStore();
 
   const validateAndSave = (): boolean => {
     // Si seleccionó retiro, guardar información básica
@@ -49,6 +49,7 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
         email: '',
         phone: '',
       });
+      setShippingMethod('retiro'); // Guardar el método seleccionado
       return true;
     }
 
@@ -63,6 +64,7 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
           state: 'Chaco',
           country: 'Argentina',
         });
+        setShippingMethod('acordar'); // Guardar el método seleccionado
         return true;
       } catch (err) {
         if (err instanceof yup.ValidationError) {

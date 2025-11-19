@@ -1,7 +1,8 @@
 import { Box, Typography, Button, Stack } from '@mui/material';
 import { CartList, CartSearch } from '@shared/components';
 import { useCartStore } from '@/storage/useCartStore';
-import { useState } from 'react';
+import { useCheckoutStore } from '@/storage/useCheckoutStore';
+import { useState, useEffect } from 'react';
 
 interface CartStepProps {
   onNext: () => void;
@@ -10,10 +11,29 @@ interface CartStepProps {
 export const CartStep = ({ onNext }: CartStepProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const items = useCartStore(state => state.items);
+  const { totalQuantity, totalPrice } = useCartStore();
+  const { setOrderSummary } = useCheckoutStore();
 
   const filteredItems = items.filter(item => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Guardar el resumen de la orden cuando los items cambian
+  useEffect(() => {
+    if (items.length > 0) {
+      const orderSummary = {
+        totalItems: totalQuantity,
+        totalPrice: totalPrice,
+        items: items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      };
+      setOrderSummary(orderSummary);
+    }
+  }, [items, totalQuantity, totalPrice, setOrderSummary]);
 
   return (
     <Box>

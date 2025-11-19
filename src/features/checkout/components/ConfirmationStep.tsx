@@ -11,7 +11,6 @@ import {
   Receipt,
   ShoppingBag,
 } from '@mui/icons-material';
-import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import { formatPrice } from '@/helpers';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
@@ -23,11 +22,9 @@ interface ConfirmationStepProps {
 
 export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
   const navigate = useNavigate();
-  const { totalPrice, totalQuantity, clearCart } = useCartStore();
-  const { orderId, shippingInfo, clearCheckout } = useCheckoutStore();
+  const { orderId, shippingInfo, orderSummary, clearCheckout } = useCheckoutStore();
 
   const handleResetMobile = () => {
-    clearCart();
     clearCheckout();
     onReset?.();
     navigate('/', { replace: true });
@@ -91,7 +88,7 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
                 Cantidad de artículos
               </Typography>
               <Typography variant='body2' color='text.secondary'>
-                {totalQuantity} {totalQuantity === 1 ? 'artículo' : 'artículos'}
+                {orderSummary?.totalItems || 0} {orderSummary?.totalItems === 1 ? 'artículo' : 'artículos'}
               </Typography>
             </Box>
           </Box>
@@ -108,7 +105,7 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
                 color='text.secondary'
                 fontWeight='bold'
               >
-                {formatPrice(totalPrice)}
+                {formatPrice(orderSummary?.totalPrice || 0)}
               </Typography>
             </Box>
           </Box>
@@ -116,7 +113,6 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
           {/* Dirección de envío */}
           {shippingInfo && (
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-              {/* <MapPin color='action' /> */}
               <MyLocationIcon color='action' />
               <Box sx={{ flex: 1 }}>
                 <Typography variant='subtitle2' fontWeight='medium'>
