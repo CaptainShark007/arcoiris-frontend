@@ -326,7 +326,7 @@ export const CartSummary = memo(({
                         {item.name}
                       </Typography>
                       <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
-                        {item.variant?.color}/{item.variant?.storage}/{item.variant?.finish}
+                        {item.variant?.color} - {item.variant?.storage} - {item.variant?.finish}
                       </Typography>
                       <Typography variant='caption' color='text.secondary' sx={{ display: 'block' }}>
                         Cantidad: {item.quantity}

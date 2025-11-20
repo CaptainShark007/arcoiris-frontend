@@ -5,9 +5,6 @@ import {
   Typography,
   Card,
   CardMedia,
-  CardContent,
-  Chip,
-  Stack,
 } from '@mui/material';
 import { Add, Remove, Delete } from '@mui/icons-material';
 import { useCartStore } from '../../storage/useCartStore';
@@ -34,121 +31,139 @@ export const CartItem = memo(({ item }: CartItemProps) => {
     removeItem(item.id);
   };
 
+  const variants = [
+    item.variant?.color,
+    item.variant?.storage,
+    item.variant?.finish,
+  ]
+    .filter(Boolean)
+    .join(' - ');
+
   return (
     <Card
       sx={{
         display: 'flex',
-        flexDirection: 'column',
         position: 'relative',
         boxShadow: 'none',
-        borderBottom: 1,
-        bgcolor: 'background.default',
         borderRadius: 0,
+        //border: 1,
+        borderBottom: 1,
         borderColor: 'divider',
-        p: 1,
+        p: 1.5,
+        gap: 1.5,
+        height: 'auto',
+        bgcolor: 'background.default',
       }}
     >
-      <Box sx={{ display: 'flex' }}>
-        <CardMedia
-          component='img'
-          sx={{ width: 120, height: 120, objectFit: 'cover' }}
-          image={item.image}
-          alt={item.name}
-        />
+      {/* Imagen */}
+      <CardMedia
+        component='img'
+        sx={{
+          width: 120,
+          height: 120,
+          objectFit: 'contain',
+          borderRadius: 1,
+          flexShrink: 0,
+        }}
+        image={item.image}
+        alt={item.name}
+      />
 
-        <CardContent
-          sx={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Box>
-            <Typography variant='h6' sx={{ mb: 0.5 }}>
-              {item.name}
-            </Typography>
+      {/* Contenido */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          minWidth: 0,
+          pr: 4,
+        }}
+      >
+        {/* Nombre y precio */}
+        <Box>
+          <Typography
+            variant='subtitle1'
+            sx={{
+              fontWeight: 600,
+              mb: 0.5,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {item.name}
+          </Typography>
 
-            <Typography variant='body1' color='primary' fontWeight='bold'>
-              {formatPrice(item.price)}
-            </Typography>
-          </Box>
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+            {variants}
+          </Typography>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-            <IconButton
-              size='small'
-              onClick={handleDecrement}
-              sx={{ border: 1, borderColor: 'divider' }}
-            >
-              <Remove fontSize='small' />
-            </IconButton>
+          <Typography variant='subtitle2' color='primary' fontWeight='bold'>
+            {formatPrice(item.price)}
+          </Typography>
+        </Box>
 
-            <Typography
-              variant='body1'
-              sx={{ minWidth: 30, textAlign: 'center' }}
-            >
-              {item.quantity}
-            </Typography>
+        {/* Cantidad */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <IconButton
+            size='small'
+            onClick={handleDecrement}
+            sx={{
+              border: 1,
+              borderColor: 'divider',
+              p: 0.5,
+              '&:hover': {
+                bgcolor: 'action.hover',
+              },
+            }}
+          >
+            <Remove fontSize='small' />
+          </IconButton>
 
-            <IconButton
-              size='small'
-              onClick={handleIncrement}
-              sx={{ border: 1, borderColor: 'divider' }}
-            >
-              <Add fontSize='small' />
-            </IconButton>
-          </Box>
-        </CardContent>
+          <Typography
+            variant='body2'
+            sx={{
+              minWidth: 28,
+              textAlign: 'center',
+              fontWeight: 600,
+            }}
+          >
+            {item.quantity}
+          </Typography>
+
+          <IconButton
+            size='small'
+            onClick={handleIncrement}
+            sx={{
+              border: 1,
+              borderColor: 'divider',
+              p: 0.5,
+              '&:hover': {
+                bgcolor: 'action.hover',
+              },
+            }}
+          >
+            <Add fontSize='small' />
+          </IconButton>
+        </Box>
       </Box>
 
-      {/* FILA completa: chips + total (alineado con imagen) */}
-      <Stack
-        direction='row'
-        justifyContent='space-between'
-        alignItems='center'
-        sx={{ mt: 1 }}
-      >
-        {item.variant && (
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {item.variant.color && (
-              <Chip
-                size='small'
-                label={item.variant.color}
-                icon={
-                  item.variant.colorHex ? (
-                    <Box
-                      sx={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: '50%',
-                        backgroundColor: item.variant.colorHex,
-                        border: '1px solid #ccc',
-                      }}
-                    />
-                  ) : undefined
-                }
-              />
-            )}
-
-            {item.variant.storage && (
-              <Chip size='small' label={item.variant.storage} />
-            )}
-            {item.variant.finish && (
-              <Chip size='small' label={item.variant.finish} />
-            )}
-          </Box>
-        )}
-
-        <Typography variant='body1' fontWeight='bold'>
-          {formatPrice(item.price * item.quantity)}
-        </Typography>
-      </Stack>
-
+      {/* Botón eliminar */}
       <IconButton
         onClick={handleRemove}
-        sx={{ position: 'absolute', top: 8, right: 8 }}
+        size='small'
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          color: 'error.main',
+          '&:hover': {
+            bgcolor: 'error.lighter',
+          },
+        }}
       >
-        <Delete />
+        <Delete fontSize='small' />
       </IconButton>
     </Card>
   );
