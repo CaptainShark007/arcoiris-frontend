@@ -20,9 +20,12 @@ import {
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import { formatPrice } from '@/helpers';
 import { useNavigate } from 'react-router';
-import { mockData } from '../data/mock.data';
+
+// DESCOMENTAR para usar la version real
 //import { useOrder } from '@features/orders/hooks/useOrder';
 //import { Loader } from '@shared/components';
+
+import { mockData } from '../data/mock.data'; // COMENTAR para usar la version de prueba
 
 interface ConfirmationStepProps {
   onReset: () => void;
@@ -42,7 +45,7 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
     navigate('/cuenta/pedidos');
   }
 
-  // Obtiene los detalles de la orden real
+  // DESCOMENTAR para usar la version real
   /* const { data, isLoading, isError } = useOrder(orderId || 0);
 
   if (isError) return <Typography variant='body2' sx={{ textAlign: 'center' }}>Error al cargar los detalles de la orden.</Typography>;
@@ -51,8 +54,7 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
 
   if (!data) return <Typography variant='body2' sx={{ textAlign: 'center' }}>No hay datos disponibles.</Typography>; */
 
-  // Uso de datos simulados para diseño
-  const data = mockData;
+  const data = mockData; // COMENTAR para usar la version de prueba
 
   return (
     <Box>

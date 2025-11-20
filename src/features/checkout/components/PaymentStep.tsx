@@ -49,11 +49,8 @@ export const PaymentStep = ({
     // DESCOMENTAR para el funcionamiento real de la creacion orden
     /* const orderData = {
       address: {
-        name: shippingInfo.name,
-        email: shippingInfo.email,
-        phone: shippingInfo.phone,
         addressLine1: shippingInfo.addressLine1,
-        addressLine2: '',
+        addressLine2: shippingInfo.addressLine2,
         city: shippingInfo.city,
         state: shippingInfo.state,
         postalCode: shippingInfo.postalCode,
@@ -183,15 +180,15 @@ export const PaymentStep = ({
               Datos de envío cargados:
             </Typography>
             <Typography variant='body2' color='text.secondary'>
-              {shippingInfo?.addressLine1}, {shippingInfo?.city}, {shippingInfo?.postalCode}, {shippingInfo?.country}
+              {shippingInfo?.addressLine1}, {shippingInfo?.addressLine2}, {shippingInfo?.city}, {shippingInfo?.state}, {shippingInfo?.country}, {shippingInfo?.postalCode}
             </Typography>
 
-            <Typography variant='body1' color='text.primary' fontWeight="bold" sx={{ mt: 2 }}>
+            {/* <Typography variant='body1' color='text.primary' fontWeight="bold" sx={{ mt: 2 }}>
               Datos de contacto cargados:
             </Typography>
             <Typography variant='body2' color='text.secondary'>
               {shippingInfo?.email}, {shippingInfo?.phone}, {shippingInfo?.name}
-            </Typography>
+            </Typography> */}
           </Box>
         )}
       </Box>
