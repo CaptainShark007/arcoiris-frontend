@@ -36,7 +36,7 @@ export const CartList = memo(({ items: propItems }: CartListProps) => {
       //bgcolor: 'green',
       display: 'flex',
       flexDirection: 'column',
-      gap: 2
+      //gap: 2
     }}>
       {items.map((item) => (
         <CartItem key={item.id} item={item} />

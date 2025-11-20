@@ -18,11 +18,10 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
 
   const [form, setForm] = useState({
     addressLine1: '',
+    addressLine2: '',
     city: '',
+    state: '',
     postalCode: '',
-    name: '',
-    email: '',
-    phone: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -41,13 +40,11 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
     if (selected === 'retiro') {
       setShippingInfo({
         addressLine1: 'Retiro en sucursal',
+        addressLine2: '',
         city: 'Resistencia',
         state: 'Chaco',
         postalCode: '3500',
         country: 'Argentina',
-        name: '',
-        email: '',
-        phone: '',
       });
       setShippingMethod('retiro'); // Guardar el método seleccionado
       return true;
@@ -217,72 +214,57 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
           </Typography>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, my: 2 }}>
+            {/* Dirección */}
             <TextField 
               label="Dirección" 
               fullWidth 
-              required 
+              //required 
               value={form.addressLine1}
               onChange={(e) => updateForm('addressLine1', e.target.value)}
               onBlur={() => handleBlur('addressLine1')}
               error={touched.addressLine1 && !!errors.addressLine1}
               helperText={touched.addressLine1 && errors.addressLine1}
             />
+            {/* Dirección 2 */}
+            <TextField 
+              label="Dirección 2 (opcional)" 
+              fullWidth 
+              //required 
+              value={form.addressLine2}
+              onChange={(e) => updateForm('addressLine2', e.target.value)}
+              onBlur={() => handleBlur('addressLine2')}
+              error={touched.addressLine2 && !!errors.addressLine2}
+              helperText={touched.addressLine2 && errors.addressLine2}
+            />
+            {/* Ciudad */}
             <TextField 
               label="Ciudad" 
               fullWidth 
-              required 
+              //required 
               value={form.city}
               onChange={(e) => updateForm('city', e.target.value)}
               onBlur={() => handleBlur('city')}
               error={touched.city && !!errors.city}
               helperText={touched.city && errors.city}
             />
+            {/* Estado/Provincia */}
             <TextField 
-              label="Código postal" 
+              label="Estado/Provincia" 
+              fullWidth 
+              //required 
+              value={form.state}
+              onChange={(e) => updateForm('state', e.target.value)}
+              onBlur={() => handleBlur('state')}
+              error={touched.state && !!errors.state}
+              helperText={touched.state && errors.state}
+            />
+            {/* Código postal */}
+            <TextField 
+              label="Código postal (opcional)" 
               fullWidth 
               value={form.postalCode}
               onChange={(e) => updateForm('postalCode', e.target.value)}
               onBlur={() => handleBlur('postalCode')}
-            />
-          </Box>
-        </Box>
-
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Información de contacto
-          </Typography>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, my: 2 }}>
-            <TextField 
-              label="Nombre" 
-              fullWidth 
-              required 
-              value={form.name}
-              onChange={(e) => updateForm('name', e.target.value)}
-              onBlur={() => handleBlur('name')}
-              error={touched.name && !!errors.name}
-              helperText={touched.name && errors.name}
-            />
-            <TextField 
-              label="Correo electrónico" 
-              fullWidth 
-              required 
-              type="email"
-              value={form.email}
-              onChange={(e) => updateForm('email', e.target.value)}
-              onBlur={() => handleBlur('email')}
-              error={touched.email && !!errors.email}
-              helperText={touched.email && errors.email}
-            />
-            <TextField 
-              label="Teléfono" 
-              fullWidth 
-              required 
-              value={form.phone}
-              onChange={(e) => updateForm('phone', e.target.value)}
-              onBlur={() => handleBlur('phone')}
-              error={touched.phone && !!errors.phone}
-              helperText={touched.phone && errors.phone}
             />
           </Box>
         </Box>

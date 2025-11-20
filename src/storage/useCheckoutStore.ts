@@ -2,13 +2,11 @@ import { create } from 'zustand';
 
 interface ShippingInfo {
   addressLine1: string;
+  addressLine2?: string;
   city: string;
   state: string;
-  postalCode: string;
+  postalCode?: string;
   country: string;
-  name: string;
-  email: string;
-  phone: string;
 }
 
 interface OrderSummary {

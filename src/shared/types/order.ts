@@ -6,9 +6,6 @@ export interface OrderInput {
     state: string;
     postalCode?: string;
     country: string;
-    name: string;
-    email: string;
-    phone: string;
   };
   cartItems: {
     variantId: string;
@@ -16,4 +13,11 @@ export interface OrderInput {
     price: number;
   }[];
   totalAmount: number;
+}
+
+export interface OrderItemSingle {
+	created_at: string;
+	id: number;
+	status: string;
+	total_amount: number;
 }
