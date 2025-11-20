@@ -2,7 +2,7 @@ import { Error404 } from '@shared/components/Error404';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import { ClientLayout } from '../layout/ClientLayout';
-import { ContactPage, HomePage, LoginPage, ProductPage, RegisterPage, ShopPage, CartPage, CheckoutPage, OrdersUserPage, OrderUserPage, DashboardProductsPage, DashboardOrdersPage } from './lazy';
+import { ContactPage, HomePage, LoginPage, ProductPage, RegisterPage, ShopPage, CartPage, CheckoutPage, OrdersUserPage, OrderUserPage, DashboardProductsPage, DashboardOrdersPage, DashboardNewProductPage } from './lazy';
 import { DashboardLayout } from '@layout/DashboardLayout';
 
 export default function Router() {
@@ -34,28 +34,13 @@ export default function Router() {
       </Route>
 
       {/* Paginas del administrador */}
-      <Route path='dashboard' element={<DashboardLayout />} >
+      <Route path='panel' element={<DashboardLayout />} >
         <Route index element={<Navigate to='productos' replace />} />
         <Route path='productos' element={<DashboardProductsPage />} />
+        <Route path='productos/nuevo' element={<DashboardNewProductPage />} />
         <Route path='pedidos' element={<DashboardOrdersPage />} />
       </Route>
 
     </Routes>
   );
 }
-
-/*
-debo lograr similar a esto
-patch: 'cuenta',
-element: <ClientLayout />,
-children: [
-  {
-    path: '',
-    element: <Navigate to='/cuenta/pedidos' />
-  },
-  {
-    path: 'pedidos',
-    element: <OrderUserPage />
-  }
-]
-*/

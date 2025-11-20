@@ -8,7 +8,7 @@ const DashboardProductsPage = () => {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
       <Button
         component={RouterLink}
-        to="/dashboard/products/new"
+        to="/panel/productos/nuevo"
         variant="contained"
         startIcon={<AddCircleIcon />}
         sx={{

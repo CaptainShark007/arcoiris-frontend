@@ -5,13 +5,13 @@ export const dashboardLinks = [
 	{
 		id: 1,
 		title: 'Productos',
-		href: '/dashboard/productos',
+		href: '/panel/productos',
 		icon: <InventoryIcon />,
 	},
 	{
 		id: 2,
 		title: 'Ordenes',
-		href: '/dashboard/pedidos',
+		href: '/panel/pedidos',
 		icon: <ShoppingCartIcon />,
 	},
 ];

@@ -12,3 +12,4 @@ export const CartPage = lazy(() => import('../features/cart/pages/CartPage'));
 export const CheckoutPage = lazy(() => import('../features/checkout/pages/CheckoutPage'));
 export const DashboardProductsPage = lazy(() => import('../features/admin/pages/DashboardProductsPage'));
 export const DashboardOrdersPage = lazy(() => import('../features/admin/pages/DashboardOrdersPage'));
+export const DashboardNewProductPage = lazy(() => import('../features/admin/pages/DashboardNewProductPage'));
