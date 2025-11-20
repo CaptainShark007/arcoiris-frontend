@@ -54,6 +54,10 @@ export const CartSummary = memo(({
     navigate('/', { replace: true });
   };
 
+  const handleViewOrdersHistory = () => {
+    navigate('/cuenta/pedidos');
+  }
+
   // Maneja el click en "Finalizar compra" con validación de login
   const handleFinalizarCompra = () => {
     if (!session) {
@@ -172,7 +176,7 @@ export const CartSummary = memo(({
               variant='contained'
               size='large'
               fullWidth
-              onClick={() => window.location.href = '/orders/12345'}
+              onClick={handleViewOrdersHistory}
             >
               Ver detalles de la orden
             </Button>

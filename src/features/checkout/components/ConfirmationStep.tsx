@@ -4,17 +4,25 @@ import {
   Button,
   Paper,
   Divider,
-  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
 } from '@mui/material';
 import {
   CheckCircle,
   Receipt,
-  ShoppingBag,
+  //Email,
+  AccountCircle,
+  LocationOn,
 } from '@mui/icons-material';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import { formatPrice } from '@/helpers';
-import MyLocationIcon from '@mui/icons-material/MyLocation';
 import { useNavigate } from 'react-router';
+import { mockData } from '../data/mock.data';
+//import { useOrder } from '@features/orders/hooks/useOrder';
+//import { Loader } from '@shared/components';
 
 interface ConfirmationStepProps {
   onReset: () => void;
@@ -22,13 +30,29 @@ interface ConfirmationStepProps {
 
 export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
   const navigate = useNavigate();
-  const { orderId, shippingInfo, orderSummary, clearCheckout } = useCheckoutStore();
+  const { orderId, clearCheckout } = useCheckoutStore();
 
   const handleResetMobile = () => {
     clearCheckout();
     onReset?.();
     navigate('/', { replace: true });
   };
+
+  const handleViewOrdersHistory = () => {
+    navigate('/cuenta/pedidos');
+  }
+
+  // Obtiene los detalles de la orden real
+  /* const { data, isLoading, isError } = useOrder(orderId || 0);
+
+  if (isError) return <Typography variant='body2' sx={{ textAlign: 'center' }}>Error al cargar los detalles de la orden.</Typography>;
+
+  if (isLoading) return <Loader />
+
+  if (!data) return <Typography variant='body2' sx={{ textAlign: 'center' }}>No hay datos disponibles.</Typography>; */
+
+  // Uso de datos simulados para diseño
+  const data = mockData;
 
   return (
     <Box>
@@ -42,14 +66,10 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
           }}
         />
         <Typography variant='h4' gutterBottom fontWeight='bold'>
-          ¡Orden confirmada!
+          ¡Gracias, {data?.customer.full_name}!
         </Typography>
         <Typography variant='body1' color='text.secondary'>
-          Gracias por tu compra{' '}
-          <Typography component='span' fontWeight='bold'>
-            {shippingInfo?.name}
-          </Typography>
-          . Te contactaremos pronto.
+          Tu pedido ha sido recibido con éxito.
         </Typography>
       </Box>
 
@@ -67,106 +87,158 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Receipt color='primary' />
-          <Typography variant='h6'>Orden #{orderId || 'N/A'}</Typography>
-          <Chip
-            label='Pendiente'
-            size='small'
-            color='warning'
-            variant='outlined'
-          />
+          <Typography variant='h6'>Orden #{orderId || '1000'}</Typography>
         </Box>
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Resumen de compra */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-          {/* Cantidad de productos */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <ShoppingBag color='action' />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant='subtitle2' fontWeight='medium'>
-                Cantidad de artículos
+        {/* DETALLES DEL PEDIDO */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant='h6' gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+            Detalles del pedido
+          </Typography>
+
+          {/* Tabla de items con altura fija y scroll */}
+          <TableContainer
+            sx={{
+              mb: 3,
+              maxHeight: 410,
+              overflowY: 'auto',
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 1,
+              '&::-webkit-scrollbar': {
+                width: '8px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: '#f1f1f1',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: '#888',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-thumb:hover': {
+                background: '#555',
+              },
+            }}
+          >
+            <Table stickyHeader>
+              <TableBody>
+                {data.orderItems.map((item, index) => (
+                  <TableRow key={index} sx={{ '&:last-child td': { border: 0 }}}>
+                    <TableCell sx={{ width: 80, pr: 2, borderBottom: 1, borderColor: 'divider' }}>
+                      <Box
+                        component='img'
+                        src={item.productImage}
+                        alt={item.productName}
+                        sx={{
+                          width: 64,
+                          height: 64,
+                          objectFit: 'contain',
+                          borderRadius: 1,
+                          //bgcolor: 'red'
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                      <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 0.5 }}>
+                        {item.productName}
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary'>
+                        {item.color_name} / {item.storage} / {item.finish}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align='right' sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                      <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
+                        {formatPrice(item.price)}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {/* Total */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              p: 2,
+              bgcolor: 'action.hover',
+              borderRadius: 1,
+              mb: 3,
+            }}
+          >
+            <Box sx={{ display: 'flex', gap: 8 }}>
+              <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
+                Total:
               </Typography>
-              <Typography variant='body2' color='text.secondary'>
-                {orderSummary?.totalItems || 0} {orderSummary?.totalItems === 1 ? 'artículo' : 'artículos'}
+              <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
+                {formatPrice(data.totalAmount)}
               </Typography>
             </Box>
           </Box>
 
-          {/* Monto total */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Receipt color='action' />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant='subtitle2' fontWeight='medium'>
-                Monto total
-              </Typography>
-              <Typography
-                variant='body2'
-                color='text.secondary'
-                fontWeight='bold'
-              >
-                {formatPrice(orderSummary?.totalPrice || 0)}
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* Dirección de envío */}
-          {shippingInfo && (
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-              <MyLocationIcon color='action' />
-              <Box sx={{ flex: 1 }}>
-                <Typography variant='subtitle2' fontWeight='medium'>
-                  Dirección de envío
-                </Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  {shippingInfo.addressLine1}
-                </Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  {shippingInfo.city}, {shippingInfo.state}{' '}
-                  {shippingInfo.postalCode}
+          {/* Información adicional - Sin Grid */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+              gap: 3,
+            }}
+          >
+            {/* Información de contacto */}
+            <Box>
+              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                {/* <Email color='primary' sx={{ fontSize: 20 }} /> */}
+                <AccountCircle color='primary' sx={{ fontSize: 20 }} />
+                <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
+                  Información de contacto
                 </Typography>
               </Box>
+              <Typography variant='body2' color='text.secondary' sx={{ ml: 4 }}>
+                {data.customer.email}
+              </Typography>
+              <Typography variant='body2' color='text.secondary' sx={{ ml: 4 }}>
+                {data.customer.phone}
+              </Typography>
             </Box>
-          )}
+
+            {/* Dirección de envío - Mostrar solo si existe */}
+            {data.address && (
+              <Box>
+                <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                  <LocationOn color='primary' sx={{ fontSize: 20 }} />
+                  <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
+                    Dirección de envío
+                  </Typography>
+                </Box>
+                <Box sx={{ ml: 4 }}>
+                  <Typography variant='body2' color='text.secondary'>
+                    {data.address.addressLine1}
+                  </Typography>
+                  {data.address.addressLine2 && (
+                    <Typography variant='body2' color='text.secondary'>
+                      {data.address.addressLine2}
+                    </Typography>
+                  )}
+                  <Typography variant='body2' color='text.secondary'>
+                    {data.address.city}, {data.address.state}
+                  </Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    {data.address.postalCode}
+                  </Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    {data.address.country}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </Box>
         </Box>
 
         <Divider sx={{ my: 2 }} />
-
-        {/* Sección de contacto */}
-        <Box sx={{ mb: 2 }}>
-          <Typography variant='subtitle1' fontWeight='bold' gutterBottom>
-            ¿Tienes preguntas?
-          </Typography>
-          <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-            Nos pondremos en contacto contigo pronto. Si tienes dudas,
-            contactanos simplemente a traves del icono de WhatsApp indicando su numero de orden.
-          </Typography>
-        </Box>
-      </Paper>
-
-      {/* Información adicional */}
-      <Paper
-        sx={{
-          p: 2.5,
-          mb: 3,
-          bgcolor: 'info.lighter',
-          boxShadow: 'none',
-          border: 1,
-          borderColor: 'info.light',
-          borderRadius: 1,
-        }}
-      >
-        <Typography variant='subtitle2' fontWeight='bold' gutterBottom>
-          Próximos pasos:
-        </Typography>
-        <Typography variant='body2' color='text.secondary' component='div'>
-          <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-            <li>Revisaremos tu pedido en nuestro sistema</li>
-            <li>Te contactaremos para confirmar los detalles</li>
-            <li>Acordaremos el método de envío</li>
-            <li>Recibirás actualizaciones del estado via WhatsApp o Email (según lo proporcionado)</li>
-          </ul>
-        </Typography>
       </Paper>
 
       {/* Botones solo visibles en móviles */}
@@ -179,9 +251,9 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
       >
         <Button
           variant='contained'
-          onClick={() => (window.location.href = `/orders/${orderId}`)}
+          onClick={handleViewOrdersHistory}
           fullWidth
-          disabled={!orderId}
+          //disabled={!orderId}
         >
           Ver detalles de la orden
         </Button>
