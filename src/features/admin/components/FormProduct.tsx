@@ -12,6 +12,8 @@ import { VariantsInput } from "./VariantsInput";
 import { UploaderImages } from "./UploaderImages";
 import { Editor } from "./Editor";
 import { Box, Button, IconButton, Typography } from "@mui/material";
+import { useCreateProduct } from "../hooks";
+import { Loader } from "@shared/components";
 
 interface Props {
 	titleForm: string;
@@ -31,8 +33,28 @@ export const FormProduct = ({ titleForm }: Props) => {
 
 	const navigate = useNavigate();
 
+	const { mutate: createProduct, isPending } = useCreateProduct();
+
 	const onSubmit = handleSubmit(data => {
-		console.log(data);
+		// console.log('data form product:', data);
+		createProduct({
+			name: data.name,
+			brand: data.brand,
+			slug: data.slug,
+			description: data.description,
+			features: data.features?.map(f => f.value) ?? [],
+			images: data.images ?? [],
+			variants: data.variants?.map(v => ({
+				id: v.id,
+				stock: v.stock,
+				price: v.price,
+				storage: v.storage,
+				color: v.color,
+				color_name: v.colorName,
+				finish: v.finish || null,
+			})) ?? [],
+		});
+
 	});
 
 	const watchName = watch('name');
@@ -42,6 +64,8 @@ export const FormProduct = ({ titleForm }: Props) => {
 		const generatedSlug = generateSlug(watchName);
 		setValue('slug', generatedSlug, { shouldValidate: true });
 	}, [watchName, setValue]);
+
+	if (isPending) return <Loader />;
 
 	return (
 		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, position: 'relative', pb: 10 }}>

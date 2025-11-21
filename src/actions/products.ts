@@ -1,4 +1,5 @@
 import { supabase } from '@/supabase/client';
+import { ProductInput } from '@shared/types';
 
 // Nuevo metodo para listar productos con variantes paginados y con filtros varios - video
 export const getFilteredProducts = async ({
@@ -207,3 +208,83 @@ export const getProducts = async (page: number) => {
 
 	return { products, count };
 };
+
+// ADMINISTRADOR
+// CRUD de productos (crear, actualizar, eliminar)
+
+// Crear producto
+// VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
+// DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
+export const createProduct = async (productInput: ProductInput) => {
+
+  try {
+    
+    // 1 Crear el producto para obtener su id
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .insert({
+        name: productInput.name,
+        brand: productInput.brand,
+        slug: productInput.slug,
+        features: productInput.features,
+        description: productInput.description,
+        images: [], // inicialmente vacio
+      }).select().single();
+
+      if (productError) {
+        throw new Error(productError.message);
+      }
+
+      // 2. Subir las imagenes al storage dentro de una carpeta
+      // que se creara a partir del producto
+      const folderName = product.id;
+
+      const uploadedImages = await Promise.all(
+        productInput.images.map(async (image) => {
+          const { data, error } = await supabase
+            .storage
+            .from('product-images')
+            .upload(`${folderName}/${product.id}-${image.name}`, image);
+
+          if (error) throw new Error(error.message);
+
+          // obtener la url publica de la imagen subida
+          const imageUrl = `${supabase.storage.from('product-images').getPublicUrl(data.path).data.publicUrl}`;
+
+          return imageUrl;
+        })
+      );
+
+      // 3. Actualizar el producto con las imagenes subidas
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ images: uploadedImages })
+        .eq('id', product.id);
+
+      if (updateError) throw new Error(updateError.message);
+
+      // 4. Crear las variantes del producto
+      const variants = productInput.variants.map(variant => ({
+        product_id: product.id,
+        stock: variant.stock,
+        price: variant.price,
+        storage: variant.storage,
+        color: variant.color,
+        color_name: variant.color_name,
+        finish: variant.finish || null,
+      }));
+
+      const { error: variantsError } = await supabase
+        .from('variants')
+        .insert(variants);
+
+      if (variantsError) throw new Error(variantsError.message);
+
+    return product;
+
+  } catch (error) {
+    console.log(error);
+    throw new Error('Error al crear el producto. vuelve a intentarlo.');
+  }
+
+}
