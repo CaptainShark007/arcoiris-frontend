@@ -288,3 +288,64 @@ export const createProduct = async (productInput: ProductInput) => {
   }
 
 }
+
+// Eliminar producto
+// VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
+// DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
+export const deleteProduct = async (productId: string) => {
+
+  try {
+    
+    // 1. Eliminar las variantes asociadas al producto
+    const { error: variantsError } = await supabase
+      .from('variants')
+      .delete()
+      .eq('product_id', productId);
+
+      if (variantsError) throw new Error(variantsError.message);
+
+    // 2. Obtener las imagenes del producto para eliminarlas del storage
+    const { data: productImages, error: productImagesError } = await supabase
+      .from('products')
+      .select('images')
+      .eq('id', productId)
+      .single();
+
+    if (productImagesError) throw new Error(productImagesError.message);
+
+    // 3. Eliminar el producto
+    const { error: productDeleteError } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId);
+
+    if (productDeleteError) throw new Error(productDeleteError.message);
+
+    // 4. Eliminar las imagenes del storage
+    if (productImages.images.length > 0) {
+
+      const folnerName = productId;
+
+      const paths = productImages.images.map(image => {
+        const fileName = image.split('/').pop(); // obtener el nombre del archivo
+        return `${folnerName}/${fileName}`;
+      });
+
+      const { error: storageError } = await supabase
+        .storage
+        .from('product-images')
+        .remove(paths);
+
+      if (storageError) throw new Error(storageError.message);
+
+      return true;
+      
+    }
+    
+
+  } catch (error) {
+    console.log(error);
+    throw new Error('Error al eliminar el producto. vuelve a intentarlo.');
+  }  
+
+}

@@ -21,6 +21,7 @@ import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
 import { Loader, Pagination } from '@shared/components';
 import { useProducts } from '../hooks/useProducts';
+import { useDeleteProduct } from '../hooks';
 
 const tableHeaders = [
   '',
@@ -44,6 +45,8 @@ export const TableProduct = () => {
     page,
   });
 
+   const { mutate: deleteProduct, isPending } = useDeleteProduct();
+
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, index: number) => {
     setAnchorEl(event.currentTarget);
     setOpenMenuIndex(index);
@@ -62,11 +65,11 @@ export const TableProduct = () => {
   };
 
   const handleDeleteProduct = (id: string) => {
-    console.log(id);
+    deleteProduct(id);
     handleMenuClose();
   };
 
-  if (!products || isLoading || !totalProducts) return <Loader />;
+  if (!products || isLoading || !totalProducts || isPending) return <Loader />;
 
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', flex: 1, p: 2.5, bgcolor: 'white', mb: 4 }}>
