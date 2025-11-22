@@ -73,19 +73,19 @@ export const productSchema = yup.object().shape({
 					.min(0.01, 'El precio debe ser mayor a 0'),
 				storage: yup
 					.string()
-					.required('El almacenamiento es requerido')
+					//.required('El almacenamiento es requerido')
 					.typeError('El almacenamiento debe ser un texto'),
 				color: yup
 					.string()
-					.required('El color es requerido')
-					.typeError('El color debe ser un texto')
-					.matches(
+					//.required('El color es requerido')
+					.typeError('El color debe ser un texto'),
+					/* .matches(
 						/^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})|(rgb|hsl)a?\(\s*([0-9]{1,3}\s*,\s*){2}[0-9]{1,3}\s*(,\s*(0|1|0?\.\d+))?\s*\))$/,
 						'El color debe ser un valor válido en formato hexadecimal, RGB o HSL'
-					),
+					), */
 				colorName: yup
 					.string()
-					.required('El nombre del color es obligatorio')
+					//.required('El nombre del color es obligatorio')
 					.typeError('El nombre del color debe ser un texto'),
 				finish: yup
 					.string()

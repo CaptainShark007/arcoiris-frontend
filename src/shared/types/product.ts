@@ -102,8 +102,14 @@ export interface VariantInput {
 	id?: string;
 	stock: number;
 	price: number;
-	color: string;
-	storage: string;
-	color_name: string;
+	color?: string;
+	storage?: string;
+	color_name?: string;
 	finish?: string | null;
 }
+
+export type CreateProductRPCResult = {
+  product_id: string;
+  success: boolean;
+  message: string;
+};
