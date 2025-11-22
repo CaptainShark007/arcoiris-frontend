@@ -156,7 +156,7 @@ export const TableProduct = () => {
                     >
                       <MenuItem
                         component={RouterLink}
-                        to={`/dashboard/productos/editar/${product.slug}`}
+                        to={`/panel/productos/editar/${product.slug}`}
                         sx={{
                           display: 'flex',
                           gap: 0.5,

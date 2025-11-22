@@ -6,7 +6,7 @@ import {
 } from '@tiptap/react';
 import { FieldErrors, UseFormSetValue } from 'react-hook-form';
 import StarterKit from '@tiptap/starter-kit';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { ProductFormValues } from '../schema/productSchema';
 import { Box, Button, Typography, Stack } from '@mui/material';
 
@@ -112,6 +112,12 @@ export const Editor = ({
       }
 		},
 	});
+
+	useEffect(() => {
+		if (initialContent && editor) {
+			editor.commands.setContent(initialContent);
+		}
+	}, [initialContent, editor]);
 
 	return (
 		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

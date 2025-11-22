@@ -1,3 +1,4 @@
+import { extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
 import { ProductInput } from '@shared/types';
 
@@ -349,3 +350,181 @@ export const deleteProduct = async (productId: string) => {
   }  
 
 }
+
+// Actualizar producto
+// VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
+// DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
+export const updateProduct = async (productId: string, productInput: ProductInput) => {
+
+  try {
+    
+    // 1. Obtener las images actuales del producto
+    const { data: currentProduct, error: currentProductError } = await supabase
+      .from('products')
+      .select('images')
+      .eq('id', productId)
+      .single();
+
+    if (currentProductError) throw new Error(currentProductError.message);
+
+    const existingImages = currentProduct.images || [];
+
+    // 2. Actualizar la informacion inidividual del producto
+    const { data: updatedProduct, error: productError } = await supabase
+      .from('products')
+      .update({
+        name: productInput.name,
+        brand: productInput.brand,
+        slug: productInput.slug,
+        features: productInput.features,
+        description: productInput.description,
+      })
+      .eq('id', productId)
+      .select()
+      .single();
+
+    if (productError) throw new Error(productError.message);
+
+    // 3. Manejo de imagenes (SUBIR NUEVAS Y ELIMINAR ANTIGUAS SI ES NECESARIO)
+    const folderName = productId;
+
+    const validImages = productInput.images.filter(image => image);
+
+    // 3.1 identificar las imagenes que han sido eliminadas
+    // const imagesToDelete = existingImages.filter(image => !validImages.includes(image));
+    // validImages puede contener File | string, existingImages son strings (URLs),
+    // por lo que usamos .some y typeof para comparar solo las entradas string.
+    const imagesToDelete = existingImages.filter(image =>
+      !validImages.some(v => typeof v === 'string' && v === image)
+    );
+
+    // 3.2 obtener los paths de los archivos a eliminar
+    const filesToDelete = imagesToDelete.map(extractFilePath);
+
+    // 3.3 eliminar las imagenes del storage
+    if (filesToDelete.length > 0) {
+
+      const { error: deleteImagesError } = await supabase
+        .storage
+        .from('product-images')
+        .remove(filesToDelete);
+
+      if (deleteImagesError) throw new Error(deleteImagesError.message);
+
+    } else {
+      console.log(`Imagenes eliminadas: ${filesToDelete.join(', ')}`);
+    }
+
+    // 3.4 subir las nuevas imagenes al storage y construir el array final de imagenes actualizadas
+    const uploadedImages = await Promise.all(
+      validImages.map(async (image) => {
+
+        if (image instanceof File) {
+          // si la imagen no es una URL (es un archivo), entonces subirla al storage
+          const { data, error } = await supabase
+            .storage
+            .from('product-images')
+            .upload(`${folderName}/${productId}-${image.name}`, image);
+
+          if (error) throw new Error(error.message);
+
+          const imageUrl = await supabase
+            .storage
+            .from('product-images')
+            .getPublicUrl(data.path).data.publicUrl;
+
+          return imageUrl;
+
+        } else if (typeof image === 'string') {
+          return image; // si es una URL existente, mantenerla
+        } else {
+          throw new Error('Tipo de imagen no válido');
+        }
+
+      })
+    );
+
+    // 4. Actualizar el producto con las imagenes actualizadas
+    const { error: updateImagesError } = await supabase
+      .from('products')
+      .update({ images: uploadedImages })
+      .eq('id', productId);
+
+    if (updateImagesError) throw new Error(updateImagesError.message);
+
+    // 5. Actualizar las variantes del producto
+    const existingVariants = productInput.variants.filter(v => v.id);
+    const newVariants = productInput.variants.filter(v => !v.id);
+
+    // 5.1 modificar las variantes existentes
+    if (existingVariants.length > 0) {
+      
+      const { error: updatedVariantsError } = await supabase
+        .from('variants')
+        .upsert(
+          existingVariants.map(variant => ({
+            id: variant.id,
+            product_id: productId,
+            stock: variant.stock,
+            price: variant.price,
+            storage: variant.storage,
+            color: variant.color,
+            color_name: variant.color_name,
+            finish: variant.finish || null,
+          })), {
+            onConflict: 'id',
+          }
+        );
+
+      if (updatedVariantsError) throw new Error(updatedVariantsError.message);
+
+    }
+
+    // 5.2 crear y agregar las nuevas variantes
+    let newVariantIds: string[] = [];
+
+    if (newVariants.length > 0) {
+
+      const { data, error: insertVariantsError } = await supabase
+        .from('variants')
+        .insert(
+          newVariants.map(variant => ({
+            product_id: productId,
+            stock: variant.stock,
+            price: variant.price,
+            storage: variant.storage,
+            color: variant.color,
+            color_name: variant.color_name,
+            finish: variant.finish || null,
+          }))
+        ).select();
+
+      if (insertVariantsError) throw new Error(insertVariantsError.message);
+
+      newVariantIds = data.map(v => v.id);
+
+    }
+
+    // 5.3 combinar los ids de las variantes existentes y nuevas
+    const currentVariantIds = [
+      ...existingVariants.map(v => v.id),
+      ...newVariantIds || [],
+    ];
+
+    // 5.4 eliminar las variantes que no estan en la lista de IDs
+    const { error: deleteVariantsError } = await supabase
+      .from('variants')
+      .delete()
+      .eq('product_id', productId)
+      .not('id', 'in', `(${currentVariantIds ? currentVariantIds.join(',') : 0})`);
+
+    if (deleteVariantsError) throw new Error(deleteVariantsError.message);
+
+    return updatedProduct;
+
+  } catch (error) {
+    console.log(error);
+    throw new Error('Error al actualizar el producto. vuelve a intentarlo.');
+  }
+
+};

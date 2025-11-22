@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ProductFormValues, productSchema } from "../schema/productSchema";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useEffect } from "react";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { SectionFormProduct } from "./SectionFormProduct";
@@ -12,8 +12,9 @@ import { VariantsInput } from "./VariantsInput";
 import { UploaderImages } from "./UploaderImages";
 import { Editor } from "./Editor";
 import { Box, Button, IconButton, Typography } from "@mui/material";
-import { useCreateProduct } from "../hooks";
+import { useCreateProduct, useUpdateProduct } from "../hooks";
 import { Loader } from "@shared/components";
+import { useProduct } from "@features/product/hooks/useProduct";
 
 interface Props {
 	titleForm: string;
@@ -31,29 +32,75 @@ export const FormProduct = ({ titleForm }: Props) => {
 		resolver: yupResolver(productSchema),
 	});
 
-	const navigate = useNavigate();
+	const { slug } = useParams<{ slug: string }>();
+	const { product, isLoading } = useProduct(slug || '');
 
 	const { mutate: createProduct, isPending } = useCreateProduct();
 
-	const onSubmit = handleSubmit(data => {
-		// console.log('data form product:', data);
-		createProduct({
-			name: data.name,
-			brand: data.brand,
-			slug: data.slug,
-			description: data.description,
-			features: data.features?.map(f => f.value) ?? [],
-			images: data.images ?? [],
-			variants: data.variants?.map(v => ({
+	const { mutate: updateProduct, isPending: isUpdatePending } = useUpdateProduct(product?.id || '');
+
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (product && !isLoading) {
+			setValue('name', product.name);
+			setValue('slug', product.slug);
+			setValue('brand', product.brand);
+			setValue('features', product.features.map(f => ({ value: f })));
+			setValue('description', product.description);
+			setValue('images', product.images);
+			setValue('variants', product.variants.map(v => ({
 				id: v.id,
 				stock: v.stock,
 				price: v.price,
 				storage: v.storage,
 				color: v.color,
-				color_name: v.colorName,
-				finish: v.finish || null,
-			})) ?? [],
-		});
+				colorName: v.color_name,
+				finish: v.finish || '',
+			})));
+		}
+	}, [product, isLoading, setValue]);
+
+	const onSubmit = handleSubmit(data => {
+		// console.log('data form product:', data);
+
+		if (slug) {
+			updateProduct({
+				name: data.name,
+				brand: data.brand,
+				slug: data.slug,
+				description: data.description,
+				features: data.features?.map(f => f.value) ?? [],
+				images: data.images ?? [],
+				variants: data.variants?.map(v => ({
+					id: v.id,
+					stock: v.stock,
+					price: v.price,
+					storage: v.storage,
+					color: v.color,
+					color_name: v.colorName,
+					finish: v.finish || null,
+				})) ?? [],
+			});
+		} else {
+			createProduct({
+				name: data.name,
+				brand: data.brand,
+				slug: data.slug,
+				description: data.description,
+				features: data.features?.map(f => f.value) ?? [],
+				images: data.images ?? [],
+				variants: data.variants?.map(v => ({
+					id: v.id,
+					stock: v.stock,
+					price: v.price,
+					storage: v.storage,
+					color: v.color,
+					color_name: v.colorName,
+					finish: v.finish || null,
+				})) ?? [],
+			});
+		}
 
 	});
 
@@ -65,7 +112,7 @@ export const FormProduct = ({ titleForm }: Props) => {
 		setValue('slug', generatedSlug, { shouldValidate: true });
 	}, [watchName, setValue]);
 
-	if (isPending) return <Loader />;
+	if (isPending || isUpdatePending || isLoading) return <Loader />;
 
 	return (
 		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, position: 'relative', pb: 10 }}>
@@ -149,7 +196,7 @@ export const FormProduct = ({ titleForm }: Props) => {
 
 				<Box sx={{ gridColumn: 'span', lg: { gridColumn: '1/-1' } }}>
 					<SectionFormProduct titleSection='Descripción del producto' >
-						<Editor setValue={setValue} errors={errors} />
+						<Editor setValue={setValue} errors={errors} initialContent={product?.description} />
 					</SectionFormProduct>
 				</Box>
 
