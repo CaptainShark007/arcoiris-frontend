@@ -11,13 +11,13 @@ export const useDeleteProduct = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Producto eliminado correctamente', {
-        position: 'bottom-right',
+        position: 'top-right',
       });
     },
     onError: (error) => {
       console.error(error);
       toast.error('Error al eliminar el producto', {
-        position: 'bottom-right',
+        position: 'top-right',
       });
     }
   });

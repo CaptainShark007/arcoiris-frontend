@@ -1,6 +1,6 @@
-import { extractFilePath } from '@/helpers';
+import { compressImage, extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
-import { ProductInput } from '@shared/types';
+import { CreateProductRPCResult, ProductInput } from '@shared/types';
 
 // Nuevo metodo para listar productos con variantes paginados y con filtros varios - video
 export const getFilteredProducts = async ({
@@ -136,23 +136,6 @@ export const getRandomProducts = async () => {
   return randomProducts;
 }
 
-// metodo para obtener los productos destacados
-// metodo para obtener los productos por categoria
-export const getCategories = async () => {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('is_active', true)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.log('Error fetching categories:', error.message);
-    throw new Error('Error fetching categories');
-  }
-
-  return data;
-};
-
 // metodo para buscar el producto por su slug
 export const getProductBySlug = async (slug: string) => {
 
@@ -210,13 +193,44 @@ export const getProducts = async (page: number) => {
 	return { products, count };
 };
 
-// ADMINISTRADOR
-// CRUD de productos (crear, actualizar, eliminar)
 
-// Crear producto
+
+
+
+
+
+
+
+
+// **************************************************************************************************
+// *************************************** ADMINISTRADOR ********************************************
+// **************************************************************************************************
+// ************************ CRUD de productos (crear, actualizar, eliminar)**************************
+
+export const updateProductCategory = async (productId: string, categoryId: string | null) => {
+
+  const { data, error } = await supabase
+    .from('products')
+    .update({ category_id: categoryId })
+    .eq('id', productId)
+    .select()
+    .single();
+
+  if (error) {
+    console.log('Error al actualizar la categoria del producto:', error.message);
+    throw new Error('Error al actualizar la categoria del producto. Vuelve a intentarlo.');
+  }
+
+  return data;
+
+}
+
+// **************************************************************************************************
+// *************************************** CREAR PRODUCTO ********************************************
+// *************************************** FORMA DEL VIDEO *******************************************
 // VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
 // DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
-export const createProduct = async (productInput: ProductInput) => {
+/* export const createProduct = async (productInput: ProductInput) => {
 
   try {
     
@@ -288,8 +302,159 @@ export const createProduct = async (productInput: ProductInput) => {
     throw new Error('Error al crear el producto. vuelve a intentarlo.');
   }
 
-}
+} */
 
+// **************************************************************************************************
+// *************************************** CREAR PRODUCTO ********************************************
+// *************************************** NUEVA FORMA *******************************************
+// USANDO PROCEDIMIENTO ALMACENADO Y VALIDACIONES
+
+// Validación
+const validateProductInput = async (input: ProductInput): Promise<string[]> => {
+  const errors: string[] = [];
+
+  if (!input.name?.trim()) errors.push('El nombre del producto es obligatorio.');
+  if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
+  if (!input.brand?.trim()) errors.push('La marca del producto es obligatoria.');
+  if (!input.images?.length) errors.push('Al menos una imagen del producto es obligatoria.');
+  if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');
+  if (!input.variants?.length) errors.push('El producto debe tener al menos una variante.');
+
+  input.variants?.forEach((v, i) => {
+    if (!v.price || v.price <= 0) errors.push(`El precio de la variante ${i + 1} debe ser mayor a 0.`);
+    if (!v.stock || v.stock < 0) errors.push(`El stock de la variante ${i + 1} no puede ser negativo.`);
+  });
+
+  // Validar y comprimir imagenes
+  for (let i = 0; i < input.images.length; i++) {
+    const img = input.images[i];
+    
+    if (!['image/jpeg', 'image/jpg', 'image/png' , 'image/webp'].includes(img.type)) {
+      errors.push(`La imagen ${i + 1} debe ser JPEG, JPG, PNG o WEBP.`);
+      continue;
+    }
+
+    // si la imagen es mayor a 1.5MB
+    if (img.size > 1.5 * 1024 * 1024) {
+      // Comprimir automáticamente
+      try {
+        const compressed = await compressImage(img, 1.5);
+        input.images[i] = compressed;
+      } catch (err) {
+        console.log(err);
+        errors.push(`No se pudo comprimir la imagen ${i + 1}.`);
+      }
+    }
+  }
+
+  return errors;
+};
+
+export const createProduct = async (productInput: ProductInput) => {
+  try {
+    // 1. Validar entrada
+    const validationErrors = await validateProductInput(productInput);
+    if (validationErrors.length > 0) {
+      throw new Error(validationErrors.join(' '));
+    }
+
+    // 2. Ejecutar el procedimiento almacenado (sin imagenes aun)
+    const procedureResult = await (supabase.rpc as any)(
+      'create_product_with_variants',
+      {
+        p_name: productInput.name.trim(),
+        p_brand: productInput.brand.trim(),
+        p_slug: productInput.slug.trim(),
+        p_features: productInput.features || [],
+        p_description: productInput.description ? JSON.parse(JSON.stringify(productInput.description)) : {},
+        p_variants: productInput.variants.map(v => ({
+          stock: v.stock,
+          price: v.price,
+          storage: v.storage || null,
+          color: v.color || null,
+          color_name: v.color_name || null,
+          finish: v.finish || null,
+        })),
+      }
+    );
+
+    if (procedureResult.error) throw new Error(procedureResult.error.message);
+
+    const result = (procedureResult.data as any)?.[0] as CreateProductRPCResult;
+    if (!result?.success || !result?.product_id) {
+      throw new Error(result?.message || 'Error desconocido al crear el producto.');
+    }
+
+    const productId = result.product_id;
+
+    // 3. Subir las imagenes al storage
+    const uploadedImages = await Promise.allSettled(
+      productInput.images.map(async (image) => {
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${image.name}`;
+        const filePath = `${productId}/${fileName}`;
+
+        const { data, error } = await supabase
+          .storage
+          .from('product-images')
+          .upload(filePath, image, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (error) throw new Error(`Error subiendo imagen: ${error.message}`);
+
+        const { data: publicUrlData } = supabase
+          .storage
+          .from('product-images')
+          .getPublicUrl(data.path);
+
+        return publicUrlData.publicUrl;
+      })
+    );
+
+    // Filtrar solo las imagenes subidas correctamente
+    const successfulImages = uploadedImages
+      .filter((result) => result.status === 'fulfilled')
+      .map((result) => (result as PromiseFulfilledResult<string>).value);
+
+    if (successfulImages.length === 0) {
+      await supabase.from('products').delete().eq('id', productId);
+      throw new Error('No se pudieron subir las imagenes del producto.');
+    }
+
+    // 4. Actualizar producto con imagenes
+    const { error: updateError } = await supabase
+      .from('products')
+      .update({ images: successfulImages })
+      .eq('id', productId);
+
+    if (updateError) {
+      await supabase.from('products').delete().eq('id', productId);
+      throw new Error(updateError.message);
+    }
+
+    // 5. Obtener y retornar el producto creado
+    const { data: product, error: fetchError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+
+    if (fetchError) throw new Error('Error al obtener el producto creado');
+
+    return product;
+
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error al crear el producto. Vuelve a intentarlo.');
+  }
+};
+
+
+
+// **************************************************************************************************
+// *************************************** ELIMINAR PRODUCTO ****************************************
+// *************************************** FORMA DEL VIDEO ******************************************
 // Eliminar producto
 // VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
 // DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH

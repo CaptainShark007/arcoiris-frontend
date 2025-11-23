@@ -67,3 +67,58 @@ export const extractFilePath = (url: string) => {
 	return parts[1];
 
 }
+
+// Función para comprimir imagen
+export const compressImage = async (file: File, maxSizeMB: number = 2): Promise<File> => {
+  return new Promise((resolve) => { // , reject
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Reducir tamaño si es muy grande
+        if (width > 2000 || height > 2000) {
+          const ratio = Math.min(2000 / width, 2000 / height);
+          width *= ratio;
+          height *= ratio;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Comprimir hasta llegar al tamaño máximo
+        let quality = 0.9;
+        canvas.toBlob(
+          (blob) => {
+            if (blob && blob.size > maxSizeMB * 1024 * 1024 && quality > 0.1) {
+              quality -= 0.1;
+              canvas.toBlob(
+                (retryBlob) => {
+                  resolve(new File([retryBlob!], file.name, { type: 'image/jpeg' }));
+                },
+                'image/jpeg',
+                quality
+              );
+            } else {
+              resolve(new File([blob!], file.name, { type: 'image/jpeg' }));
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      
+      img.src = e.target?.result as string;
+    };
+    
+    reader.readAsDataURL(file);
+  });
+};

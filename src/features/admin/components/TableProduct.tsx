@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 import {
+  Autocomplete,
   Box,
   Button,
   Card,
@@ -12,6 +13,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -19,21 +21,32 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
-import { Loader, Pagination } from '@shared/components';
+import { DeleteProductModal, Loader, Pagination } from '@shared/components';
 import { useProducts } from '../hooks/useProducts';
-import { useDeleteProduct } from '../hooks';
+import { useDeleteProduct, useUpdateProductCategory } from '../hooks';
+import { useCategories } from '@features/shop/hooks/products/useCategories';
 
 const tableHeaders = [
   '',
   'Nombre',
   'Variante',
   'Precio',
+  'Categoría',
   'Stock',
-  'Fecha de creación',
+  'Fecha',
   '',
 ];
 
 export const TableProduct = () => {
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{
+    id: string;
+    name: string;
+    variantsCount: number;
+    imagesCount: number;
+  } | null>(null);
+  
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [selectedVariants, setSelectedVariants] = useState<{
@@ -45,7 +58,11 @@ export const TableProduct = () => {
     page,
   });
 
-   const { mutate: deleteProduct, isPending } = useDeleteProduct();
+  const { categories, isLoading: isCategoriesLoading } = useCategories();
+
+  const { mutate: deleteProduct, isPending } = useDeleteProduct();
+
+  const { mutate: updateProductCategory, isPending: isUpdatingCategory } = useUpdateProductCategory();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, index: number) => {
     setAnchorEl(event.currentTarget);
@@ -64,9 +81,37 @@ export const TableProduct = () => {
     });
   };
 
-  const handleDeleteProduct = (id: string) => {
+  /* const handleDeleteProduct = (id: string) => {
     deleteProduct(id);
     handleMenuClose();
+  }; */
+
+  const handleDeleteProduct = (product: any) => {
+    setProductToDelete({
+      id: product.id,
+      name: product.name,
+      variantsCount: product.variants.length,
+      imagesCount: product.images.length,
+    });
+    setDeleteModalOpen(true);
+    handleMenuClose();
+  };
+
+  const handleConfirmDelete = () => {
+    if (productToDelete) {
+      deleteProduct(productToDelete.id);
+      setDeleteModalOpen(false);
+      setProductToDelete(null);
+    }
+  };
+
+  const handleCategoryChange = (product: any, newCategory: any) => {
+    if (newCategory) {
+      updateProductCategory({
+        productId: product.id,
+        categoryId: newCategory.id,
+      });
+    }
   };
 
   if (!products || isLoading || !totalProducts || isPending) return <Loader />;
@@ -91,6 +136,7 @@ export const TableProduct = () => {
                     textAlign: 'left',
                     fontWeight: 'bold',
                     fontSize: '0.875rem',
+                    borderBottom: '1px solid #e5e7eb',
                   }}
                 >
                   {header}
@@ -102,6 +148,12 @@ export const TableProduct = () => {
             {products.map((product, index) => {
               const selectedVariantIndex = selectedVariants[product.id] ?? 0;
               const selectedVariant = product.variants[selectedVariantIndex];
+              const selectedCategory = categories.find((cat) => cat.id === product.category_id);
+
+              const categoryOptions = [
+                { id: 'clear', name: 'Sin categoría' },
+                ...categories,
+              ]
 
               return (
                 <TableRow key={index} sx={{ borderBottom: '1px solid #f3f4f6' }}>
@@ -130,14 +182,67 @@ export const TableProduct = () => {
                         fontSize: '0.875rem',
                       }}
                     >
-                      {product.variants.map((variant, variantIndex) => (
-                        <option key={variant.id} value={variantIndex}>
+                      {/* {product.variants.map((variant, variantIndex) => (
+                        <MenuItem key={variant.id} value={variantIndex}>
                           {variant.color_name} - {variant.storage} - {variant.finish}
-                        </option>
-                      ))}
+                        </MenuItem>
+                      ))} */}
+                      {product.variants.map((variant, variantIndex) => {
+                        const variantLabel = [
+                          variant.color_name,
+                          variant.storage,
+                          variant.finish,
+                        ]
+                          .filter(Boolean) // Filtra null, undefined, string vacío
+                          .join(' • ');
+
+                        return (
+                          <MenuItem key={variant.id} value={variantIndex}>
+                            {variantLabel}
+                          </MenuItem>
+                        );
+                      })}
                     </Select>
                   </TableCell>
-                  <CellTableProduct content={formatPrice(selectedVariant.price)} />
+                  <CellTableProduct content={formatPrice(selectedVariant.price)} sx={{ fontWeight: 'bold' }} />
+                  <TableCell sx={{ fontWeight: 500, letterSpacing: '-0.025em', minWidth: 200 }}>
+                    <Autocomplete
+                      options={categoryOptions}
+                      getOptionLabel={(option) => {
+                        if (option.id === 'clear') return 'Sin categoría';
+                        return option.name;
+                      }}
+                      value={selectedCategory || null}
+                      //onChange={(event, newValue) => handleCategoryChange(product, newValue)}
+                      onChange={(event, newValue) => {
+                        if (newValue?.id === 'clear') {
+                          // Eliminar categoría
+                          updateProductCategory({
+                            productId: product.id,
+                            categoryId: null as any,
+                          });
+                        } else if (newValue) {
+                          handleCategoryChange(product, newValue);
+                        }
+                      }}
+                      loading={isCategoriesLoading || isUpdatingCategory}
+                      size="small"
+                      fullWidth
+                      noOptionsText="No hay categorías"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          fontSize: '0.875rem',
+                        },
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Asignar categoría"
+                          size="small"
+                        />
+                      )}
+                    />
+                  </TableCell>
                   <CellTableProduct content={selectedVariant.stock.toString()} />
                   <CellTableProduct content={formatDate(product.created_at)} />
                   <TableCell sx={{ position: 'relative' }}>
@@ -169,7 +274,7 @@ export const TableProduct = () => {
                         <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
                       </MenuItem>
                       <MenuItem
-                        onClick={() => handleDeleteProduct(product.id)}
+                        onClick={() => handleDeleteProduct(product)}
                         sx={{
                           fontSize: '0.75rem',
                           fontWeight: 500,
@@ -189,6 +294,22 @@ export const TableProduct = () => {
 
       {/* Controles de paginación */}
       <Pagination page={page} setPage={setPage} totalItems={totalProducts} />
+
+      {productToDelete && (
+        <DeleteProductModal
+          open={deleteModalOpen}
+          productName={productToDelete.name}
+          variantsCount={productToDelete.variantsCount}
+          imagesCount={productToDelete.imagesCount}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setDeleteModalOpen(false);
+            setProductToDelete(null)
+          }}
+          isLoading={isPending}
+        />
+      )}
+
     </Card>
   );
 };

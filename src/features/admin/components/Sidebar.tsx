@@ -37,7 +37,7 @@ export const Sidebar = () => {
           gap: 1,
         }}
       >
-        <img src={logo} alt="Logo" style={{ height: 80 }} />
+        <img src={logo} alt="Logo" style={{ height: 110 }} />
       </MuiLink>
 
       <Box sx={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
