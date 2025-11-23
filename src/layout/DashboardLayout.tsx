@@ -11,10 +11,10 @@ export const DashboardLayout = () => {
         reverseOrder={false}
         toastOptions={{
           duration: 4000,
-          style: {
+          /* style: {
             background: '#363636',
             color: '#fff',
-          },
+          }, */
         }}
       />
       <Box

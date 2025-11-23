@@ -11,13 +11,17 @@ export const useCreateProduct = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: createProduct,
     onSuccess: () => {
-      toast.success('Producto creado exitosamente');
+      toast.success('Producto creado exitosamente', {
+        position: 'top-right',
+      });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       navigate('/panel/productos');
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : 'Error al crear el producto';
-      toast.error(message);
+      toast.error(message, {
+        position: 'top-right',
+      });
       console.error(error);
     },
   });

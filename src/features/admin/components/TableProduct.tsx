@@ -19,7 +19,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
-import { Loader, Pagination } from '@shared/components';
+import { DeleteProductModal, Loader, Pagination } from '@shared/components';
 import { useProducts } from '../hooks/useProducts';
 import { useDeleteProduct } from '../hooks';
 
@@ -34,6 +34,15 @@ const tableHeaders = [
 ];
 
 export const TableProduct = () => {
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{
+    id: string;
+    name: string;
+    variantsCount: number;
+    imagesCount: number;
+  } | null>(null);
+  
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [selectedVariants, setSelectedVariants] = useState<{
@@ -64,9 +73,28 @@ export const TableProduct = () => {
     });
   };
 
-  const handleDeleteProduct = (id: string) => {
+  /* const handleDeleteProduct = (id: string) => {
     deleteProduct(id);
     handleMenuClose();
+  }; */
+
+  const handleDeleteProduct = (product: any) => {
+    setProductToDelete({
+      id: product.id,
+      name: product.name,
+      variantsCount: product.variants.length,
+      imagesCount: product.images.length,
+    });
+    setDeleteModalOpen(true);
+    handleMenuClose();
+  };
+
+  const handleConfirmDelete = () => {
+    if (productToDelete) {
+      deleteProduct(productToDelete.id);
+      setDeleteModalOpen(false);
+      setProductToDelete(null);
+    }
   };
 
   if (!products || isLoading || !totalProducts || isPending) return <Loader />;
@@ -184,7 +212,7 @@ export const TableProduct = () => {
                         <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
                       </MenuItem>
                       <MenuItem
-                        onClick={() => handleDeleteProduct(product.id)}
+                        onClick={() => handleDeleteProduct(product)}
                         sx={{
                           fontSize: '0.75rem',
                           fontWeight: 500,
@@ -204,6 +232,22 @@ export const TableProduct = () => {
 
       {/* Controles de paginación */}
       <Pagination page={page} setPage={setPage} totalItems={totalProducts} />
+
+      {productToDelete && (
+        <DeleteProductModal
+          open={deleteModalOpen}
+          productName={productToDelete.name}
+          variantsCount={productToDelete.variantsCount}
+          imagesCount={productToDelete.imagesCount}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setDeleteModalOpen(false);
+            setProductToDelete(null)
+          }}
+          isLoading={isPending}
+        />
+      )}
+
     </Card>
   );
 };
