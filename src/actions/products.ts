@@ -136,23 +136,6 @@ export const getRandomProducts = async () => {
   return randomProducts;
 }
 
-// metodo para obtener los productos destacados
-// metodo para obtener los productos por categoria
-export const getCategories = async () => {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('is_active', true)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.log('Error fetching categories:', error.message);
-    throw new Error('Error fetching categories');
-  }
-
-  return data;
-};
-
 // metodo para buscar el producto por su slug
 export const getProductBySlug = async (slug: string) => {
 

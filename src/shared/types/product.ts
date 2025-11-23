@@ -63,12 +63,6 @@ export interface Variant {
   finish?: string | null;
 }
 
-export interface Category {
-  id: number;
-  name: string;
-  image: string;
-}
-
 export interface CarouselSlide {
   id: string;
   image: string;

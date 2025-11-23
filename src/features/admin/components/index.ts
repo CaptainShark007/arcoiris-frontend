@@ -8,3 +8,4 @@ export * from './FeaturesInput';
 export * from './VariantsInput';
 export * from './UploaderImages';
 export * from './Editor';
+export * from './CategoriesModal';
