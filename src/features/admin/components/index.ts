@@ -8,4 +8,9 @@ export * from './FeaturesInput';
 export * from './VariantsInput';
 export * from './UploaderImages';
 export * from './Editor';
+
+// Categories
 export * from './CategoriesModal';
+
+// Orders
+export * from './TableOrdersAdmin';
