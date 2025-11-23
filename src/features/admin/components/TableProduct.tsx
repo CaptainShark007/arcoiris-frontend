@@ -203,7 +203,7 @@ export const TableProduct = () => {
                       })}
                     </Select>
                   </TableCell>
-                  <CellTableProduct content={formatPrice(selectedVariant.price)} />
+                  <CellTableProduct content={formatPrice(selectedVariant.price)} sx={{ fontWeight: 'bold' }} />
                   <TableCell sx={{ fontWeight: 500, letterSpacing: '-0.025em', minWidth: 200 }}>
                     <Autocomplete
                       options={categoryOptions}
