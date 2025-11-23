@@ -11,6 +11,7 @@ export * from './Editor';
 
 // Categories
 export * from './CategoriesModal';
+export * from './CategoryFormModal';
 
 // Orders
 export * from './TableOrdersAdmin';

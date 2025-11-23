@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,7 +11,6 @@ import {
   TableHead,
   TableRow,
   Box,
-  TextField,
   CircularProgress,
   IconButton,
   Tooltip,
@@ -19,9 +18,9 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import { useCreateCategory, useUpdateCategory, useDeleteCategory, useAllCategories } from '@features/admin/hooks';
-import { generateCategorySlug } from '@/actions/categories';
-import toast from 'react-hot-toast';
+import { useDeleteCategory, useAllCategories, useCountProductsByCategory } from '@features/admin/hooks';
+import { CategoryFormModal } from './CategoryFormModal';
+import { DeleteCategoryModal } from '@shared/components';
 
 interface CategoriesModalProps {
   open: boolean;
@@ -29,169 +28,82 @@ interface CategoriesModalProps {
 }
 
 export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
-  const { categories, isLoading } = useAllCategories(); // refetch
-  const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
-  const { mutate: updateCategory, isPending: isUpdating } = useUpdateCategory();
+  const { categories, isLoading } = useAllCategories();
   const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory();
 
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [isCreateMode, setIsCreateMode] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    slug: '',
-    description: '',
-  });
-
-  const resetForm = () => {
-    setFormData({ name: '', slug: '', description: '' });
-    setEditingId(null);
-    setIsCreateMode(false);
-  };
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-    setFormData({
-      ...formData,
-      name,
-      slug: generateCategorySlug(name),
-    });
-  };
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<any>(null);
 
   const handleCreateClick = () => {
-    setIsCreateMode(true);
-    resetForm();
+    setFormMode('create');
+    setSelectedCategory(null);
+    setFormModalOpen(true);
   };
 
   const handleEditClick = (category: any) => {
-    setEditingId(category.id);
-    setFormData({
-      name: category.name,
-      slug: category.slug,
-      description: category.description || '',
-    });
+    setFormMode('edit');
+    setSelectedCategory(category);
+    setFormModalOpen(true);
   };
 
-  const handleSave = () => {
-    if (!formData.name.trim()) {
-      toast.error('El nombre es obligatorio');
-      return;
-    }
+  const handleFormModalClose = () => {
+    setFormModalOpen(false);
+    setSelectedCategory(null);
+  };
 
-    if (isCreateMode) {
-      createCategory({
-        name: formData.name,
-        slug: formData.slug,
-        description: formData.description || undefined,
+  const handleDeleteClick = (category: any) => {
+    setCategoryToDelete(category);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (categoryToDelete) {
+      deleteCategory({
+        id: categoryToDelete.id,
+        imageUrl: categoryToDelete.image,
       });
-    } else if (editingId) {
-      updateCategory({
-        id: editingId,
-        data: {
-          name: formData.name,
-          slug: formData.slug,
-          description: formData.description || null,
-        },
-      });
-    }
-
-    resetForm();
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
-      deleteCategory(id);
+      setDeleteModalOpen(false);
+      setCategoryToDelete(null);
     }
   };
 
-  const handleCancel = () => {
-    resetForm();
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setCategoryToDelete(null);
   };
 
-  const isPending = isCreating || isUpdating || isDeleting;
+  const isPending = isDeleting;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 'bold', pb: 2 }}>
-        Gestión de Categorías
-      </DialogTitle>
+    <>
+      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: 'bold', pb: 2 }}>
+          Gestión de Categorías
+        </DialogTitle>
 
-      <DialogContent sx={{ minHeight: 400 }}>
-        {isLoading ? (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: 300,
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>
-            {/* Formulario de crear/editar */}
-            {(isCreateMode || editingId) && (
-              <Box sx={{ mb: 3, p: 2, backgroundColor: '#f9fafb', borderRadius: 1 }}>
-                <TextField
-                  fullWidth
-                  label="Nombre"
-                  value={formData.name}
-                  onChange={handleNameChange}
-                  size="small"
-                  sx={{ mb: 1.5 }}
-                  disabled={isPending}
-                />
-                <TextField
-                  fullWidth
-                  label="Slug"
-                  value={formData.slug}
-                  onChange={(e) =>
-                    setFormData({ ...formData, slug: e.target.value })
-                  }
-                  size="small"
-                  sx={{ mb: 1.5 }}
-                  disabled={isPending}
-                />
-                <TextField
-                  fullWidth
-                  label="Descripción"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  size="small"
-                  multiline
-                  rows={2}
-                  disabled={isPending}
-                />
-
-                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    onClick={handleSave}
-                    disabled={isPending}
-                    sx={{ backgroundColor: '#0007d7ff' }}
-                  >
-                    {isPending ? 'Guardando...' : isCreateMode ? 'Crear' : 'Actualizar'}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={handleCancel}
-                    disabled={isPending}
-                  >
-                    Cancelar
-                  </Button>
-                </Box>
-              </Box>
-            )}
-
-            {/* Tabla de categorías */}
+        <DialogContent sx={{ minHeight: 400 }}>
+          {isLoading ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: 300,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
             <Box sx={{ width: '100%', overflow: 'auto' }}>
               <Table size="small">
-                <TableHead sx={{ backgroundColor: '#f3f4f6' }}>
+                <TableHead>
                   <TableRow>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Imagen</TableCell>
                     <TableCell sx={{ fontWeight: 'bold' }}>Nombre</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Slug</TableCell>
                     <TableCell sx={{ fontWeight: 'bold' }}>Descripción</TableCell>
                     <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>
                       Acciones
@@ -208,14 +120,42 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
                   ) : (
                     categories.map((category: any) => (
                       <TableRow key={category.id}>
+                        <TableCell sx={{ p: 1 }}>
+                          {category.image ? (
+                            <Box
+                              component="img"
+                              src={category.image}
+                              alt={category.name}
+                              sx={{
+                                width: 50,
+                                height: 50,
+                                objectFit: 'contain',
+                              }}
+                            />
+                          ) : (
+                            <Box
+                              sx={{
+                                width: 50,
+                                height: 50,
+                                backgroundColor: '#f3f4f6',
+                                borderRadius: 1,
+                                border: '1px solid #e5e7eb',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.75rem',
+                                color: '#9ca3af',
+                              }}
+                            >
+                              Sin imagen
+                            </Box>
+                          )}
+                        </TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>
                           {category.name}
                         </TableCell>
                         <TableCell sx={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                          {category.slug}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                          {category.description || '-'}
+                          {category.description || 'Sin descripción'}
                         </TableCell>
                         <TableCell sx={{ textAlign: 'center' }}>
                           <Tooltip title="Editar">
@@ -231,7 +171,7 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
                           <Tooltip title="Eliminar">
                             <IconButton
                               size="small"
-                              onClick={() => handleDelete(category.id)}
+                              onClick={() => handleDeleteClick(category)}
                               disabled={isPending}
                               sx={{ color: '#ef4444' }}
                             >
@@ -245,24 +185,72 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
                 </TableBody>
               </Table>
             </Box>
-          </>
-        )}
-      </DialogContent>
+          )}
+        </DialogContent>
 
-      <DialogActions sx={{ p: 2, gap: 1 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreateClick}
-          disabled={isPending || isCreateMode || editingId !== null}
-          sx={{ backgroundColor: '#0007d7ff' }}
-        >
-          Crear Categoría
-        </Button>
-        <Button variant="outlined" onClick={onClose} disabled={isPending}>
-          Cerrar
-        </Button>
-      </DialogActions>
-    </Dialog>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleCreateClick}
+            disabled={isPending}
+            sx={{ backgroundColor: '#0007d7ff' }}
+          >
+            Crear Categoría
+          </Button>
+          <Button variant="outlined" onClick={onClose} disabled={isPending}>
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal del formulario */}
+      <CategoryFormModal
+        open={formModalOpen}
+        onClose={handleFormModalClose}
+        mode={formMode}
+        category={selectedCategory}
+      />
+
+      {/* Modal de eliminación */}
+      {categoryToDelete && (
+        <DeleteCategoryModalWrapper
+          open={deleteModalOpen}
+          category={categoryToDelete}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+          isLoading={isPending}
+        />
+      )}
+    </>
+  );
+};
+
+// Componente wrapper que usa el hook para contar productos
+const DeleteCategoryModalWrapper = ({
+  open,
+  category,
+  onConfirm,
+  onCancel,
+  isLoading,
+}: {
+  open: boolean;
+  category: any;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}) => {
+  const { count } = useCountProductsByCategory(category?.id);
+
+  return (
+    <DeleteCategoryModal
+      open={open}
+      categoryName={category?.name}
+      hasImage={!!category?.image}
+      productsCount={count}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+      isLoading={isLoading}
+    />
   );
 };

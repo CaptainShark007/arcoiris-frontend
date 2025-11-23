@@ -8,6 +8,7 @@ export * from './useAllCategories';
 export * from './useCreateCategory';
 export * from './useUpdateCategory';
 export * from './useDeleteCategory';
+export * from './useCountProductsByCategory';
 
 // orders
 export * from './useAllOrders';
