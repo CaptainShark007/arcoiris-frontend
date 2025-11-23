@@ -33,7 +33,7 @@ const tableHeaders = [
   'Precio',
   'Categoría',
   'Stock',
-  'Fecha de creación',
+  'Fecha',
   '',
 ];
 
@@ -136,6 +136,7 @@ export const TableProduct = () => {
                     textAlign: 'left',
                     fontWeight: 'bold',
                     fontSize: '0.875rem',
+                    borderBottom: '1px solid #e5e7eb',
                   }}
                 >
                   {header}

@@ -14,7 +14,7 @@ const DashboardOrdersPage = () => {
         Órdenes
       </Typography>
 
-      <Card sx={{ p: 2.5, bgcolor: 'white' }}>
+      <Card sx={{ p: 2.5, bgcolor: '#F9FAFB', boxShadow: 'none', border: '1px solid #E5E7EB' }}>
         <TableOrdersAdmin orders={data} />
       </Card>
     </Box>

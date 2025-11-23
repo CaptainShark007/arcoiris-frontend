@@ -37,8 +37,8 @@ const DashboardOrderPage = () => {
         <IconButton
           onClick={() => navigate(-1)}
           sx={{
-            bgcolor: 'white',
-            border: '1px solid #e2e8f0',
+            //bgcolor: 'white',
+            //border: '1px solid #e2e8f0',
             transition: 'all 300ms',
             '&:hover': { transform: 'scale(1.05)' },
           }}
@@ -47,10 +47,10 @@ const DashboardOrderPage = () => {
         </IconButton>
 
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+          <Typography variant='h4' sx={{ fontWeight: 'bold', mb: 0.5 }}>
             Pedido #{id}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#6b7280' }}>
+          <Typography variant='body2' sx={{ color: '#6b7280' }}>
             {formatDateLong(order.created_at)}
           </Typography>
         </Box>
@@ -59,10 +59,17 @@ const DashboardOrderPage = () => {
       </Box>
 
       {/* Tabla de Items */}
-      <Card sx={{ p: 2.5, bgcolor: 'white' }}>
+      <Card
+        sx={{
+          p: 2.5,
+          bgcolor: '#F9FAFB',
+          boxShadow: 'none',
+          border: '1px solid #E5E7EB',
+        }}
+      >
         <Box sx={{ width: '100%', overflow: 'auto' }}>
           <Table sx={{ minWidth: 650 }}>
-            <TableHead sx={{ backgroundColor: '#f3f4f6', borderBottom: '1px solid #e5e7eb' }}>
+            <TableHead>
               <TableRow>
                 {tableHeaders.map((header, index) => (
                   <TableCell
@@ -73,6 +80,7 @@ const DashboardOrderPage = () => {
                       textAlign: 'left',
                       fontWeight: 'bold',
                       fontSize: '0.875rem',
+                      borderBottom: '1px solid #e5e7eb',
                     }}
                   >
                     {header}
@@ -91,9 +99,11 @@ const DashboardOrderPage = () => {
                 >
                   {/* Producto */}
                   <TableCell sx={{ p: 2 }}>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                    <Box
+                      sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}
+                    >
                       <Box
-                        component="img"
+                        component='img'
                         src={item.productImage}
                         alt={item.productName}
                         sx={{
@@ -101,18 +111,30 @@ const DashboardOrderPage = () => {
                           width: 80,
                           objectFit: 'contain',
                           borderRadius: 1,
-                          border: '1px solid #e5e7eb',
+                          //border: '1px solid #e5e7eb',
                         }}
                       />
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1,
+                        }}
+                      >
+                        <Typography
+                          sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+                        >
                           {item.productName}
                         </Typography>
-                        <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                        <Typography
+                          sx={{ fontSize: '0.75rem', color: '#6b7280' }}
+                        >
                           {item.color_name} / {item.storage}
                         </Typography>
-                        <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                        <Typography
+                          sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+                        >
                           {formatPrice(item.price)}
                         </Typography>
                       </Box>
@@ -150,11 +172,27 @@ const DashboardOrderPage = () => {
       </Card>
 
       {/* Resumen y Dirección */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
+          gap: 3,
+          mb: 3,
+        }}
+      >
         {/* Resumen */}
-        <Card sx={{ p: 2.5, bgcolor: 'white' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', pb: 1.5, borderBottom: '1px solid #e5e7eb' }}>
+        <Card sx={{ p: 2.5, bgcolor: '#F9FAFB', boxShadow: 'none', border: '1px solid #E5E7EB' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, bgcolor: '#F9FAFB', boxShadow: 'none' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                pb: 1.5,
+                borderBottom: '1px solid #e5e7eb',
+                bgcolor: '#F9FAFB',
+                boxShadow: 'none',
+              }}
+            >
               <Typography sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
                 Subtotal
               </Typography>
@@ -163,7 +201,15 @@ const DashboardOrderPage = () => {
               </Typography>
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', pb: 1.5, borderBottom: '1px solid #e5e7eb' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                pb: 1.5,
+                borderBottom: '1px solid #e5e7eb',
+                bgcolor: '#F9FAFB'
+              }}
+            >
               <Typography sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
                 Envío (Standard)
               </Typography>
@@ -172,11 +218,15 @@ const DashboardOrderPage = () => {
               </Typography>
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 1 }}>
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', pt: 1 }}
+            >
               <Typography sx={{ fontWeight: 700, fontSize: '0.875rem' }}>
                 Total
               </Typography>
-              <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#0007d7ff' }}>
+              <Typography
+                sx={{ fontWeight: 700, fontSize: '1rem', color: '#0007d7ff' }}
+              >
                 {formatPrice(order.totalAmount)}
               </Typography>
             </Box>
@@ -184,12 +234,12 @@ const DashboardOrderPage = () => {
         </Card>
 
         {/* Dirección */}
-        <Card sx={{ p: 2.5, bgcolor: 'white' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+        <Card sx={{ p: 2.5, bgcolor: '#F9FAFB', boxShadow: 'none', border: '1px solid #E5E7EB' }}>
+          <Typography variant='h6' sx={{ fontWeight: 'bold', mb: 2 }}>
             Dirección de Envío
           </Typography>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, bgcolor: '#F9FAFB', boxShadow: 'none' }}>
             <Box>
               <Typography
                 sx={{

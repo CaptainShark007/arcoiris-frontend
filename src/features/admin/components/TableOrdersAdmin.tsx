@@ -38,7 +38,7 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
   return (
     <Box sx={{ width: '100%', overflow: 'auto' }}>
       <Table sx={{ minWidth: 650 }}>
-        <TableHead sx={{ backgroundColor: '#f3f4f6', borderBottom: '1px solid #e5e7eb' }}>
+        <TableHead>
           <TableRow>
             {tableHeaders.map((header, index) => (
               <TableCell
@@ -49,6 +49,7 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
                   textAlign: 'left',
                   fontWeight: 'bold',
                   fontSize: '0.875rem',
+                  borderBottom: '1px solid #e5e7eb',
                 }}
               >
                 {header}
@@ -64,9 +65,9 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
               onClick={() => navigate(`/panel/pedidos/${order.id}`)}
               sx={{
                 cursor: 'pointer',
-                borderBottom: '1px solid #f3f4f6',
+                borderBottom: '1px solid #e8eaefff',
                 '&:hover': {
-                  backgroundColor: '#f9fafb',
+                  backgroundColor: '#f4f2f2ff',
                   transition: 'background-color 200ms',
                 },
               }}
