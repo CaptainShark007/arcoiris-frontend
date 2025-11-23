@@ -130,11 +130,26 @@ export const TableProduct = () => {
                         fontSize: '0.875rem',
                       }}
                     >
-                      {product.variants.map((variant, variantIndex) => (
-                        <option key={variant.id} value={variantIndex}>
+                      {/* {product.variants.map((variant, variantIndex) => (
+                        <MenuItem key={variant.id} value={variantIndex}>
                           {variant.color_name} - {variant.storage} - {variant.finish}
-                        </option>
-                      ))}
+                        </MenuItem>
+                      ))} */}
+                      {product.variants.map((variant, variantIndex) => {
+                        const variantLabel = [
+                          variant.color_name,
+                          variant.storage,
+                          variant.finish,
+                        ]
+                          .filter(Boolean) // Filtra null, undefined, string vacío
+                          .join(' • ');
+
+                        return (
+                          <MenuItem key={variant.id} value={variantIndex}>
+                            {variantLabel}
+                          </MenuItem>
+                        );
+                      })}
                     </Select>
                   </TableCell>
                   <CellTableProduct content={formatPrice(selectedVariant.price)} />
