@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 import {
+  Autocomplete,
   Box,
   Button,
   Card,
@@ -12,6 +13,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -21,13 +23,15 @@ import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
 import { DeleteProductModal, Loader, Pagination } from '@shared/components';
 import { useProducts } from '../hooks/useProducts';
-import { useDeleteProduct } from '../hooks';
+import { useDeleteProduct, useUpdateProductCategory } from '../hooks';
+import { useCategories } from '@features/shop/hooks/products/useCategories';
 
 const tableHeaders = [
   '',
   'Nombre',
   'Variante',
   'Precio',
+  'Categoría',
   'Stock',
   'Fecha de creación',
   '',
@@ -54,7 +58,11 @@ export const TableProduct = () => {
     page,
   });
 
-   const { mutate: deleteProduct, isPending } = useDeleteProduct();
+  const { categories, isLoading: isCategoriesLoading } = useCategories();
+
+  const { mutate: deleteProduct, isPending } = useDeleteProduct();
+
+  const { mutate: updateProductCategory, isPending: isUpdatingCategory } = useUpdateProductCategory();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, index: number) => {
     setAnchorEl(event.currentTarget);
@@ -97,6 +105,15 @@ export const TableProduct = () => {
     }
   };
 
+  const handleCategoryChange = (product: any, newCategory: any) => {
+    if (newCategory) {
+      updateProductCategory({
+        productId: product.id,
+        categoryId: newCategory.id,
+      });
+    }
+  };
+
   if (!products || isLoading || !totalProducts || isPending) return <Loader />;
 
   return (
@@ -130,6 +147,12 @@ export const TableProduct = () => {
             {products.map((product, index) => {
               const selectedVariantIndex = selectedVariants[product.id] ?? 0;
               const selectedVariant = product.variants[selectedVariantIndex];
+              const selectedCategory = categories.find((cat) => cat.id === product.category_id);
+
+              const categoryOptions = [
+                { id: 'clear', name: 'Sin categoría' },
+                ...categories,
+              ]
 
               return (
                 <TableRow key={index} sx={{ borderBottom: '1px solid #f3f4f6' }}>
@@ -181,6 +204,44 @@ export const TableProduct = () => {
                     </Select>
                   </TableCell>
                   <CellTableProduct content={formatPrice(selectedVariant.price)} />
+                  <TableCell sx={{ fontWeight: 500, letterSpacing: '-0.025em', minWidth: 200 }}>
+                    <Autocomplete
+                      options={categoryOptions}
+                      getOptionLabel={(option) => {
+                        if (option.id === 'clear') return 'Sin categoría';
+                        return option.name;
+                      }}
+                      value={selectedCategory || null}
+                      //onChange={(event, newValue) => handleCategoryChange(product, newValue)}
+                      onChange={(event, newValue) => {
+                        if (newValue?.id === 'clear') {
+                          // Eliminar categoría
+                          updateProductCategory({
+                            productId: product.id,
+                            categoryId: null as any,
+                          });
+                        } else if (newValue) {
+                          handleCategoryChange(product, newValue);
+                        }
+                      }}
+                      loading={isCategoriesLoading || isUpdatingCategory}
+                      size="small"
+                      fullWidth
+                      noOptionsText="No hay categorías"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          fontSize: '0.875rem',
+                        },
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Asignar categoría"
+                          size="small"
+                        />
+                      )}
+                    />
+                  </TableCell>
                   <CellTableProduct content={selectedVariant.stock.toString()} />
                   <CellTableProduct content={formatDate(product.created_at)} />
                   <TableCell sx={{ position: 'relative' }}>

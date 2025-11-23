@@ -224,6 +224,24 @@ export const getProducts = async (page: number) => {
 // **************************************************************************************************
 // ************************ CRUD de productos (crear, actualizar, eliminar)**************************
 
+export const updateProductCategory = async (productId: string, categoryId: string | null) => {
+
+  const { data, error } = await supabase
+    .from('products')
+    .update({ category_id: categoryId })
+    .eq('id', productId)
+    .select()
+    .single();
+
+  if (error) {
+    console.log('Error al actualizar la categoria del producto:', error.message);
+    throw new Error('Error al actualizar la categoria del producto. Vuelve a intentarlo.');
+  }
+
+  return data;
+
+}
+
 // **************************************************************************************************
 // *************************************** CREAR PRODUCTO ********************************************
 // *************************************** FORMA DEL VIDEO *******************************************

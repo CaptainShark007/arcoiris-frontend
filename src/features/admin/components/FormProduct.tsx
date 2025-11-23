@@ -122,9 +122,9 @@ export const FormProduct = ({ titleForm }: Props) => {
 					<IconButton
 						onClick={() => navigate(-1)}
 						sx={{
-							bgcolor: 'white',
-							border: '1px solid #e2e8f0',
-							transition: 'all 300ms',
+							//bgcolor: 'white',
+							//border: '1px solid #e2e8f0',
+							transition: 'all 400ms',
 							'&:hover': { transform: 'scale(1.05)' },
 						}}
 					>
