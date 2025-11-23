@@ -1,4 +1,4 @@
-import { extractFilePath } from '@/helpers';
+import { compressImage, extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
 import { CreateProductRPCResult, ProductInput } from '@shared/types';
 
@@ -307,38 +307,52 @@ export const getProducts = async (page: number) => {
 // *************************************** CREAR PRODUCTO ********************************************
 // *************************************** NUEVA FORMA *******************************************
 // USANDO PROCEDIMIENTO ALMACENADO Y VALIDACIONES
-// Validaciones
-const validateProductInput = (input: ProductInput): string[] => {
 
+// Validación
+const validateProductInput = async (input: ProductInput): Promise<string[]> => {
   const errors: string[] = [];
 
   if (!input.name?.trim()) errors.push('El nombre del producto es obligatorio.');
   if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
   if (!input.brand?.trim()) errors.push('La marca del producto es obligatoria.');
   if (!input.images?.length) errors.push('Al menos una imagen del producto es obligatoria.');
+  if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');
   if (!input.variants?.length) errors.push('El producto debe tener al menos una variante.');
 
-  // Validar variantes
   input.variants?.forEach((v, i) => {
     if (!v.price || v.price <= 0) errors.push(`El precio de la variante ${i + 1} debe ser mayor a 0.`);
     if (!v.stock || v.stock < 0) errors.push(`El stock de la variante ${i + 1} no puede ser negativo.`);
   });
 
-  // Validar imagenes (tamaño maximo 5MB, solo JPEG/JPG/PNG)
-  input.images?.forEach((img, i) => {
-    if (img.size > 5 * 1024 * 1024) errors.push(`La imagen ${i + 1} excede el tamaño máximo de 5MB.`);
-    if (!['image/jpeg', 'image/jpg', 'image/png'].includes(img.type)) {
-      errors.push(`La imagen ${i + 1} debe ser JPEG, JPG o PNG.`);
+  // Validar y comprimir imagenes
+  for (let i = 0; i < input.images.length; i++) {
+    const img = input.images[i];
+    
+    if (!['image/jpeg', 'image/jpg', 'image/png' , 'image/webp'].includes(img.type)) {
+      errors.push(`La imagen ${i + 1} debe ser JPEG, JPG, PNG o WEBP.`);
+      continue;
     }
-  });
+
+    // si la imagen es mayor a 1.5MB
+    if (img.size > 1.5 * 1024 * 1024) {
+      // Comprimir automáticamente
+      try {
+        const compressed = await compressImage(img, 1.5);
+        input.images[i] = compressed;
+      } catch (err) {
+        console.log(err);
+        errors.push(`No se pudo comprimir la imagen ${i + 1}.`);
+      }
+    }
+  }
 
   return errors;
-}
+};
 
 export const createProduct = async (productInput: ProductInput) => {
   try {
     // 1. Validar entrada
-    const validationErrors = validateProductInput(productInput);
+    const validationErrors = await validateProductInput(productInput);
     if (validationErrors.length > 0) {
       throw new Error(validationErrors.join(' '));
     }

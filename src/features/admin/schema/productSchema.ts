@@ -98,6 +98,7 @@ export const productSchema = yup.object().shape({
 	images: yup
 		.array()
 		.min(1, 'Debe haber al menos una imagen')
+		.max(3, 'Máximo 3 imágenes permitidas')
 		.typeError('Las imágenes deben ser un array'),
 });
 

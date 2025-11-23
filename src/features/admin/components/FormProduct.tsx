@@ -15,6 +15,7 @@ import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useCreateProduct, useUpdateProduct } from "../hooks";
 import { Loader } from "@shared/components";
 import { useProduct } from "@features/product/hooks/useProduct";
+import { JSONContent } from "@tiptap/react";
 
 interface Props {
 	titleForm: string;
@@ -33,7 +34,7 @@ export const FormProduct = ({ titleForm }: Props) => {
 	});
 
 	const { slug } = useParams<{ slug: string }>();
-	const { product, isLoading } = useProduct(slug || '');
+	const { product, isLoading } = useProduct(slug);
 
 	const { mutate: createProduct, isPending } = useCreateProduct();
 
@@ -47,15 +48,15 @@ export const FormProduct = ({ titleForm }: Props) => {
 			setValue('slug', product.slug);
 			setValue('brand', product.brand);
 			setValue('features', product.features.map(f => ({ value: f })));
-			setValue('description', product.description);
+			setValue('description', product.description as JSONContent);
 			setValue('images', product.images);
 			setValue('variants', product.variants.map(v => ({
 				id: v.id,
 				stock: v.stock,
 				price: v.price,
-				storage: v.storage,
-				color: v.color,
-				colorName: v.color_name,
+				storage: v.storage || '', 
+				color: v.color || '',
+				colorName: v.color_name || '',
 				finish: v.finish || '',
 			})));
 		}
@@ -196,7 +197,7 @@ export const FormProduct = ({ titleForm }: Props) => {
 
 				<Box sx={{ gridColumn: 'span', lg: { gridColumn: '1/-1' } }}>
 					<SectionFormProduct titleSection='Descripción del producto' >
-						<Editor setValue={setValue} errors={errors} initialContent={product?.description} />
+						<Editor setValue={setValue} errors={errors} initialContent={product?.description as JSONContent | undefined} />
 					</SectionFormProduct>
 				</Box>
 

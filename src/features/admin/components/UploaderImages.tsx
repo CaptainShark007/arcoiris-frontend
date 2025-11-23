@@ -7,7 +7,7 @@ import {
 import { useState } from 'react';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { ProductFormValues } from '../schema/productSchema';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, Alert } from '@mui/material';
 
 interface ImagePreview {
 	file?: File;
@@ -19,6 +19,9 @@ interface Props {
 	watch: UseFormWatch<ProductFormValues>;
 	errors: FieldErrors<ProductFormValues>;
 }
+
+const MAX_IMAGES = 3;
+//const MIN_IMAGES = 1;
 
 export const UploaderImages = ({
 	setValue,
@@ -48,6 +51,21 @@ export const UploaderImages = ({
 				previewUrl: URL.createObjectURL(file),
 			}));
 
+			// Verificar si al agregar las nuevas imágenes se excede el máximo
+			const totalImages = images.length + newImages.length;
+			
+			if (totalImages > MAX_IMAGES) {
+				// Solo agregar hasta el máximo permitido
+				const canAdd = MAX_IMAGES - images.length;
+				const updatedImages = [...images, ...newImages.slice(0, canAdd)];
+				setImages(updatedImages);
+				setValue(
+					'images',
+					updatedImages.map(img => img.file || img.previewUrl)
+				);
+				return;
+			}
+
 			const updatedImages = [...images, ...newImages];
 			setImages(updatedImages);
 			setValue(
@@ -66,27 +84,67 @@ export const UploaderImages = ({
 		);
 	};
 
+	const canAddMore = images.length < MAX_IMAGES;
+	const imagesRemaining = MAX_IMAGES - images.length;
+
 	return (
 		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+			{/* Estado de imágenes */}
+			<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+				<Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+					Imágenes: <strong>{images.length}</strong> / {MAX_IMAGES}
+				</Typography>
+				{!canAddMore && (
+					<Typography variant="body2" sx={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 500 }}>
+						Máximo de imágenes alcanzado
+					</Typography>
+				)}
+			</Box>
+
+			{/* Barra de progreso visual */}
+			<Box sx={{ 
+				width: '100%', 
+				height: '4px', 
+				backgroundColor: '#e5e7eb', 
+				borderRadius: '2px',
+				overflow: 'hidden'
+			}}>
+				<Box sx={{ 
+					height: '100%', 
+					width: `${(images.length / MAX_IMAGES) * 100}%`,
+					backgroundColor: images.length === MAX_IMAGES ? '#10b981' : '#0007d7ff',
+					transition: 'width 300ms ease'
+				}} />
+			</Box>
+
+			{/* Botón de seleccionar imágenes */}
 			<Button
 				component="label"
 				variant="outlined"
+				disabled={!canAddMore}
 				sx={{
 					py: 1.5,
 					textTransform: 'none',
 					fontSize: '0.875rem',
+					opacity: canAddMore ? 1 : 0.5,
+					cursor: canAddMore ? 'pointer' : 'not-allowed',
 				}}
 			>
-				Seleccionar imágenes
+				{canAddMore 
+					? `Seleccionar imágenes (${imagesRemaining} disponibles)`
+					: 'Máximo de imágenes alcanzado'
+				}
 				<input
 					type='file'
 					accept='image/*'
 					multiple
 					hidden
 					onChange={handleImageChange}
+					disabled={!canAddMore}
 				/>
 			</Button>
 
+			{/* Galería de imágenes */}
 			<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
 				{images.map((image, index) => (
 					<Box
@@ -143,9 +201,17 @@ export const UploaderImages = ({
 				))}
 			</Box>
 
-			{formImages?.length === 0 && errors.images && (
-				<Typography sx={{ color: '#ef4444', fontSize: '0.75rem' }}>
+			{/* Errores de validación */}
+			{errors.images && (
+				<Alert severity="error" sx={{ fontSize: '0.75rem' }}>
 					{errors.images.message}
+				</Alert>
+			)}
+
+			{/* Mensaje informativo */}
+			{images.length === 0 && !errors.images && (
+				<Typography variant="body2" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>
+					Carga mínimo 1 imagen y máximo 3 imágenes del producto
 				</Typography>
 			)}
 		</Box>
