@@ -5,6 +5,8 @@ import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
+import { enviarEmailOrden } from '@/services/emailService';
+import { useCustomer, useUsers } from '@shared/hooks';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -21,6 +23,13 @@ export const PaymentStep = ({
   onConfirmOrderRef,
   isProcessingRef
 }: PaymentStepProps) => {
+
+  const { session, isLoading } = useUsers();
+
+  const userId = session?.user?.id;
+
+  const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
+
   const [selected, setSelected] = useState<'acordar'>('acordar');
 
   const { shippingInfo, shippingMethod, setOrderId, orderSummary } = useCheckoutStore();
@@ -34,9 +43,35 @@ export const PaymentStep = ({
     // Limpiar el carrito
     clearCart();
 
+    // ============================================================
+    // ENVÍO DE EMAIL (Solo si selecciona 'ACORDAR')
+    // ============================================================
+    if (shippingMethod === 'acordar') {
+      try {
+        await enviarEmailOrden({
+          id: response.orderId,
+          email: "eliasdiegogomez37@gmail.com", // siempre se envia al email del admin
+          nombreCliente: customer?.full_name || 'Cliente',
+          total: orderSummary?.totalPrice ?? 0,
+          items: (orderSummary?.items ?? []).map(item => ({
+            nombre: item.name,
+            cantidad: item.quantity,
+            precio: item.price,
+          })),
+        });
+        console.log('Email enviado exitosamente');
+      } catch (emailError) {
+        console.error('Error al enviar email:', emailError);
+        toast.error('Orden creada pero hubo un error al enviar el email de confirmación', {
+          position: 'bottom-right',
+        });
+      }
+    }
+    // ============================================================
+
     // Navegar al siguiente paso
     onNext();
-  }, [onNext, setOrderId, clearCart]);
+  }, [onNext, setOrderId, clearCart, shippingMethod, orderSummary]);
 
   // Manejo de error en la creación de la orden
   const handleOrderError = useCallback(async (error: Error) => {
@@ -51,7 +86,15 @@ export const PaymentStep = ({
   });
 
   // Función para confirmar la orden
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback( async () => {
+
+    // Validar que los datos del cliente se hayan cargado
+    if (isLoadingCustomer) {
+      toast.error('Por favor espera mientras se cargan tus datos', {
+        position: 'bottom-right',
+      });
+      return;
+    }
 
     // Validar que la información de envío esté completa
     if (!shippingInfo) {
@@ -72,7 +115,7 @@ export const PaymentStep = ({
     // ============================================================
     // OPCIÓN 1: FUNCIONAMIENTO REAL CON SP (Descomenta este bloque)
     // ============================================================
-    /*
+    
     // Mostrar toast de procesamiento
     toast.loading('Procesando tu orden...', {
       id: 'order-processing',
@@ -105,13 +148,12 @@ export const PaymentStep = ({
     setTimeout(() => {
       toast.dismiss('order-processing');
     }, 100);
-    */
 
     // ============================================================
     // OPCIÓN 2: SIMULACIÓN (Para pruebas sin ejecutar SP)
     // Comenta esta sección cuando uses OPCIÓN 1
     // ============================================================
-    toast.loading('Procesando tu orden...', {
+    /* toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'bottom-right',
       duration: 1500,
@@ -127,9 +169,9 @@ export const PaymentStep = ({
       });
 
       onNext();
-    }, 1500);
+    }, 1500); */
 
-  }, [shippingInfo, orderSummary, createOrder]);
+  }, [shippingInfo, orderSummary, createOrder, setOrderId, clearCart, onNext, isLoadingCustomer]);
 
   // Actualizar ref con la función de confirmar
   useEffect(() => {
@@ -256,7 +298,7 @@ export const PaymentStep = ({
           variant="outlined" 
           onClick={onBack} 
           fullWidth
-          disabled={isPending}
+          disabled={isPending || isLoading || isLoadingCustomer}
         >
           Volver
         </Button>
@@ -269,7 +311,7 @@ export const PaymentStep = ({
             position: 'relative',
           }}
         >
-          {isPending ? 'Procesando...' : 'Confirmar orden'}
+          {isPending ? 'Procesando...' : isLoading || isLoadingCustomer ? 'Cargando datos...' : 'Confirmar orden'}
         </Button>
       </Box>
     </Box>
