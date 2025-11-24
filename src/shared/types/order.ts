@@ -15,6 +15,16 @@ export interface OrderInput {
   totalAmount: number;
 }
 
+export interface CreateOrderResponse {
+  success: boolean;
+  orderId?: number;
+  customerId?: string;
+  addressId?: string;
+  error?: string;
+  detail?: string;
+  message: string;
+}
+
 export interface OrderItemSingle {
 	created_at: string;
 	id: number;
