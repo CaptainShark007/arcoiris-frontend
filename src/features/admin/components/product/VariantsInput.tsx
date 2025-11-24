@@ -9,8 +9,8 @@ import {
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { useEffect, useState } from 'react';
-import { ProductFormValues } from '../schema/productSchema';
 import { Box, Button, TextField, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, Popover } from '@mui/material';
+import { ProductFormValues } from '@features/admin/schema/productSchema';
 
 interface Props {
 	control: Control<ProductFormValues>;

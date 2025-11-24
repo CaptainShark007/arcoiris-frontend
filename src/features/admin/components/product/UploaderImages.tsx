@@ -6,8 +6,8 @@ import {
 } from 'react-hook-form';
 import { useState } from 'react';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { ProductFormValues } from '../schema/productSchema';
 import { Box, Button, Typography, Alert } from '@mui/material';
+import { ProductFormValues } from '@features/admin/schema/productSchema';
 
 interface ImagePreview {
 	file?: File;

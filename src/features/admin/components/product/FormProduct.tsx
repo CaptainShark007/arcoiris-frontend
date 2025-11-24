@@ -1,5 +1,4 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ProductFormValues, productSchema } from '../schema/productSchema';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 import { useEffect } from 'react';
@@ -12,10 +11,11 @@ import { VariantsInput } from './VariantsInput';
 import { UploaderImages } from './UploaderImages';
 import { Editor } from './Editor';
 import { Box, Button, IconButton, Typography } from '@mui/material';
-import { useCreateProduct, useUpdateProduct } from '../hooks';
 import { Loader } from '@shared/components';
 import { useProduct } from '@features/product/hooks/useProduct';
 import { JSONContent } from '@tiptap/react';
+import { useCreateProduct, useUpdateProduct } from '@features/admin/hooks';
+import { ProductFormValues, productSchema } from '@features/admin/schema/productSchema';
 
 interface Props {
   titleForm: string;
@@ -38,8 +38,7 @@ export const FormProduct = ({ titleForm }: Props) => {
 
   const { mutate: createProduct, isPending } = useCreateProduct();
 
-  const { mutate: updateProduct, isPending: isUpdatePending } =
-    useUpdateProduct(product?.id || '');
+  const { mutate: updateProduct, isPending: isUpdatePending } = useUpdateProduct(product?.id || '');
 
   const navigate = useNavigate();
 

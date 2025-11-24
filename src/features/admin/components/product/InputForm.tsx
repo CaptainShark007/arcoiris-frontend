@@ -1,6 +1,6 @@
 import { FieldErrors, UseFormRegister } from 'react-hook-form';
-import { ProductFormValues } from '../schema/productSchema';
 import { Box, TextField, Typography } from '@mui/material';
+import { ProductFormValues } from '@features/admin/schema/productSchema';
 
 interface Props {
 	className?: string;

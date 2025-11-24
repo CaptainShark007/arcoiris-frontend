@@ -1,16 +1,16 @@
-export * from './useCreateProduct';
-export * from './useProducts';
-export * from './useDeleteProduct';
-export * from './useUpdateProduct';
-export * from './useUpdateProductCategory';
+export * from './product/useCreateProduct';
+export * from './product/useProducts';
+export * from './product/useDeleteProduct';
+export * from './product/useUpdateProduct';
+export * from './product/useUpdateProductCategory';
 // categories
-export * from './useAllCategories';
-export * from './useCreateCategory';
-export * from './useUpdateCategory';
-export * from './useDeleteCategory';
-export * from './useCountProductsByCategory';
+export * from './category/useAllCategories';
+export * from './category/useCreateCategory';
+export * from './category/useUpdateCategory';
+export * from './category/useDeleteCategory';
+export * from './category/useCountProductsByCategory';
 
 // orders
-export * from './useAllOrders';
-export * from './useChangeStatusOrder';
-export * from './useOrderAdmin';
+export * from './order/useAllOrders';
+export * from './order/useChangeStatusOrder';
+export * from './order/useOrderAdmin';

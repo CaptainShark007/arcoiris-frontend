@@ -22,9 +22,8 @@ import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
 import { DeleteProductModal, Loader, Pagination } from '@shared/components';
-import { useProducts } from '../hooks/useProducts';
-import { useDeleteProduct, useUpdateProductCategory } from '../hooks';
 import { useCategories } from '@features/shop/hooks/products/useCategories';
+import { useDeleteProduct, useProducts, useUpdateProductCategory } from '@features/admin/hooks';
 
 const tableHeaders = [
   '',
@@ -61,8 +60,7 @@ export const TableProduct = () => {
 
   const { mutate: deleteProduct, isPending } = useDeleteProduct();
 
-  const { mutate: updateProductCategory, isPending: isUpdatingCategory } =
-    useUpdateProductCategory();
+  const { mutate: updateProductCategory, isPending: isUpdatingCategory } = useUpdateProductCategory();
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLElement>,

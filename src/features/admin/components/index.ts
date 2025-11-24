@@ -1,17 +1,19 @@
 export * from './Sidebar';
-export * from './TableProduct';
-export * from './CellTableProduct';
-export * from './FormProduct';
-export * from './SectionFormProduct';
-export * from './InputForm';
-export * from './FeaturesInput';
-export * from './VariantsInput';
-export * from './UploaderImages';
-export * from './Editor';
+
+// Products
+export * from './product/TableProduct';
+export * from './product/CellTableProduct';
+export * from './product/FormProduct';
+export * from './product/SectionFormProduct';
+export * from './product/InputForm';
+export * from './product/FeaturesInput';
+export * from './product/VariantsInput';
+export * from './product/UploaderImages';
+export * from './product/Editor';
 
 // Categories
-export * from './CategoriesModal';
-export * from './CategoryFormModal';
+export * from './category/CategoriesModal';
+export * from './category/CategoryFormModal';
 
 // Orders
-export * from './TableOrdersAdmin';
+export * from './order/TableOrdersAdmin';
