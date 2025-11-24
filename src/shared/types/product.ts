@@ -1,3 +1,4 @@
+import { JSONContent } from '@tiptap/react';
 import { Json } from '../../supabase/supabase'
 
 export interface Color {
@@ -62,12 +63,6 @@ export interface Variant {
   finish?: string | null;
 }
 
-export interface Category {
-  id: number;
-  name: string;
-  image: string;
-}
-
 export interface CarouselSlide {
   id: string;
   image: string;
@@ -86,3 +81,29 @@ export interface ProductSectionProps {
   showOriginalPrice?: boolean;
 }
 
+// types para creacion y edición de productos en el admin
+export interface ProductInput {
+	name: string;
+	brand: string;
+	slug: string;
+	features: string[];
+	description: JSONContent;
+	images: File[];
+	variants: VariantInput[];
+}
+
+export interface VariantInput {
+	id?: string;
+	stock: number;
+	price: number;
+	color?: string;
+	storage?: string;
+	color_name?: string;
+	finish?: string | null;
+}
+
+export type CreateProductRPCResult = {
+  product_id: string;
+  success: boolean;
+  message: string;
+};

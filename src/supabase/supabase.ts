@@ -294,34 +294,34 @@ export type Database = {
       }
       variants: {
         Row: {
-          color: string
-          color_name: string
+          color: string | null
+          color_name: string | null
           finish: string | null
           id: string
           price: number
           product_id: string
           stock: number
-          storage: string
+          storage: string | null
         }
         Insert: {
-          color: string
-          color_name: string
+          color?: string | null
+          color_name?: string | null
           finish?: string | null
           id?: string
           price: number
           product_id: string
           stock: number
-          storage: string
+          storage?: string | null
         }
         Update: {
-          color?: string
-          color_name?: string
+          color?: string | null
+          color_name?: string | null
           finish?: string | null
           id?: string
           price?: number
           product_id?: string
           stock?: number
-          storage?: string
+          storage?: string | null
         }
         Relationships: [
           {
@@ -338,7 +338,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_product_with_variants: {
+        Args: {
+          p_brand: string
+          p_description: Json
+          p_features: string[]
+          p_name: string
+          p_slug: string
+          p_variants: Json
+        }
+        Returns: {
+          message: string
+          product_id: string
+          success: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

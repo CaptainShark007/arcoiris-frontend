@@ -5,11 +5,12 @@ import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
+//import { enviarEmailOrden } from '@/services/emailService';
 
 interface PaymentStepProps {
   onNext: () => void;
   onBack: () => void;
-  onEditAddress?: () => void;
+  onGoToStep?: (step: number) => void;
   onConfirmOrderRef?: MutableRefObject<(() => void) | null>;
   isProcessingRef?: MutableRefObject<boolean>;
 }
@@ -17,16 +18,19 @@ interface PaymentStepProps {
 export const PaymentStep = ({ 
   onNext, 
   onBack, 
-  onEditAddress,
+  onGoToStep,
   onConfirmOrderRef,
   isProcessingRef
 }: PaymentStepProps) => {
   const [selected, setSelected] = useState<'acordar'>('acordar');
 
-  const { mutate: createOrder, isPending } = useCreateOrder();
-  const { items, totalPrice, clearCart } = useCartStore();
-  const { shippingInfo, clearCheckout, setOrderId } = useCheckoutStore();
-
+  const { mutate: createOrder, isPending, } = useCreateOrder();
+  const { clearCart } = useCartStore();
+  // DESCOMENTAR para el funcionamiento real de la creacion orden
+  //const { shippingInfo, shippingMethod, setOrderId, orderSummary } = useCheckoutStore();
+  const { shippingInfo, shippingMethod, setOrderId } = useCheckoutStore(); // comentar esta linea para el funcionamiento real
+  
+  
   const handleConfirm = () => {
     if (!shippingInfo) {
       toast.error('Por favor, completa la información de envío antes de continuar.', {
@@ -35,42 +39,87 @@ export const PaymentStep = ({
       return;
     }
 
-    const orderData = {
+    // DESCOMENTAR para el funcionamiento real de la creacion orden
+    /* toast.loading('Procesando tu orden...', {
+      id: 'order-processing',
+      position: 'bottom-right',
+      duration: 4000,
+    }); */
+
+    // DESCOMENTAR para el funcionamiento real de la creacion orden
+    /* const orderData = {
       address: {
-        name: shippingInfo.name,
-        email: shippingInfo.email,
-        phone: shippingInfo.phone,
         addressLine1: shippingInfo.addressLine1,
-        addressLine2: '',
+        addressLine2: shippingInfo.addressLine2,
         city: shippingInfo.city,
         state: shippingInfo.state,
         postalCode: shippingInfo.postalCode,
         country: shippingInfo.country,
       },
-      cartItems: items.map((item) => ({
+      cartItems: orderSummary?.items.map((item) => ({
         variantId: item.id,
         quantity: item.quantity,
         price: item.price,
-      })),
-      totalAmount: totalPrice,
-    };
+      })) ?? [],
+      totalAmount: orderSummary?.totalPrice ?? 0,
+    }; */
 
-    createOrder(orderData, {
-      onSuccess: (data) => {
+    // DESCOMENTAR para el funcionamiento real de la creacion orden
+    /* createOrder(orderData, {
+      onSuccess: async (data) => {
         setOrderId(data.id);
         clearCart();
+
+        // SE COMENTA PARA EVITAR COSTOS INNECESARIOS EN ENVÍOS DE EMAILS DURANTE PRUEBAS
+        // FUNCIONA UNICAMENTE SI SELECCIONA METODO DE ENVIO 'ACORDAR'
+        // REVISAR PORQUE NO MANDA EL EMAIL CUANDO SELECCIONA 'RETIRO POR SUCURSAL'
+        //await enviarEmailOrden({
+        //  id: data.id,
+        //  email: shippingInfo.email,
+        //  nombreCliente: shippingInfo.name,
+        //  total: orderSummary?.totalPrice ?? 0,
+        //  items: (orderSummary?.items ?? []).map(item => ({
+        //    nombre: item.name,
+        //    cantidad: item.quantity,
+        //    precio: item.price,
+        //  })),
+        //});
+
+        toast.success('¡Orden creada con éxito!', {
+          id: 'order-processing',
+          position: 'bottom-right',
+        });
+
         onNext();
       },
-    });
+      onError: () => {
+        toast.error('Hubo un error al crear la orden. Por favor, intenta nuevamente.', {
+          id: 'order-processing',
+          position: 'bottom-right',
+        });
+      }
+    }); */
+
+    // Simulación de creación de orden para evitar costos de email durante pruebas
+    // commentar este bloque para el funcionamiento real
+    clearCart();
+    onNext();
+  };
+
+  const handleEditDelivery = () => {
+    if (onGoToStep) {
+      onGoToStep(1);
+    } else {
+      onBack();
+    }
   };
 
   useEffect(() => {
     if (onConfirmOrderRef) {
       onConfirmOrderRef.current = handleConfirm;
     }
-  }, [shippingInfo, items, totalPrice, createOrder, clearCart, clearCheckout, onNext])
+  }, [shippingInfo, createOrder, clearCart, setOrderId, onNext])
 
-  // Sincronizar el estado de procesamiento
   useEffect(() => {
     if (isProcessingRef) {
       isProcessingRef.current = isPending;
@@ -97,7 +146,7 @@ export const PaymentStep = ({
           <Button
             variant="outlined"
             size="small"
-            onClick={onEditAddress}
+            onClick={handleEditDelivery}
             sx={{
               textTransform: 'none',
               borderRadius: 1,
@@ -116,9 +165,32 @@ export const PaymentStep = ({
           </Button>
         </Stack>
 
-        <Typography variant="body2" color="text.secondary">
-          Roque Sáenz Peña, Resistencia, Chaco 3500, Argentina
-        </Typography>
+        {shippingMethod === 'retiro' ? (
+          <Box>
+            <Typography variant='body1' color='text.primary' fontWeight="bold">
+              Retiro en sucursal seleccionado.
+            </Typography>
+            <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
+              Comunícate con nosotros a través de WhatsApp para coordinar el retiro.
+            </Typography>
+          </Box>
+        ) : (
+          <Box>
+            <Typography variant='body1' color='text.primary' fontWeight="bold">
+              Datos de envío cargados:
+            </Typography>
+            <Typography variant='body2' color='text.secondary'>
+              {shippingInfo?.addressLine1}, {shippingInfo?.addressLine2}, {shippingInfo?.city}, {shippingInfo?.state}, {shippingInfo?.country}, {shippingInfo?.postalCode}
+            </Typography>
+
+            {/* <Typography variant='body1' color='text.primary' fontWeight="bold" sx={{ mt: 2 }}>
+              Datos de contacto cargados:
+            </Typography>
+            <Typography variant='body2' color='text.secondary'>
+              {shippingInfo?.email}, {shippingInfo?.phone}, {shippingInfo?.name}
+            </Typography> */}
+          </Box>
+        )}
       </Box>
 
       {/* Sección de método de pago */}
@@ -159,7 +231,12 @@ export const PaymentStep = ({
 
       {/* Botones inferiores - solo en móvil */}
       <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 2, mt: 2 }}>
-        <Button variant="outlined" onClick={onBack} fullWidth>
+        <Button 
+          variant="outlined" 
+          onClick={onBack} 
+          fullWidth
+          disabled={isPending}
+        >
           Volver
         </Button>
         <Button
@@ -168,7 +245,7 @@ export const PaymentStep = ({
           fullWidth
           disabled={isPending}
         >
-          {isPending ? 'Procesando...' : 'Confirmar orden'}
+          Confirmar orden
         </Button>
       </Box>
     </Box>

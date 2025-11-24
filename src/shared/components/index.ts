@@ -26,3 +26,4 @@ export * from './HeaderSearch';
 export * from './VariantSelectModal';
 export * from './ProductBadge';
 export * from './Pagination';
+export * from './DeleteProductModal';

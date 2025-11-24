@@ -2,13 +2,8 @@ import { Error404 } from '@shared/components/Error404';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import { ClientLayout } from '../layout/ClientLayout';
-import { ContactPage, HomePage, LoginPage, OrderUserPage, ProductPage, RegisterPage, ShopPage, CartPage, CheckoutPage } from './lazy';
-import { DashboardLayout } from '../layouts/DashboardLayout';
-import { DashboardProductsPage } from '@/pages/dashboard/DashboardProductsPage';
-import { DashboardNewProductPage } from '@/pages/dashboard/DashboardNewProductPage';
-import { DashboardProductSlugPage } from '@/pages/dashboard/DashboardProductSlugPage';
-import { DashboardOrdersPage } from '@/pages/dashboard/DashboardOrdersPage';
-import { DashboardOrderPage } from '@/pages/dashboard/DashboardOrderPage';
+import { ContactPage, HomePage, LoginPage, ProductPage, RegisterPage, ShopPage, CartPage, CheckoutPage, OrdersUserPage, OrderUserPage, DashboardProductsPage, DashboardOrdersPage, DashboardNewProductPage, DashboardProductSlugPage, DashboardOrderPage } from './lazy';
+import { DashboardLayout } from '@layout/DashboardLayout';
 
 export default function Router() {
   return (
@@ -27,7 +22,8 @@ export default function Router() {
         {/* Rutas protegidas del cliente */}
         <Route path='cuenta' element={<ClientLayout />}>
           <Route index element={<Navigate to='pedidos' replace />} />
-          <Route path='pedidos' element={<OrderUserPage />} />
+          <Route path='pedidos' element={<OrdersUserPage />} />
+          <Route path='pedidos/:id' element={<OrderUserPage />} />
         </Route>
 
         {/* Página de checkout */}
@@ -37,6 +33,7 @@ export default function Router() {
         <Route path='*' element={<Error404 />} />
       </Route>
 
+<<<<<<< HEAD
       {/* Rutas del dashboard */}
       <Route path='dashboard' element={<DashboardLayout />}>
         <Route index element={<Navigate to='productos' replace />} />
@@ -46,22 +43,19 @@ export default function Router() {
         <Route path='ordenes' element={<DashboardOrdersPage />} />
         <Route path='ordenes/:id' element={<DashboardOrderPage />} />
       </Route>
+=======
+      {/* Paginas del administrador */}
+      <Route path='panel' element={<DashboardLayout />} >
+        <Route index element={<Navigate to='productos' replace />} />
+        <Route path='productos' element={<DashboardProductsPage />} />
+        <Route path='productos/nuevo' element={<DashboardNewProductPage />} />
+        <Route path='productos/editar/:slug' element={<DashboardProductSlugPage />} />
+        <Route path='pedidos' element={<DashboardOrdersPage />} />
+        <Route path='pedidos/:id' element={<DashboardOrderPage />} />
+
+      </Route>
+
+>>>>>>> origin/develop
     </Routes>
   );
 }
-
-/*
-debo lograr similar a esto
-patch: 'cuenta',
-element: <ClientLayout />,
-children: [
-  {
-    path: '',
-    element: <Navigate to='/cuenta/pedidos' />
-  },
-  {
-    path: 'pedidos',
-    element: <OrderUserPage />
-  }
-]
-*/

@@ -30,8 +30,8 @@ export const ProductListPage = ({
   totalProducts,
   page,
   setPage,
-  itemsPerPage, 
-  setItemsPerPage,
+  //itemsPerPage, 
+  //setItemsPerPage,
   selectedBrands,
   setSelectedBrands,
   selectedCategories, 
@@ -87,8 +87,8 @@ export const ProductListPage = ({
                 totalItems={totalProducts} 
                 page={page} 
                 setPage={setPage}
-                itemsPerPage={itemsPerPage}
-                setItemsPerPage={setItemsPerPage}
+                //itemsPerPage={itemsPerPage}
+                //setItemsPerPage={setItemsPerPage}
               />
             </Box>
           </>

@@ -1,7 +1,7 @@
 import { getProductBySlug } from "@/actions";
 import { useQuery } from "@tanstack/react-query";
 
-export const useProduct = (slug: string) => {
+export const useProduct = (slug?: string) => {
 
   const { 
     data: product,
@@ -9,8 +9,9 @@ export const useProduct = (slug: string) => {
     isError
   } = useQuery({
     queryKey: ['product', slug],
-    queryFn: () => getProductBySlug(slug),
+    queryFn: () => getProductBySlug(slug!),
     retry: false,
+    enabled: !!slug, // Solo ejecutar la consulta si slug está definido
   });
 
   return {

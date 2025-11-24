@@ -53,6 +53,7 @@ const CheckoutPage = () => {
           <PaymentStep 
             onNext={handleNext} 
             onBack={handleBack}
+            onGoToStep={handleGoToStep}
             onConfirmOrderRef={confirmOrderRef}
             isProcessingRef={isProcessingRef}
           />

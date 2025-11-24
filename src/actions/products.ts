@@ -1,4 +1,6 @@
+import { compressImage, extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
+import { CreateProductRPCResult, ProductInput } from '@shared/types';
 
 // Nuevo metodo para listar productos con variantes paginados y con filtros varios - video
 export const getFilteredProducts = async ({
@@ -134,23 +136,6 @@ export const getRandomProducts = async () => {
   return randomProducts;
 }
 
-// metodo para obtener los productos destacados
-// metodo para obtener los productos por categoria
-export const getCategories = async () => {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('is_active', true)
-    .order('display_order', { ascending: true });
-
-  if (error) {
-    console.log('Error fetching categories:', error.message);
-    throw new Error('Error fetching categories');
-  }
-
-  return data;
-};
-
 // metodo para buscar el producto por su slug
 export const getProductBySlug = async (slug: string) => {
 
@@ -184,3 +169,527 @@ export const getProductVariants = async (productId: string) => {
 
   return data || [];
 }
+
+export const getProducts = async (page: number) => {
+	const itemsPerPage = 10;
+	const from = (page - 1) * itemsPerPage;
+	const to = from + itemsPerPage - 1;
+
+	const {
+		data: products,
+		error,
+		count,
+	} = await supabase
+		.from('products')
+		.select('*, variants(*)', { count: 'exact' })
+		.order('created_at', { ascending: false })
+		.range(from, to);
+
+	if (error) {
+		console.log(error.message);
+		throw new Error(error.message);
+	}
+
+	return { products, count };
+};
+
+
+
+
+
+
+
+
+
+
+// **************************************************************************************************
+// *************************************** ADMINISTRADOR ********************************************
+// **************************************************************************************************
+// ************************ CRUD de productos (crear, actualizar, eliminar)**************************
+
+export const updateProductCategory = async (productId: string, categoryId: string | null) => {
+
+  const { data, error } = await supabase
+    .from('products')
+    .update({ category_id: categoryId })
+    .eq('id', productId)
+    .select()
+    .single();
+
+  if (error) {
+    console.log('Error al actualizar la categoria del producto:', error.message);
+    throw new Error('Error al actualizar la categoria del producto. Vuelve a intentarlo.');
+  }
+
+  return data;
+
+}
+
+// **************************************************************************************************
+// *************************************** CREAR PRODUCTO ********************************************
+// *************************************** FORMA DEL VIDEO *******************************************
+// VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
+// DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
+/* export const createProduct = async (productInput: ProductInput) => {
+
+  try {
+    
+    // 1 Crear el producto para obtener su id
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .insert({
+        name: productInput.name,
+        brand: productInput.brand,
+        slug: productInput.slug,
+        features: productInput.features,
+        description: productInput.description,
+        images: [], // inicialmente vacio
+      }).select().single();
+
+      if (productError) {
+        throw new Error(productError.message);
+      }
+
+      // 2. Subir las imagenes al storage dentro de una carpeta
+      // que se creara a partir del producto
+      const folderName = product.id;
+
+      const uploadedImages = await Promise.all(
+        productInput.images.map(async (image) => {
+          const { data, error } = await supabase
+            .storage
+            .from('product-images')
+            .upload(`${folderName}/${product.id}-${image.name}`, image);
+
+          if (error) throw new Error(error.message);
+
+          // obtener la url publica de la imagen subida
+          const imageUrl = `${supabase.storage.from('product-images').getPublicUrl(data.path).data.publicUrl}`;
+
+          return imageUrl;
+        })
+      );
+
+      // 3. Actualizar el producto con las imagenes subidas
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ images: uploadedImages })
+        .eq('id', product.id);
+
+      if (updateError) throw new Error(updateError.message);
+
+      // 4. Crear las variantes del producto
+      const variants = productInput.variants.map(variant => ({
+        product_id: product.id,
+        stock: variant.stock,
+        price: variant.price,
+        storage: variant.storage,
+        color: variant.color,
+        color_name: variant.color_name,
+        finish: variant.finish || null,
+      }));
+
+      const { error: variantsError } = await supabase
+        .from('variants')
+        .insert(variants);
+
+      if (variantsError) throw new Error(variantsError.message);
+
+    return product;
+
+  } catch (error) {
+    console.log(error);
+    throw new Error('Error al crear el producto. vuelve a intentarlo.');
+  }
+
+} */
+
+// **************************************************************************************************
+// *************************************** CREAR PRODUCTO ********************************************
+// *************************************** NUEVA FORMA *******************************************
+// USANDO PROCEDIMIENTO ALMACENADO Y VALIDACIONES
+
+// Validación
+const validateProductInput = async (input: ProductInput): Promise<string[]> => {
+  const errors: string[] = [];
+
+  if (!input.name?.trim()) errors.push('El nombre del producto es obligatorio.');
+  if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
+  if (!input.brand?.trim()) errors.push('La marca del producto es obligatoria.');
+  if (!input.images?.length) errors.push('Al menos una imagen del producto es obligatoria.');
+  if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');
+  if (!input.variants?.length) errors.push('El producto debe tener al menos una variante.');
+
+  input.variants?.forEach((v, i) => {
+    if (!v.price || v.price <= 0) errors.push(`El precio de la variante ${i + 1} debe ser mayor a 0.`);
+    if (!v.stock || v.stock < 0) errors.push(`El stock de la variante ${i + 1} no puede ser negativo.`);
+  });
+
+  // Validar y comprimir imagenes
+  for (let i = 0; i < input.images.length; i++) {
+    const img = input.images[i];
+    
+    if (!['image/jpeg', 'image/jpg', 'image/png' , 'image/webp'].includes(img.type)) {
+      errors.push(`La imagen ${i + 1} debe ser JPEG, JPG, PNG o WEBP.`);
+      continue;
+    }
+
+    // si la imagen es mayor a 1.5MB
+    if (img.size > 1.5 * 1024 * 1024) {
+      // Comprimir automáticamente
+      try {
+        const compressed = await compressImage(img, 1.5);
+        input.images[i] = compressed;
+      } catch (err) {
+        console.log(err);
+        errors.push(`No se pudo comprimir la imagen ${i + 1}.`);
+      }
+    }
+  }
+
+  return errors;
+};
+
+export const createProduct = async (productInput: ProductInput) => {
+  try {
+    // 1. Validar entrada
+    const validationErrors = await validateProductInput(productInput);
+    if (validationErrors.length > 0) {
+      throw new Error(validationErrors.join(' '));
+    }
+
+    // 2. Ejecutar el procedimiento almacenado (sin imagenes aun)
+    const procedureResult = await (supabase.rpc as any)(
+      'create_product_with_variants',
+      {
+        p_name: productInput.name.trim(),
+        p_brand: productInput.brand.trim(),
+        p_slug: productInput.slug.trim(),
+        p_features: productInput.features || [],
+        p_description: productInput.description ? JSON.parse(JSON.stringify(productInput.description)) : {},
+        p_variants: productInput.variants.map(v => ({
+          stock: v.stock,
+          price: v.price,
+          storage: v.storage || null,
+          color: v.color || null,
+          color_name: v.color_name || null,
+          finish: v.finish || null,
+        })),
+      }
+    );
+
+    if (procedureResult.error) throw new Error(procedureResult.error.message);
+
+    const result = (procedureResult.data as any)?.[0] as CreateProductRPCResult;
+    if (!result?.success || !result?.product_id) {
+      throw new Error(result?.message || 'Error desconocido al crear el producto.');
+    }
+
+    const productId = result.product_id;
+
+    // 3. Subir las imagenes al storage
+    const uploadedImages = await Promise.allSettled(
+      productInput.images.map(async (image) => {
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${image.name}`;
+        const filePath = `${productId}/${fileName}`;
+
+        const { data, error } = await supabase
+          .storage
+          .from('product-images')
+          .upload(filePath, image, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (error) throw new Error(`Error subiendo imagen: ${error.message}`);
+
+        const { data: publicUrlData } = supabase
+          .storage
+          .from('product-images')
+          .getPublicUrl(data.path);
+
+        return publicUrlData.publicUrl;
+      })
+    );
+
+    // Filtrar solo las imagenes subidas correctamente
+    const successfulImages = uploadedImages
+      .filter((result) => result.status === 'fulfilled')
+      .map((result) => (result as PromiseFulfilledResult<string>).value);
+
+    if (successfulImages.length === 0) {
+      await supabase.from('products').delete().eq('id', productId);
+      throw new Error('No se pudieron subir las imagenes del producto.');
+    }
+
+    // 4. Actualizar producto con imagenes
+    const { error: updateError } = await supabase
+      .from('products')
+      .update({ images: successfulImages })
+      .eq('id', productId);
+
+    if (updateError) {
+      await supabase.from('products').delete().eq('id', productId);
+      throw new Error(updateError.message);
+    }
+
+    // 5. Obtener y retornar el producto creado
+    const { data: product, error: fetchError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+
+    if (fetchError) throw new Error('Error al obtener el producto creado');
+
+    return product;
+
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error al crear el producto. Vuelve a intentarlo.');
+  }
+};
+
+
+
+// **************************************************************************************************
+// *************************************** ELIMINAR PRODUCTO ****************************************
+// *************************************** FORMA DEL VIDEO ******************************************
+// Eliminar producto
+// VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
+// DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
+export const deleteProduct = async (productId: string) => {
+
+  try {
+    
+    // 1. Eliminar las variantes asociadas al producto
+    const { error: variantsError } = await supabase
+      .from('variants')
+      .delete()
+      .eq('product_id', productId);
+
+      if (variantsError) throw new Error(variantsError.message);
+
+    // 2. Obtener las imagenes del producto para eliminarlas del storage
+    const { data: productImages, error: productImagesError } = await supabase
+      .from('products')
+      .select('images')
+      .eq('id', productId)
+      .single();
+
+    if (productImagesError) throw new Error(productImagesError.message);
+
+    // 3. Eliminar el producto
+    const { error: productDeleteError } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId);
+
+    if (productDeleteError) throw new Error(productDeleteError.message);
+
+    // 4. Eliminar las imagenes del storage
+    if (productImages.images.length > 0) {
+
+      const folnerName = productId;
+
+      const paths = productImages.images.map(image => {
+        const fileName = image.split('/').pop(); // obtener el nombre del archivo
+        return `${folnerName}/${fileName}`;
+      });
+
+      const { error: storageError } = await supabase
+        .storage
+        .from('product-images')
+        .remove(paths);
+
+      if (storageError) throw new Error(storageError.message);
+
+      return true;
+      
+    }
+    
+
+  } catch (error) {
+    console.log(error);
+    throw new Error('Error al eliminar el producto. vuelve a intentarlo.');
+  }  
+
+}
+
+// Actualizar producto
+// VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
+// DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
+export const updateProduct = async (productId: string, productInput: ProductInput) => {
+
+  try {
+    
+    // 1. Obtener las images actuales del producto
+    const { data: currentProduct, error: currentProductError } = await supabase
+      .from('products')
+      .select('images')
+      .eq('id', productId)
+      .single();
+
+    if (currentProductError) throw new Error(currentProductError.message);
+
+    const existingImages = currentProduct.images || [];
+
+    // 2. Actualizar la informacion inidividual del producto
+    const { data: updatedProduct, error: productError } = await supabase
+      .from('products')
+      .update({
+        name: productInput.name,
+        brand: productInput.brand,
+        slug: productInput.slug,
+        features: productInput.features,
+        description: productInput.description,
+      })
+      .eq('id', productId)
+      .select()
+      .single();
+
+    if (productError) throw new Error(productError.message);
+
+    // 3. Manejo de imagenes (SUBIR NUEVAS Y ELIMINAR ANTIGUAS SI ES NECESARIO)
+    const folderName = productId;
+
+    const validImages = productInput.images.filter(image => image);
+
+    // 3.1 identificar las imagenes que han sido eliminadas
+    // const imagesToDelete = existingImages.filter(image => !validImages.includes(image));
+    // validImages puede contener File | string, existingImages son strings (URLs),
+    // por lo que usamos .some y typeof para comparar solo las entradas string.
+    const imagesToDelete = existingImages.filter(image =>
+      !validImages.some(v => typeof v === 'string' && v === image)
+    );
+
+    // 3.2 obtener los paths de los archivos a eliminar
+    const filesToDelete = imagesToDelete.map(extractFilePath);
+
+    // 3.3 eliminar las imagenes del storage
+    if (filesToDelete.length > 0) {
+
+      const { error: deleteImagesError } = await supabase
+        .storage
+        .from('product-images')
+        .remove(filesToDelete);
+
+      if (deleteImagesError) throw new Error(deleteImagesError.message);
+
+    } else {
+      console.log(`Imagenes eliminadas: ${filesToDelete.join(', ')}`);
+    }
+
+    // 3.4 subir las nuevas imagenes al storage y construir el array final de imagenes actualizadas
+    const uploadedImages = await Promise.all(
+      validImages.map(async (image) => {
+
+        if (image instanceof File) {
+          // si la imagen no es una URL (es un archivo), entonces subirla al storage
+          const { data, error } = await supabase
+            .storage
+            .from('product-images')
+            .upload(`${folderName}/${productId}-${image.name}`, image);
+
+          if (error) throw new Error(error.message);
+
+          const imageUrl = await supabase
+            .storage
+            .from('product-images')
+            .getPublicUrl(data.path).data.publicUrl;
+
+          return imageUrl;
+
+        } else if (typeof image === 'string') {
+          return image; // si es una URL existente, mantenerla
+        } else {
+          throw new Error('Tipo de imagen no válido');
+        }
+
+      })
+    );
+
+    // 4. Actualizar el producto con las imagenes actualizadas
+    const { error: updateImagesError } = await supabase
+      .from('products')
+      .update({ images: uploadedImages })
+      .eq('id', productId);
+
+    if (updateImagesError) throw new Error(updateImagesError.message);
+
+    // 5. Actualizar las variantes del producto
+    const existingVariants = productInput.variants.filter(v => v.id);
+    const newVariants = productInput.variants.filter(v => !v.id);
+
+    // 5.1 modificar las variantes existentes
+    if (existingVariants.length > 0) {
+      
+      const { error: updatedVariantsError } = await supabase
+        .from('variants')
+        .upsert(
+          existingVariants.map(variant => ({
+            id: variant.id,
+            product_id: productId,
+            stock: variant.stock,
+            price: variant.price,
+            storage: variant.storage,
+            color: variant.color,
+            color_name: variant.color_name,
+            finish: variant.finish || null,
+          })), {
+            onConflict: 'id',
+          }
+        );
+
+      if (updatedVariantsError) throw new Error(updatedVariantsError.message);
+
+    }
+
+    // 5.2 crear y agregar las nuevas variantes
+    let newVariantIds: string[] = [];
+
+    if (newVariants.length > 0) {
+
+      const { data, error: insertVariantsError } = await supabase
+        .from('variants')
+        .insert(
+          newVariants.map(variant => ({
+            product_id: productId,
+            stock: variant.stock,
+            price: variant.price,
+            storage: variant.storage,
+            color: variant.color,
+            color_name: variant.color_name,
+            finish: variant.finish || null,
+          }))
+        ).select();
+
+      if (insertVariantsError) throw new Error(insertVariantsError.message);
+
+      newVariantIds = data.map(v => v.id);
+
+    }
+
+    // 5.3 combinar los ids de las variantes existentes y nuevas
+    const currentVariantIds = [
+      ...existingVariants.map(v => v.id),
+      ...newVariantIds || [],
+    ];
+
+    // 5.4 eliminar las variantes que no estan en la lista de IDs
+    const { error: deleteVariantsError } = await supabase
+      .from('variants')
+      .delete()
+      .eq('product_id', productId)
+      .not('id', 'in', `(${currentVariantIds ? currentVariantIds.join(',') : 0})`);
+
+    if (deleteVariantsError) throw new Error(deleteVariantsError.message);
+
+    return updatedProduct;
+
+  } catch (error) {
+    console.log(error);
+    throw new Error('Error al actualizar el producto. vuelve a intentarlo.');
+  }
+
+};

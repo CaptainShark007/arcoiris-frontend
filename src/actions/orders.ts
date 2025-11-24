@@ -42,8 +42,8 @@ export const createOrder = async (order: OrderInput) => {
         .insert({
           user_id: userId,
           email: userData.user.email!,
-          full_name: order.address.name || userData.user.user_metadata?.full_name || 'Cliente',
-          phone: order.address.phone || null,
+          full_name: userData.user.user_metadata?.full_name || 'Cliente',
+          phone: null,
         })
         .select('id')
         .single();
@@ -187,4 +187,183 @@ export const createOrder = async (order: OrderInput) => {
     console.error('Error completo en createOrder:', error);
     throw error;
   }
+};
+
+// metodo para obtener ordenes de un cliente
+export const getOrdersByCustomerId = async () => {
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error) {
+    console.log(error);
+    throw new Error('Error al obtener el usuario autenticado');
+  }
+
+  const { data: customer, error: customerError } = await supabase
+    .from('customers')
+    .select('id')
+    .eq('user_id', data.user.id)
+    .single();
+
+  if (customerError) {
+    console.log(customerError);
+    throw new Error('Error al obtener el cliente');
+  }
+
+  const customerId = customer.id;
+
+  const { data: orders, error: ordersError } = await supabase
+    .from('orders')
+    .select('id, total_amount, status, created_at')
+    .eq('customer_id', customerId)
+    .order('created_at', { ascending: false });
+
+  if (ordersError) {
+    console.log(ordersError);
+    throw new Error('Error al obtener las órdenes');
+  }
+
+  return orders;
+};
+
+// metodo para obtener los detalles de una orden
+export const getOrderById = async (orderId: number) => {
+  const { data, error: errorUsers } = await supabase.auth.getUser();
+
+  if (errorUsers) {
+    console.log(errorUsers);
+    throw new Error('Error al obtener el usuario autenticado');
+  }
+
+  const { data: customer, error: customerError } = await supabase
+    .from('customers')
+    .select('id')
+    .eq('user_id', data.user.id)
+    .single();
+
+  if (customerError) {
+    console.log(customerError);
+    throw new Error('Error al obtener el cliente');
+  }
+
+  const customerId = customer.id;
+
+  const { data: order, error } = await supabase
+    .from('orders')
+    .select(
+      '*, addresses(*), customers(full_name, email, phone), order_items(quantity, price, variants(color_name, storage, finish, products(name, images)))'
+    )
+    .eq('customer_id', customerId)
+    .eq('id', orderId)
+    .single();
+
+  if (error) {
+    console.log(error);
+    throw new Error('Error al obtener la orden');
+  }
+
+  return {
+    customer: {
+      email: order?.customers?.email,
+      full_name: order.customers?.full_name,
+      phone: order.customers?.phone,
+    },
+    totalAmount: order.total_amount,
+    status: order.status,
+    created_at: order.created_at,
+    address: {
+      addressLine1: order.addresses?.address_line1,
+      addressLine2: order.addresses?.address_line2,
+      city: order.addresses?.city,
+      state: order.addresses?.state,
+      postalCode: order.addresses?.postal_code,
+      country: order.addresses?.country,
+    },
+    orderItems: order.order_items.map((item) => ({
+      quantity: item.quantity,
+      price: item.price,
+      color_name: item.variants?.color_name,
+      finish: item.variants?.finish,
+      storage: item.variants?.storage,
+      productName: item.variants?.products?.name,
+      productImage: item.variants?.products?.images[0],
+    })),
+  };
+};
+
+// *********************************************************************************************
+//                                    ADMINISTRADOR
+// *********************************************************************************************
+export const getAllOrders = async () => {
+	const { data, error } = await supabase
+		.from('orders')
+		.select(
+			'id, total_amount, status, created_at, customers(full_name, email)'
+		)
+		.order('created_at', { ascending: false });
+
+	if (error) {
+		console.log(error);
+		throw new Error(error.message);
+	}
+
+	return data;
+};
+
+export const updateOrderStatus = async ({
+	id,
+	status,
+}: {
+	id: number;
+	status: string;
+}) => {
+	const { error } = await supabase
+		.from('orders')
+		.update({ status })
+		.eq('id', id);
+
+	if (error) {
+		console.log(error);
+		throw new Error(error.message);
+	}
+};
+
+export const getOrderByIdAdmin = async (id: number) => {
+	const { data: order, error } = await supabase
+		.from('orders')
+		.select(
+			'*, addresses(*), customers(full_name, email), order_items(quantity, price, variants(color_name, storage, products(name, images)))'
+		)
+		.eq('id', id)
+		.single();
+
+	if (error) {
+		console.log(error);
+		throw new Error(error.message);
+	}
+
+	return {
+		customer: {
+			email: order?.customers?.email,
+			full_name: order.customers?.full_name,
+		},
+		totalAmount: order.total_amount,
+		status: order.status,
+		created_at: order.created_at,
+		address: {
+			addressLine1: order.addresses?.address_line1,
+			addressLine2: order.addresses?.address_line2,
+			city: order.addresses?.city,
+			state: order.addresses?.state,
+			postalCode: order.addresses?.postal_code,
+			country: order.addresses?.country,
+		},
+		orderItems: order.order_items.map(item => ({
+			quantity: item.quantity,
+			price: item.price,
+			color_name: item.variants?.color_name,
+			storage: item.variants?.storage,
+			productName: item.variants?.products?.name,
+			productImage: item.variants?.products?.images[0],
+		})),
+	};
 };

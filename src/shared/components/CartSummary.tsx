@@ -1,53 +1,98 @@
-import { memo } from 'react';
-import { Box, Button, Divider, Paper, Typography } from '@mui/material';
+import { memo, useState } from 'react';
+import {
+  Box,
+  Button,
+  Divider,
+  Paper,
+  Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useCartStore } from '../../storage/useCartStore';
 import { formatPrice } from '@/helpers';
-import { ChevronRight, ChevronLeft } from '@mui/icons-material';
+import { ChevronRight, ChevronLeft, ExpandMore } from '@mui/icons-material';
+import { useCheckoutStore } from '@/storage/useCheckoutStore';
+import { useUsers } from '@shared/hooks';
 
 interface CartSummaryProps {
   activeStep?: number;
   onNext?: () => void;
   onBack?: () => void;
   onReset?: () => void;
-  onConfirmOrder?: () => void; // Nueva prop para confirmar orden
-  isProcessing?: boolean; // Nueva prop para estado de carga
+  onConfirmOrder?: () => void;
+  isProcessing?: boolean;
 }
 
-export const CartSummary = memo(({ 
-  activeStep = 0, 
-  onNext, 
-  onBack, 
+export const CartSummary = memo(({
+  activeStep = 0,
+  onNext,
+  onBack,
   onReset,
   onConfirmOrder,
-  isProcessing = false
+  isProcessing = false,
 }: CartSummaryProps) => {
   const navigate = useNavigate();
-  const { totalQuantity, totalPrice, clearCart } = useCartStore(
+  const { session, isLoading } = useUsers();
+  const [expandedAccordion, setExpandedAccordion] = useState<string | false>('panel-items');
+
+  const { totalQuantity, items, clearCart } = useCartStore(
     useShallow((state) => ({
       totalQuantity: state.totalQuantity,
       totalPrice: state.totalPrice,
+      items: state.items,
       clearCart: state.clearCart,
     }))
   );
+  const { clearCheckout, orderSummary } = useCheckoutStore();
 
   const handleContinueShopping = () => {
     navigate('/tienda');
   };
 
-  // Renderiza los botones según el paso activo
+  const handleClearReviewOrderDesktop = () => {
+    clearCart();
+    clearCheckout();
+  };
+
+  const handleResetDesktop = () => {
+    clearCart();
+    clearCheckout();
+    onReset?.();
+    navigate('/', { replace: true });
+  };
+
+  const handleViewOrdersHistory = () => {
+    navigate('/cuenta/pedidos');
+  };
+
+  const handleFinalizarCompra = () => {
+    if (!session) {
+      sessionStorage.setItem('redirectAfterLogin', '/verificar');
+      navigate('/acceder');
+    } else {
+      onNext?.();
+    }
+  };
+
   const renderButtons = () => {
     switch (activeStep) {
-      case 0: // Revisar orden
+      case 0:
         return (
           <>
             <Button
               variant='contained'
               size='large'
               fullWidth
-              onClick={onNext}
-              disabled={totalQuantity === 0}
+              onClick={handleFinalizarCompra}
+              disabled={totalQuantity === 0 || isLoading}
               endIcon={<ChevronRight />}
             >
               Finalizar compra
@@ -71,7 +116,7 @@ export const CartSummary = memo(({
           </>
         );
 
-      case 1: // Entrega
+      case 1:
         return (
           <>
             <Button
@@ -102,14 +147,14 @@ export const CartSummary = memo(({
           </>
         );
 
-      case 2: // Pago - AQUÍ ESTÁ EL CAMBIO PRINCIPAL
+      case 2:
         return (
           <>
             <Button
               variant='contained'
               size='large'
               fullWidth
-              onClick={onConfirmOrder} // Ahora llama a la función de confirmar orden
+              onClick={onConfirmOrder}
               disabled={isProcessing}
             >
               {isProcessing ? 'Procesando...' : 'Confirmar orden'}
@@ -134,14 +179,14 @@ export const CartSummary = memo(({
           </>
         );
 
-      case 3: // Confirmación
+      case 3:
         return (
           <>
             <Button
               variant='contained'
               size='large'
               fullWidth
-              onClick={() => window.location.href = '/orders/12345'}
+              onClick={handleViewOrdersHistory}
             >
               Ver detalles de la orden
             </Button>
@@ -156,7 +201,7 @@ export const CartSummary = memo(({
               variant='outlined'
               size='large'
               fullWidth
-              onClick={onReset}
+              onClick={handleResetDesktop}
             >
               Volver a inicio
             </Button>
@@ -187,26 +232,126 @@ export const CartSummary = memo(({
 
       <Divider sx={{ my: 2 }} />
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant='body1'>Productos ({totalQuantity})</Typography>
-        <Typography variant='body1'>{formatPrice(totalPrice)}</Typography>
-      </Box>
+      {/* ACORDEÓN CON LISTA DE PRODUCTOS */}
+      <Accordion
+        expanded={expandedAccordion === 'panel-items'}
+        onChange={() =>
+          setExpandedAccordion(
+            expandedAccordion === 'panel-items' ? false : 'panel-items'
+          )
+        }
+        sx={{
+          boxShadow: 'none',
+          border: 1,
+          borderRadius: 1,
+          borderColor: 'divider',
+          mb: 2,
+          //bgcolor: 'red'
+        }}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMore />}
+          sx={{
+            bgcolor: 'action.hover',
+            '&:hover': {
+              bgcolor: 'action.selected',
+            },
+            borderColor: 'divider',
+            borderTopLeftRadius: 1,
+            borderTopRightRadius: 1,
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', pr: 2 }}>
+            <Typography variant='body1' sx={{ fontWeight: 600 }}>
+              Productos ({orderSummary?.totalItems ?? 0})
+            </Typography>
+            <Typography variant='body1' sx={{ fontWeight: 600 }}>
+              {formatPrice(orderSummary?.totalPrice ?? 0)}
+            </Typography>
+          </Box>
+        </AccordionSummary>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant='body1'>Envío</Typography>
-        <Typography variant='body1' color='success.main'>
-          Gratis
-        </Typography>
-      </Box>
+        <AccordionDetails sx={{ p: 0 }}>
+          {/* Tabla con scroll fijo */}
+          <TableContainer
+            sx={{
+              maxHeight: 340,
+              overflowY: 'auto',
+              '&::-webkit-scrollbar': {
+                width: '8px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: '#f1f1f1',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: '#888',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-thumb:hover': {
+                background: '#555',
+              },
+            }}
+          >
+            <Table stickyHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id} sx={{ '&:last-child td': { border: 0 } }}>
+                    <TableCell sx={{ width: 70, pr: 1, borderBottom: 1, borderColor: 'divider' }}>
+                      <Box
+                        component='img'
+                        src={item.image}
+                        alt={item.name}
+                        sx={{
+                          width: 56,
+                          height: 56,
+                          objectFit: 'contain',
+                          borderRadius: 1,
+                        }}
+                      />
+                    </TableCell>
 
-      <Divider sx={{ my: 2 }} />
+                    <TableCell sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                      {/* <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 0.5 }}>
+                        {item.name}
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary'>
+                        {item.variant?.color}/{item.variant?.storage}/{item.variant?.finish}<br />
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary'>
+                        Cantidad: {item.quantity}
+                      </Typography> */}
+                      <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 1 }}>
+                        {item.name}
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 0.5 }}>
+                        {item.variant?.color} - {item.variant?.storage} - {item.variant?.finish}
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary' sx={{ display: 'block' }}>
+                        Cantidad: {item.quantity}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell align='right' sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                      <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
+                        {formatPrice(item.price * item.quantity)}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </AccordionDetails>
+      </Accordion>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant='h6' fontWeight='bold'>
           Total
         </Typography>
         <Typography variant='h6' fontWeight='bold' color='primary'>
-          {formatPrice(totalPrice)}
+          {formatPrice(orderSummary?.totalPrice ?? 0)}
         </Typography>
       </Box>
 
@@ -218,7 +363,7 @@ export const CartSummary = memo(({
             variant='text'
             size='medium'
             fullWidth
-            onClick={clearCart}
+            onClick={handleClearReviewOrderDesktop}
             color='error'
             sx={{ mt: 1 }}
           >

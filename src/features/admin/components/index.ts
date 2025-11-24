@@ -1,0 +1,16 @@
+export * from './Sidebar';
+export * from './TableProduct';
+export * from './CellTableProduct';
+export * from './FormProduct';
+export * from './SectionFormProduct';
+export * from './InputForm';
+export * from './FeaturesInput';
+export * from './VariantsInput';
+export * from './UploaderImages';
+export * from './Editor';
+
+// Categories
+export * from './CategoriesModal';
+
+// Orders
+export * from './TableOrdersAdmin';
