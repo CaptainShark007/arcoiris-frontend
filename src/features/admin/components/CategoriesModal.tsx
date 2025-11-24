@@ -80,12 +80,12 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ fontWeight: 'bold', pb: 2 }}>
+      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth >
+        <DialogTitle sx={{ fontWeight: 'bold', pb: 2, borderBottom: '1px solid #e5e7eb', bgcolor: '#f9fafb' }}>
           Gestión de Categorías
         </DialogTitle>
 
-        <DialogContent sx={{ minHeight: 400 }}>
+        <DialogContent sx={{ minHeight: 400, bgcolor: '#f9fafb' }}>
           {isLoading ? (
             <Box
               sx={{
@@ -98,7 +98,7 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
               <CircularProgress />
             </Box>
           ) : (
-            <Box sx={{ width: '100%', overflow: 'auto' }}>
+            <Box sx={{ width: '100%', overflow: 'auto', bgcolor: '#f9fafb', p: 2, mt: 2, border: '1px solid #e5e7eb', borderRadius: 1 }}>
               <Table size="small">
                 <TableHead>
                   <TableRow>
@@ -188,7 +188,7 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
           )}
         </DialogContent>
 
-        <DialogActions sx={{ p: 2, gap: 1 }}>
+        <DialogActions sx={{ p: 2, gap: 1, bgcolor: '#f9fafb', borderTop: '1px solid #e5e7eb' }}>
           <Button
             variant="contained"
             startIcon={<AddIcon />}

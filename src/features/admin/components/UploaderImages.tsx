@@ -145,16 +145,17 @@ export const UploaderImages = ({
 			</Button>
 
 			{/* Galería de imágenes */}
-			<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+			<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, p: 1 }}>
 				{images.map((image, index) => (
 					<Box
 						key={index}
 						sx={{
-							flex: '0 0 calc(25% - 12px)',
+							flex: '0 0 calc(30% - 12px)',
 							'@media (max-width: 600px)': {
 								flex: '0 0 calc(50% - 8px)',
 							},
 							position: 'relative',
+							//bgcolor: 'blue',
 						}}
 					>
 						<Box
@@ -162,7 +163,7 @@ export const UploaderImages = ({
 								position: 'relative',
 								width: '100%',
 								paddingBottom: '100%',
-								border: '1px solid #e5e7eb',
+								//border: '1px solid #e5e7eb',
 								borderRadius: 1,
 								overflow: 'hidden',
 							}}
@@ -185,8 +186,8 @@ export const UploaderImages = ({
 								onClick={() => handleRemoveImage(index)}
 								sx={{
 									position: 'absolute',
-									top: -8,
-									right: -8,
+									top: -1,
+									right: -1,
 									minWidth: 'auto',
 									p: 0,
 									'&:hover': { transform: 'scale(1.1)' },

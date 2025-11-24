@@ -14,6 +14,7 @@ import { useCreateCategory, useUpdateCategory } from '@features/admin/hooks';
 import { generateCategorySlug } from '@/actions/categories';
 import toast from 'react-hot-toast';
 import { compressImageCategory } from '@/helpers';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 interface CategoryFormModalProps {
   open: boolean;
@@ -28,7 +29,6 @@ export const CategoryFormModal = ({
   mode,
   category,
 }: CategoryFormModalProps) => {
-
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
   const { mutate: updateCategory, isPending: isUpdating } = useUpdateCategory();
 
@@ -77,7 +77,11 @@ export const CategoryFormModal = ({
       const file = e.target.files[0];
 
       // Validar tipo
-      if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+      if (
+        !['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
+          file.type
+        )
+      ) {
         toast.error('Solo se permiten imágenes JPEG, PNG o WEBP');
         return;
       }
@@ -157,53 +161,74 @@ export const CategoryFormModal = ({
   const isPending = isCreating || isUpdating || isCompressing;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth sx={{ gap: 2 }}>
-      <DialogTitle sx={{ fontWeight: 'bold' }}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='sm'
+      fullWidth
+      sx={{ gap: 2 }}
+    >
+      <DialogTitle
+        sx={{
+          fontWeight: 'bold',
+          bgcolor: '#f9fafb',
+          borderBottom: '1px solid #e5e7eb',
+        }}
+      >
         {mode === 'create' ? 'Crear Categoría' : 'Editar Categoría'}
       </DialogTitle>
 
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+      <DialogContent
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          pt: 2,
+          bgcolor: '#f9fafb',
+          borderBottom: '1px solid #e5e7eb',
+        }}
+      >
         {/* Nombre */}
         <TextField
           fullWidth
-          label="Nombre"
+          label='Nombre'
           value={formData.name}
           onChange={handleNameChange}
           disabled={isPending}
-          size="small"
-          sx={{ mt: 1}}
+          size='small'
+          sx={{ mt: 2 }}
           required
         />
 
         {/* Slug */}
         <TextField
           fullWidth
-          label="Slug"
+          label='Slug'
           value={formData.slug}
           onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
           disabled={isPending}
-          size="small"
-          helperText="Se genera automáticamente desde el nombre"
+          size='small'
+          helperText='Se genera automáticamente desde el nombre'
           required
         />
 
         {/* Descripción */}
         <TextField
           fullWidth
-          label="Descripción (opcional)"
+          label='Descripción (opcional)'
           value={formData.description}
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
           }
           disabled={isPending}
-          size="small"
+          size='small'
           multiline
           rows={3}
         />
 
         {/* Imagen */}
         <Box>
-          <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+          <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
             Imagen de la Categoría
           </Typography>
 
@@ -220,9 +245,9 @@ export const CategoryFormModal = ({
               }}
             >
               <Box
-                component="img"
+                component='img'
                 src={formData.imagePreview}
-                alt="Preview"
+                alt='Preview'
                 sx={{
                   width: '100%',
                   height: '100%',
@@ -231,30 +256,25 @@ export const CategoryFormModal = ({
                 }}
               />
               <Button
-                size="small"
                 onClick={handleRemoveImage}
                 disabled={isPending}
                 sx={{
                   position: 'absolute',
-                  top: 4,
-                  right: 4,
-                  backgroundColor: '#ef4444',
-                  color: 'white',
-                  '&:hover': { backgroundColor: '#dc2626' },
+                  top: 2,
+                  right: 2,
                   minWidth: 'auto',
-                  padding: '4px 8px',
-                  fontSize: '0.65rem',
-                  borderRadius: '100%',
+                  p: 0,
+                  '&:hover': { transform: 'scale(1.1)' },
                 }}
               >
-                X
+                <CancelIcon sx={{ color: '#ef4444', fontSize: '1.5rem' }} />
               </Button>
             </Box>
           )}
 
           <Button
-            component="label"
-            variant="outlined"
+            component='label'
+            variant='outlined'
             disabled={isPending || isCompressing}
             fullWidth
             sx={{ textTransform: 'none' }}
@@ -268,35 +288,50 @@ export const CategoryFormModal = ({
               'Seleccionar Imagen'
             )}
             <input
-              type="file"
-              accept="image/*"
+              type='file'
+              accept='image/*'
               hidden
               onChange={handleImageChange}
               disabled={isPending || isCompressing}
             />
           </Button>
 
-          <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#6b7280' }}>
-            Solo puedes subir 1 sola imagene por categoría. Formatos permitidos: JPEG, PNG, WEBP.
+          <Typography
+            variant='caption'
+            sx={{ display: 'block', mt: 1, color: '#6b7280' }}
+          >
+            Solo puedes subir 1 sola imagene por categoría. Formatos permitidos:
+            JPEG, PNG, WEBP.
           </Typography>
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, gap: 1 }}>
+      <DialogActions
+        sx={{
+          p: 2,
+          gap: 1,
+          bgcolor: '#f9fafb',
+          borderTop: '1px solid #e5e7eb',
+        }}
+      >
         <Button
-          variant="outlined"
+          variant='outlined'
           onClick={onClose}
           disabled={isPending || isCompressing}
         >
           Cancelar
         </Button>
         <Button
-          variant="contained"
+          variant='contained'
           onClick={handleSave}
           disabled={isPending || isCompressing}
           sx={{ backgroundColor: '#0007d7ff' }}
         >
-          {isPending ? 'Guardando...' : mode === 'create' ? 'Crear' : 'Actualizar'}
+          {isPending
+            ? 'Guardando...'
+            : mode === 'create'
+              ? 'Crear'
+              : 'Actualizar'}
         </Button>
       </DialogActions>
     </Dialog>

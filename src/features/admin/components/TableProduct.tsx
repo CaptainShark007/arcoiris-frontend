@@ -38,7 +38,6 @@ const tableHeaders = [
 ];
 
 export const TableProduct = () => {
-
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{
     id: string;
@@ -46,7 +45,7 @@ export const TableProduct = () => {
     variantsCount: number;
     imagesCount: number;
   } | null>(null);
-  
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [selectedVariants, setSelectedVariants] = useState<{
@@ -62,9 +61,13 @@ export const TableProduct = () => {
 
   const { mutate: deleteProduct, isPending } = useDeleteProduct();
 
-  const { mutate: updateProductCategory, isPending: isUpdatingCategory } = useUpdateProductCategory();
+  const { mutate: updateProductCategory, isPending: isUpdatingCategory } =
+    useUpdateProductCategory();
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, index: number) => {
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    index: number
+  ) => {
     setAnchorEl(event.currentTarget);
     setOpenMenuIndex(index);
   };
@@ -117,8 +120,19 @@ export const TableProduct = () => {
   if (!products || isLoading || !totalProducts || isPending) return <Loader />;
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', flex: 1, p: 2.5, bgcolor: 'white', mb: 4 }}>
-      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+    <Card
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        p: 2.5,
+        bgcolor: '#F9FAFB',
+        mb: 4,
+        boxShadow: 'none',
+        border: '1px solid #E5E7EB',
+      }}
+    >
+      <Typography variant='h6' sx={{ fontWeight: 'bold', mb: 0.5 }}>
         Gestión de Productos
       </Typography>
 
@@ -148,21 +162,29 @@ export const TableProduct = () => {
             {products.map((product, index) => {
               const selectedVariantIndex = selectedVariants[product.id] ?? 0;
               const selectedVariant = product.variants[selectedVariantIndex];
-              const selectedCategory = categories.find((cat) => cat.id === product.category_id);
+              const selectedCategory = categories.find(
+                (cat) => cat.id === product.category_id
+              );
 
               const categoryOptions = [
                 { id: 'clear', name: 'Sin categoría' },
                 ...categories,
-              ]
+              ];
 
               return (
-                <TableRow key={index} sx={{ borderBottom: '1px solid #f3f4f6' }}>
+                <TableRow
+                  key={index}
+                  sx={{ borderBottom: '1px solid #f3f4f6' }}
+                >
                   <TableCell sx={{ p: 2 }}>
                     <Box
-                      component="img"
-                      src={product.images[0] || 'https://ui.shadcn.com/placeholder.svg'}
-                      alt="Imagen Product"
-                      loading="lazy"
+                      component='img'
+                      src={
+                        product.images[0] ||
+                        'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
+                      }
+                      alt='Imagen Product'
+                      loading='lazy'
                       sx={{
                         width: 64,
                         height: 64,
@@ -172,11 +194,15 @@ export const TableProduct = () => {
                     />
                   </TableCell>
                   <CellTableProduct content={product.name} />
-                  <TableCell sx={{ fontWeight: 500, letterSpacing: '-0.025em' }}>
+                  <TableCell
+                    sx={{ fontWeight: 500, letterSpacing: '-0.025em' }}
+                  >
                     <Select
                       value={selectedVariantIndex}
-                      onChange={e => handleVariantChange(product.id, Number(e.target.value))}
-                      size="small"
+                      onChange={(e) =>
+                        handleVariantChange(product.id, Number(e.target.value))
+                      }
+                      size='small'
                       fullWidth
                       sx={{
                         fontSize: '0.875rem',
@@ -204,8 +230,17 @@ export const TableProduct = () => {
                       })}
                     </Select>
                   </TableCell>
-                  <CellTableProduct content={formatPrice(selectedVariant.price)} sx={{ fontWeight: 'bold' }} />
-                  <TableCell sx={{ fontWeight: 500, letterSpacing: '-0.025em', minWidth: 200 }}>
+                  <CellTableProduct
+                    content={formatPrice(selectedVariant.price)}
+                    sx={{ fontWeight: 'bold' }}
+                  />
+                  <TableCell
+                    sx={{
+                      fontWeight: 500,
+                      letterSpacing: '-0.025em',
+                      minWidth: 200,
+                    }}
+                  >
                     <Autocomplete
                       options={categoryOptions}
                       getOptionLabel={(option) => {
@@ -226,9 +261,9 @@ export const TableProduct = () => {
                         }
                       }}
                       loading={isCategoriesLoading || isUpdatingCategory}
-                      size="small"
+                      size='small'
                       fullWidth
-                      noOptionsText="No hay categorías"
+                      noOptionsText='No hay categorías'
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           fontSize: '0.875rem',
@@ -237,13 +272,15 @@ export const TableProduct = () => {
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          placeholder="Asignar categoría"
-                          size="small"
+                          placeholder='Asignar categoría'
+                          size='small'
                         />
                       )}
                     />
                   </TableCell>
-                  <CellTableProduct content={selectedVariant.stock.toString()} />
+                  <CellTableProduct
+                    content={selectedVariant.stock.toString()}
+                  />
                   <CellTableProduct content={formatDate(product.created_at)} />
                   <TableCell sx={{ position: 'relative' }}>
                     <Button
@@ -304,12 +341,11 @@ export const TableProduct = () => {
           onConfirm={handleConfirmDelete}
           onCancel={() => {
             setDeleteModalOpen(false);
-            setProductToDelete(null)
+            setProductToDelete(null);
           }}
           isLoading={isPending}
         />
       )}
-
     </Card>
   );
 };
