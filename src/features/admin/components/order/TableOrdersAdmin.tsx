@@ -80,7 +80,8 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
                     {order.customers?.full_name}
                   </Typography>
                   <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                    {order.customers?.email}
+                    {/* {order.customers?.email} */}
+                    {[order.customers?.email, order.customers?.phone].filter(Boolean).join(' | ')}
                   </Typography>
                 </Box>
               </TableCell>

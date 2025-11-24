@@ -297,7 +297,7 @@ export const getAllOrders = async () => {
 	const { data, error } = await supabase
 		.from('orders')
 		.select(
-			'id, total_amount, status, created_at, customers(full_name, email)'
+			'id, total_amount, status, created_at, customers(full_name, email, phone)'
 		)
 		.order('created_at', { ascending: false });
 

@@ -132,3 +132,15 @@ export const getCustomerByUserId = async (userId: string) => {
 
   return data;
 }
+
+export const subscribeToAuthStateChange = (callback: (event: string, session: any) => void) => {
+
+  const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+  });
+
+  return () => {
+    listener.subscription.unsubscribe();
+  };
+
+}

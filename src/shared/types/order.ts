@@ -30,5 +30,6 @@ export interface OrderWithCustomer {
 	customers: {
 		full_name: string;
 		email: string;
+    phone: string | null;
 	} | null;
 }
