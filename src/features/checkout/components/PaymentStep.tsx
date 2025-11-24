@@ -5,8 +5,9 @@ import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
-import { enviarEmailOrden } from '@/services/emailService';
-import { useCustomer, useUsers } from '@shared/hooks';
+// DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
+//import { enviarEmailOrden } from '@/services/emailService';
+//import { useCustomer, useUsers } from '@shared/hooks';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -24,11 +25,10 @@ export const PaymentStep = ({
   isProcessingRef
 }: PaymentStepProps) => {
 
-  const { session, isLoading } = useUsers();
-
-  const userId = session?.user?.id;
-
-  const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
+  // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
+  //const { session, isLoading } = useUsers();
+  //const userId = session?.user?.id;
+  //const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
 
   const [selected, setSelected] = useState<'acordar'>('acordar');
 
@@ -46,10 +46,10 @@ export const PaymentStep = ({
     // ============================================================
     // ENVÍO DE EMAIL
     // ============================================================
-    try {
+    /* try {
       await enviarEmailOrden({
         id: response.orderId,
-        email: "eliasdiegogomez37@gmail.com", // siempre se envia al email del admin
+        email: customer?.email || '',
         nombreCliente: customer?.full_name || 'Cliente',
         total: orderSummary?.totalPrice ?? 0,
         items: (orderSummary?.items ?? []).map(item => ({
@@ -57,6 +57,14 @@ export const PaymentStep = ({
           cantidad: item.quantity,
           precio: item.price,
         })),
+        addressLine1: shippingInfo?.addressLine1 || '',
+        addressLine2: shippingInfo?.addressLine2 || '',
+        city: shippingInfo?.city || '',
+        state: shippingInfo?.state || '',
+        postalCode: shippingInfo?.postalCode || '',
+        country: shippingInfo?.country || '',
+        shippingMethod: shippingMethod || 'acordar',
+        customerPhone: customer?.phone || '',
       });
       console.log('Email enviado exitosamente');
     } catch (emailError) {
@@ -64,7 +72,7 @@ export const PaymentStep = ({
       toast.error('Orden creada pero hubo un error al enviar el email de confirmación', {
         position: 'bottom-right',
       });
-    }
+    } */
     // ============================================================
 
     // Navegar al siguiente paso
@@ -87,12 +95,13 @@ export const PaymentStep = ({
   const handleConfirm = useCallback( async () => {
 
     // Validar que los datos del cliente se hayan cargado
-    if (isLoadingCustomer) {
+    // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
+    /* if (isLoadingCustomer) {
       toast.error('Por favor espera mientras se cargan tus datos', {
         position: 'bottom-right',
       });
       return;
-    }
+    } */
 
     // Validar que la información de envío esté completa
     if (!shippingInfo) {
@@ -115,7 +124,7 @@ export const PaymentStep = ({
     // ============================================================
     
     // Mostrar toast de procesamiento
-    toast.loading('Procesando tu orden...', {
+    /* toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'bottom-right',
       duration: Infinity,
@@ -145,13 +154,13 @@ export const PaymentStep = ({
     // Cerrar toast después de que la mutación termine
     setTimeout(() => {
       toast.dismiss('order-processing');
-    }, 100);
+    }, 100); */
 
     // ============================================================
     // OPCIÓN 2: SIMULACIÓN (Para pruebas sin ejecutar SP)
     // Comenta esta sección cuando uses OPCIÓN 1
     // ============================================================
-    /* toast.loading('Procesando tu orden...', {
+    toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'bottom-right',
       duration: 1500,
@@ -167,9 +176,9 @@ export const PaymentStep = ({
       });
 
       onNext();
-    }, 1500); */
+    }, 1500);
 
-  }, [shippingInfo, orderSummary, createOrder, setOrderId, clearCart, onNext, isLoadingCustomer]);
+  }, [shippingInfo, orderSummary, createOrder, setOrderId, clearCart, onNext]); // , isLoadingCustomer
 
   // Actualizar ref con la función de confirmar
   useEffect(() => {
@@ -296,7 +305,7 @@ export const PaymentStep = ({
           variant="outlined" 
           onClick={onBack} 
           fullWidth
-          disabled={isPending || isLoading || isLoadingCustomer}
+          disabled={isPending} // || isLoading || isLoadingCustomer
         >
           Volver
         </Button>
@@ -309,7 +318,7 @@ export const PaymentStep = ({
             position: 'relative',
           }}
         >
-          {isPending ? 'Procesando...' : isLoading || isLoadingCustomer ? 'Cargando datos...' : 'Confirmar orden'}
+          {isPending ? 'Procesando...' : 'Confirmar orden'} {/* isLoading || isLoadingCustomer ? 'Cargando datos...'  */}
         </Button>
       </Box>
     </Box>
