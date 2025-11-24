@@ -458,7 +458,7 @@ export const createProduct = async (productInput: ProductInput) => {
 // Eliminar producto
 // VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
 // DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
-export const deleteProduct = async (productId: string) => {
+/* export const deleteProduct = async (productId: string) => {
 
   try {
     
@@ -514,7 +514,53 @@ export const deleteProduct = async (productId: string) => {
     throw new Error('Error al eliminar el producto. vuelve a intentarlo.');
   }  
 
-}
+} */
+
+// ***********************************************************************************************
+// *********************************** ACTUALIZAR PRODUCTO ***************************************
+// *************************************** NUEVA FORMA *******************************************
+export const deleteProduct = async (productId: string) => {
+  try {
+    // 1. Obtener imágenes ANTES de eliminar en BD
+    const { data: product, error: imgError } = await supabase
+      .from('products')
+      .select('images')
+      .eq('id', productId)
+      .single();
+
+    if (imgError) throw imgError;
+
+    // 2. Borrar en BD - transacción atómica
+    const { error: dbError } = await (supabase.rpc as any)('delete_product_cascade', {
+      p_product_id: productId,
+    });
+
+    if (dbError) throw dbError;
+
+    // 3. Eliminar archivos del Storage
+    if (product?.images?.length > 0) {
+      const folder = productId;
+
+      const paths = product.images.map((url) => {
+        const fileName = url.split('/').pop();
+        return `${folder}/${fileName}`;
+      });
+
+      const { error: storageError } = await supabase
+        .storage
+        .from('product-images')
+        .remove(paths);
+
+      if (storageError) throw storageError;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    throw new Error('No se pudo eliminar el producto.');
+  }
+};
+
 
 // ***************************************************************************************************
 // ************************************ ACTUALIZAR PRODUCTO ******************************************
