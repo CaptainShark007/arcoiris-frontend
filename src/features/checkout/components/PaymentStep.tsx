@@ -44,28 +44,26 @@ export const PaymentStep = ({
     clearCart();
 
     // ============================================================
-    // ENVÍO DE EMAIL (Solo si selecciona 'ACORDAR')
+    // ENVÍO DE EMAIL
     // ============================================================
-    if (shippingMethod === 'acordar') {
-      try {
-        await enviarEmailOrden({
-          id: response.orderId,
-          email: "eliasdiegogomez37@gmail.com", // siempre se envia al email del admin
-          nombreCliente: customer?.full_name || 'Cliente',
-          total: orderSummary?.totalPrice ?? 0,
-          items: (orderSummary?.items ?? []).map(item => ({
-            nombre: item.name,
-            cantidad: item.quantity,
-            precio: item.price,
-          })),
-        });
-        console.log('Email enviado exitosamente');
-      } catch (emailError) {
-        console.error('Error al enviar email:', emailError);
-        toast.error('Orden creada pero hubo un error al enviar el email de confirmación', {
-          position: 'bottom-right',
-        });
-      }
+    try {
+      await enviarEmailOrden({
+        id: response.orderId,
+        email: "eliasdiegogomez37@gmail.com", // siempre se envia al email del admin
+        nombreCliente: customer?.full_name || 'Cliente',
+        total: orderSummary?.totalPrice ?? 0,
+        items: (orderSummary?.items ?? []).map(item => ({
+          nombre: item.name,
+          cantidad: item.quantity,
+          precio: item.price,
+        })),
+      });
+      console.log('Email enviado exitosamente');
+    } catch (emailError) {
+      console.error('Error al enviar email:', emailError);
+      toast.error('Orden creada pero hubo un error al enviar el email de confirmación', {
+        position: 'bottom-right',
+      });
     }
     // ============================================================
 
