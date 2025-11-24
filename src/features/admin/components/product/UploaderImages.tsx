@@ -212,7 +212,7 @@ export const UploaderImages = ({
 			{/* Mensaje informativo */}
 			{images.length === 0 && !errors.images && (
 				<Typography variant="body2" sx={{ color: '#9ca3af', fontSize: '0.75rem' }}>
-					Carga mínimo 1 imagen y máximo 3 imágenes del producto
+					El nombre de la imagen no debe contener caracteres especiales.
 				</Typography>
 			)}
 		</Box>
