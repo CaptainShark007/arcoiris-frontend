@@ -122,3 +122,58 @@ export const compressImage = async (file: File, maxSizeMB: number = 2): Promise<
     reader.readAsDataURL(file);
   });
 };
+
+// Comprimir imagen
+export const compressImageCategory = async (file: File, maxSizeMB: number = 1.5): Promise<File> => {
+  return new Promise((resolve) => { // reject
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Reducir tamaño si es muy grande
+        if (width > 1500 || height > 1500) {
+          const ratio = Math.min(1500 / width, 1500 / height);
+          width *= ratio;
+          height *= ratio;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Comprimir hasta llegar al tamaño máximo
+        let quality = 0.9;
+        canvas.toBlob(
+          (blob) => {
+            if (blob && blob.size > maxSizeMB * 1024 * 1024 && quality > 0.1) {
+              quality -= 0.1;
+              canvas.toBlob(
+                (retryBlob) => {
+                  resolve(new File([retryBlob!], file.name, { type: 'image/jpeg' }));
+                },
+                'image/jpeg',
+                quality
+              );
+            } else {
+              resolve(new File([blob!], file.name, { type: 'image/jpeg' }));
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      
+      img.src = e.target?.result as string;
+    };
+    
+    reader.readAsDataURL(file);
+  });
+};

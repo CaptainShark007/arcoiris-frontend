@@ -12,7 +12,8 @@ import {
 import { formatDateLong, formatPrice } from '@/helpers';
 import { OrderWithCustomer } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
-import { useChangeStatusOrder } from '../hooks';
+import { useChangeStatusOrder } from '@features/admin/hooks';
+
 
 const tableHeaders = ['Cliente', 'Fecha', 'Estado', 'Total'];
 

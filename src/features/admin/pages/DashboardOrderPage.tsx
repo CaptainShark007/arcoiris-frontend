@@ -130,7 +130,8 @@ const DashboardOrderPage = () => {
                         <Typography
                           sx={{ fontSize: '0.75rem', color: '#6b7280' }}
                         >
-                          {item.color_name} / {item.storage}
+                          {/* {item.color_name} / {item.storage} / {item.finish} */}
+                          {[item.color_name, item.storage, item.finish].filter(Boolean).join(' • ')}
                         </Typography>
                         <Typography
                           sx={{ fontWeight: 600, fontSize: '0.875rem' }}
