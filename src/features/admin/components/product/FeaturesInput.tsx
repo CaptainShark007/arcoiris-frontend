@@ -1,8 +1,8 @@
 import React from 'react';
 import { Control, FieldErrors, useFieldArray } from 'react-hook-form';
 import { useState } from 'react';
-import { ProductFormValues } from '../schema/productSchema';
 import { Box, TextField, Button, Typography, List } from '@mui/material';
+import { ProductFormValues } from '@features/admin/schema/productSchema';
 
 interface Props {
 	control: Control<ProductFormValues>;

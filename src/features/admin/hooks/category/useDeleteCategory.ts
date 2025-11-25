@@ -6,7 +6,8 @@ export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: deleteCategory,
+    mutationFn: ({ id, imageUrl }: { id: string; imageUrl?: string | null }) =>
+      deleteCategory(id, imageUrl),
     onSuccess: () => {
       toast.success('Categoría eliminada correctamente');
       queryClient.invalidateQueries({ queryKey: ['all-categories'] });

@@ -12,7 +12,8 @@ import {
 import { formatDateLong, formatPrice } from '@/helpers';
 import { OrderWithCustomer } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
-import { useChangeStatusOrder } from '../hooks';
+import { useChangeStatusOrder } from '@features/admin/hooks';
+
 
 const tableHeaders = ['Cliente', 'Fecha', 'Estado', 'Total'];
 
@@ -79,7 +80,8 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
                     {order.customers?.full_name}
                   </Typography>
                   <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                    {order.customers?.email}
+                    {/* {order.customers?.email} */}
+                    {[order.customers?.email, order.customers?.phone].filter(Boolean).join(' | ')}
                   </Typography>
                 </Box>
               </TableCell>

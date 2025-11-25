@@ -14,8 +14,9 @@ const DashboardProductsPage = () => {
         <Button
           variant="contained"
           onClick={() => setCategoriesModalOpen(true)}
+          startIcon={<AddCircleIcon />}
           sx={{
-            backgroundColor: '#6b7280',
+            backgroundColor: '#0007d7ff',
             py: 0.75,
             px: 1,
             fontSize: '0.875rem',

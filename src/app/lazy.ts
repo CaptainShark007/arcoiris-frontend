@@ -15,3 +15,4 @@ export const DashboardNewProductPage = lazy(() => import('../features/admin/page
 export const DashboardProductSlugPage = lazy(() => import('../features/admin/pages/DashboardProductSlugPage'));
 export const DashboardOrdersPage = lazy(() => import('../features/admin/pages/DashboardOrdersPage'));
 export const DashboardOrderPage = lazy(() => import('../features/admin/pages/DashboardOrderPage'));
+export const DashboardPartnersPage = lazy(() => import('../features/admin/pages/DashboardPartnersPage'));

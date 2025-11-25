@@ -458,7 +458,7 @@ export const createProduct = async (productInput: ProductInput) => {
 // Eliminar producto
 // VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
 // DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
-export const deleteProduct = async (productId: string) => {
+/* export const deleteProduct = async (productId: string) => {
 
   try {
     
@@ -514,12 +514,60 @@ export const deleteProduct = async (productId: string) => {
     throw new Error('Error al eliminar el producto. vuelve a intentarlo.');
   }  
 
-}
+} */
 
-// Actualizar producto
+// ***********************************************************************************************
+// *********************************** ACTUALIZAR PRODUCTO ***************************************
+// *************************************** NUEVA FORMA *******************************************
+export const deleteProduct = async (productId: string) => {
+  try {
+    // 1. Obtener imágenes ANTES de eliminar en BD
+    const { data: product, error: imgError } = await supabase
+      .from('products')
+      .select('images')
+      .eq('id', productId)
+      .single();
+
+    if (imgError) throw imgError;
+
+    // 2. Borrar en BD - transacción atómica
+    const { error: dbError } = await (supabase.rpc as any)('delete_product_cascade', {
+      p_product_id: productId,
+    });
+
+    if (dbError) throw dbError;
+
+    // 3. Eliminar archivos del Storage
+    if (product?.images?.length > 0) {
+      const folder = productId;
+
+      const paths = product.images.map((url) => {
+        const fileName = url.split('/').pop();
+        return `${folder}/${fileName}`;
+      });
+
+      const { error: storageError } = await supabase
+        .storage
+        .from('product-images')
+        .remove(paths);
+
+      if (storageError) throw storageError;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    throw new Error('No se pudo eliminar el producto.');
+  }
+};
+
+
+// ***************************************************************************************************
+// ************************************ ACTUALIZAR PRODUCTO ******************************************
+// *************************************** FORMA DEL VIDEO *******************************************
 // VER LA FORMA DE HACERLO TRANSACCIONAL PARA QUE SI FALLA UNA PARTE NO QUEDE INCOMPLETO
 // DE MOMENTO SOLO MANEJAMOS ERRORES SIMPLES CON TRY CATCH
-export const updateProduct = async (productId: string, productInput: ProductInput) => {
+/* export const updateProduct = async (productId: string, productInput: ProductInput) => {
 
   try {
     
@@ -692,4 +740,181 @@ export const updateProduct = async (productId: string, productInput: ProductInpu
     throw new Error('Error al actualizar el producto. vuelve a intentarlo.');
   }
 
+}; */
+
+// ***********************************************************************************************
+// *********************************** ACTUALIZAR PRODUCTO ***************************************
+// *************************************** NUEVA FORMA *******************************************
+// USANDO PROCEDIMIENTO ALMACENADO Y VALIDACIONES
+// ==================== VALIDACIÓN ====================
+export const validateProductUpdateInput = async (input: ProductInput, productId: string): Promise<string[]> => {
+  const errors: string[] = [];
+
+  if (!input.name?.trim()) errors.push('El nombre del producto es obligatorio.');
+  if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
+  if (!input.brand?.trim()) errors.push('La marca del producto es obligatoria.');
+  if (!input.images?.length) errors.push('Al menos una imagen del producto es obligatoria.');
+  if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');
+  if (!input.variants?.length) errors.push('El producto debe tener al menos una variante.');
+
+  // Validar slug único (excluyendo este producto)
+  const { data: existingSlug, error: slugError } = await supabase
+    .from('products')
+    .select('id')
+    .eq('slug', input.slug.trim())
+    .single();
+
+  if (slugError && slugError.code !== 'PGRST116') {
+    console.error('Error al validar slug:', slugError);
+    errors.push('Error al validar el slug del producto.');
+  }
+
+  if (existingSlug && existingSlug.id !== productId) {
+    errors.push('El slug ya está siendo utilizado por otro producto.');
+  }
+
+  // Validar y comprimir imágenes
+  const validatedImages: (File | string)[] = [];
+  
+  for (let i = 0; i < input.images.length; i++) {
+    const img = input.images[i];
+
+    if (img instanceof File) {
+      if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(img.type)) {
+        errors.push(`La imagen ${i + 1} debe ser JPEG, JPG, PNG o WEBP.`);
+        continue;
+      }
+
+      if (img.size > 1.5 * 1024 * 1024) {
+        try {
+          const compressed = await compressImage(img, 1.5);
+          validatedImages.push(compressed);
+        } catch (err) {
+          console.error(err);
+          errors.push(`No se pudo comprimir la imagen ${i + 1}.`);
+        }
+      } else {
+        validatedImages.push(img);
+      }
+    } else if (typeof img === 'string') {
+      validatedImages.push(img);
+    } else {
+      errors.push(`Tipo de imagen no válido en posición ${i + 1}.`);
+    }
+  }
+
+  // El tipo de input.images puede ser estrictamente File[] en la definición,
+  // pero aquí validamos y retornamos tanto File como URLs (string).
+  // Para evitar el error de asignación, hacemos un cast seguro en tiempo de compilación.
+  (input as any).images = validatedImages;
+
+  return errors;
+};
+
+
+
+// ==================== FUNCIÓN PRINCIPAL ====================
+export const updateProduct = async (productId: string, productInput: ProductInput) => {
+  try {
+    // 1. Validar entrada
+    const validationErrors = await validateProductUpdateInput(productInput, productId);
+    if (validationErrors.length > 0) throw new Error(validationErrors.join(' '));
+
+    // 2. Obtener imágenes actuales
+    const { data: currentProduct, error: fetchError } = await supabase
+      .from('products')
+      .select('images')
+      .eq('id', productId)
+      .single();
+
+    if (fetchError) throw new Error('Producto no encontrado.');
+
+    const existingImages = currentProduct?.images || [];
+
+    // 3. Separar imágenes nuevas (File) de URLs existentes
+    const newFiles = productInput.images.filter((img) => img instanceof File) as File[];
+    const existingUrls = productInput.images.filter((img) => typeof img === 'string') as string[];
+
+    // 4. Subir solo las imágenes nuevas
+    const uploadedNewImagesResponses = await Promise.allSettled(
+      newFiles.map(async (file) => {
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+        const filePath = `${productId}/${fileName}`;
+
+        const { data, error } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, file);
+
+        if (error) throw new Error(`Error subiendo imagen: ${error.message}`);
+
+        const { data: publicUrlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(data.path);
+
+        return publicUrlData.publicUrl;
+      })
+    );
+
+    const newImageUrls = uploadedNewImagesResponses
+      .filter((r) => r.status === 'fulfilled')
+      .map((r) => (r as PromiseFulfilledResult<string>).value);
+
+    // 5. Construir lista final de imágenes que se conservarán
+    const finalImages = [...existingUrls, ...newImageUrls];
+
+    // 6. Determinar qué imágenes eliminar
+    const imagesToDelete = existingImages.filter(
+      (img) => !finalImages.includes(img)
+    );
+
+    const filesToDelete = imagesToDelete.map(extractFilePath);
+
+    // 7. Eliminar imágenes obsoletas del storage
+    if (filesToDelete.length > 0) {
+      await supabase.storage.from('product-images').remove(filesToDelete);
+    }
+
+    // 8. Llamar al stored procedure
+    const procedureResult = await (supabase.rpc as any)(
+      'update_product_with_variants',
+      {
+        p_product_id: productId,
+        p_name: productInput.name.trim(),
+        p_brand: productInput.brand.trim(),
+        p_slug: productInput.slug.trim(),
+        p_features: productInput.features || [],
+        p_description: productInput.description
+          ? JSON.parse(JSON.stringify(productInput.description))
+          : {},
+        p_images: finalImages,
+        p_variants: productInput.variants.map((v) => ({
+          id: v.id || null,
+          stock: v.stock,
+          price: v.price,
+          storage: v.storage || null,
+          color: v.color || null,
+          color_name: v.color_name || null,
+          finish: v.finish || null,
+        })),
+      }
+    );
+
+    if (procedureResult.error) throw new Error(procedureResult.error.message);
+
+    const result = procedureResult.data?.[0];
+    if (!result?.success) throw new Error(result?.message || 'Error al actualizar el producto.');
+
+    // 9. Retornar producto actualizado
+    const { data: updatedProduct } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+
+    return updatedProduct;
+
+  } catch (error) {
+    console.error('Error en updateProduct:', error);
+    throw new Error(error instanceof Error ? error.message : 'Error al actualizar el producto.');
+  }
 };

@@ -1,11 +1,13 @@
 import { Box, Typography, Button, Radio, Stack, Card, CardActionArea } from '@mui/material';
 import { RadioButtonChecked } from '@mui/icons-material';
-import { useState, useEffect, MutableRefObject } from 'react';
+import { useState, useEffect, MutableRefObject, useCallback } from 'react';
 import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
+// DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
 //import { enviarEmailOrden } from '@/services/emailService';
+//import { useCustomer, useUsers } from '@shared/hooks';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -22,16 +24,86 @@ export const PaymentStep = ({
   onConfirmOrderRef,
   isProcessingRef
 }: PaymentStepProps) => {
+
+  // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
+  //const { session, isLoading } = useUsers();
+  //const userId = session?.user?.id;
+  //const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
+
   const [selected, setSelected] = useState<'acordar'>('acordar');
 
-  const { mutate: createOrder, isPending, } = useCreateOrder();
+  const { shippingInfo, shippingMethod, setOrderId, orderSummary } = useCheckoutStore();
   const { clearCart } = useCartStore();
-  // DESCOMENTAR para el funcionamiento real de la creacion orden
-  //const { shippingInfo, shippingMethod, setOrderId, orderSummary } = useCheckoutStore();
-  const { shippingInfo, shippingMethod, setOrderId } = useCheckoutStore(); // comentar esta linea para el funcionamiento real
-  
-  
-  const handleConfirm = () => {
+
+  // Callbacks para manejar el éxito y error de la orden
+  const handleOrderSuccess = useCallback(async (response: any) => {
+    // Guardar el ID de la orden
+    setOrderId(response.orderId);
+
+    // Limpiar el carrito
+    clearCart();
+
+    // ============================================================
+    // ENVÍO DE EMAIL
+    // ============================================================
+    /* try {
+      await enviarEmailOrden({
+        id: response.orderId,
+        email: customer?.email || '',
+        nombreCliente: customer?.full_name || 'Cliente',
+        total: orderSummary?.totalPrice ?? 0,
+        items: (orderSummary?.items ?? []).map(item => ({
+          nombre: item.name,
+          cantidad: item.quantity,
+          precio: item.price,
+        })),
+        addressLine1: shippingInfo?.addressLine1 || '',
+        addressLine2: shippingInfo?.addressLine2 || '',
+        city: shippingInfo?.city || '',
+        state: shippingInfo?.state || '',
+        postalCode: shippingInfo?.postalCode || '',
+        country: shippingInfo?.country || '',
+        shippingMethod: shippingMethod || 'acordar',
+        customerPhone: customer?.phone || '',
+      });
+      console.log('Email enviado exitosamente');
+    } catch (emailError) {
+      console.error('Error al enviar email:', emailError);
+      toast.error('Orden creada pero hubo un error al enviar el email de confirmación', {
+        position: 'bottom-right',
+      });
+    } */
+    // ============================================================
+
+    // Navegar al siguiente paso
+    onNext();
+  }, [onNext, setOrderId, clearCart, shippingMethod, orderSummary]);
+
+  // Manejo de error en la creación de la orden
+  const handleOrderError = useCallback(async (error: Error) => {
+    console.error('Error en la creación de la orden:', error);
+    // toast de error ya es manejado en el hook useCreateOrder
+  }, []);
+
+  // Hook para crear la orden con callbacks personalizados
+  const { mutate: createOrder, isPending } = useCreateOrder({
+    onSuccess: handleOrderSuccess,
+    onError: handleOrderError,
+  });
+
+  // Función para confirmar la orden
+  const handleConfirm = useCallback( async () => {
+
+    // Validar que los datos del cliente se hayan cargado
+    // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
+    /* if (isLoadingCustomer) {
+      toast.error('Por favor espera mientras se cargan tus datos', {
+        position: 'bottom-right',
+      });
+      return;
+    } */
+
+    // Validar que la información de envío esté completa
     if (!shippingInfo) {
       toast.error('Por favor, completa la información de envío antes de continuar.', {
         position: 'bottom-right',
@@ -39,92 +111,96 @@ export const PaymentStep = ({
       return;
     }
 
-    // DESCOMENTAR para el funcionamiento real de la creacion orden
+    // Validar que haya items en el carrito
+    if (!orderSummary?.items || orderSummary.items.length === 0) {
+      toast.error('Tu carrito está vacío.', {
+        position: 'bottom-right',
+      });
+      return;
+    }
+
+    // ============================================================
+    // OPCIÓN 1: FUNCIONAMIENTO REAL CON SP (Descomenta este bloque)
+    // ============================================================
+    
+    // Mostrar toast de procesamiento
     /* toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'bottom-right',
-      duration: 4000,
-    }); */
+      duration: Infinity,
+    });
 
-    // DESCOMENTAR para el funcionamiento real de la creacion orden
-    /* const orderData = {
+    // Preparar datos de la orden
+    const orderData = {
       address: {
         addressLine1: shippingInfo.addressLine1,
-        addressLine2: shippingInfo.addressLine2,
+        addressLine2: shippingInfo.addressLine2 || '',
         city: shippingInfo.city,
         state: shippingInfo.state,
-        postalCode: shippingInfo.postalCode,
+        postalCode: shippingInfo.postalCode || '',
         country: shippingInfo.country,
       },
-      cartItems: orderSummary?.items.map((item) => ({
+      cartItems: orderSummary.items.map((item) => ({
         variantId: item.id,
         quantity: item.quantity,
         price: item.price,
-      })) ?? [],
-      totalAmount: orderSummary?.totalPrice ?? 0,
-    }; */
+      })),
+      totalAmount: orderSummary.totalPrice,
+    };
 
-    // DESCOMENTAR para el funcionamiento real de la creacion orden
-    /* createOrder(orderData, {
-      onSuccess: async (data) => {
-        setOrderId(data.id);
-        clearCart();
+    // Ejecutar la mutación
+    createOrder(orderData);
 
-        // SE COMENTA PARA EVITAR COSTOS INNECESARIOS EN ENVÍOS DE EMAILS DURANTE PRUEBAS
-        // FUNCIONA UNICAMENTE SI SELECCIONA METODO DE ENVIO 'ACORDAR'
-        // REVISAR PORQUE NO MANDA EL EMAIL CUANDO SELECCIONA 'RETIRO POR SUCURSAL'
-        //await enviarEmailOrden({
-        //  id: data.id,
-        //  email: shippingInfo.email,
-        //  nombreCliente: shippingInfo.name,
-        //  total: orderSummary?.totalPrice ?? 0,
-        //  items: (orderSummary?.items ?? []).map(item => ({
-        //    nombre: item.name,
-        //    cantidad: item.quantity,
-        //    precio: item.price,
-        //  })),
-        //});
+    // Cerrar toast después de que la mutación termine
+    setTimeout(() => {
+      toast.dismiss('order-processing');
+    }, 100); */
 
-        toast.success('¡Orden creada con éxito!', {
-          id: 'order-processing',
-          position: 'bottom-right',
-        });
+    // ============================================================
+    // OPCIÓN 2: SIMULACIÓN (Para pruebas sin ejecutar SP)
+    // Comenta esta sección cuando uses OPCIÓN 1
+    // ============================================================
+    toast.loading('Procesando tu orden...', {
+      id: 'order-processing',
+      position: 'bottom-right',
+      duration: 1500,
+    });
 
-        onNext();
-      },
-      onError: () => {
-        toast.error('Hubo un error al crear la orden. Por favor, intenta nuevamente.', {
-          id: 'order-processing',
-          position: 'bottom-right',
-        });
-      }
-    }); */
+    setTimeout(() => {
+      setOrderId(Math.floor(Math.random() * 100000));
+      clearCart();
+      
+      toast.success('¡Orden creada con éxito! (SIMULACIÓN)', {
+        id: 'order-processing',
+        position: 'bottom-right',
+      });
 
-    // Simulación de creación de orden para evitar costos de email durante pruebas
-    // commentar este bloque para el funcionamiento real
-    clearCart();
-    onNext();
-  };
+      onNext();
+    }, 1500);
 
-  const handleEditDelivery = () => {
+  }, [shippingInfo, orderSummary, createOrder, setOrderId, clearCart, onNext]); // , isLoadingCustomer
+
+  // Actualizar ref con la función de confirmar
+  useEffect(() => {
+    if (onConfirmOrderRef) {
+      onConfirmOrderRef.current = handleConfirm;
+    }
+  }, [handleConfirm, onConfirmOrderRef]);
+
+  // Actualizar ref con el estado de carga
+  useEffect(() => {
+    if (isProcessingRef) {
+      isProcessingRef.current = isPending;
+    }
+  }, [isPending, isProcessingRef]);
+
+  const handleEditDelivery = useCallback(() => {
     if (onGoToStep) {
       onGoToStep(1);
     } else {
       onBack();
     }
-  };
-
-  useEffect(() => {
-    if (onConfirmOrderRef) {
-      onConfirmOrderRef.current = handleConfirm;
-    }
-  }, [shippingInfo, createOrder, clearCart, setOrderId, onNext])
-
-  useEffect(() => {
-    if (isProcessingRef) {
-      isProcessingRef.current = isPending;
-    }
-  }, [isPending]);
+  }, [onGoToStep, onBack]);
 
   return (
     <Box>
@@ -147,6 +223,7 @@ export const PaymentStep = ({
             variant="outlined"
             size="small"
             onClick={handleEditDelivery}
+            disabled={isPending}
             sx={{
               textTransform: 'none',
               borderRadius: 1,
@@ -182,13 +259,6 @@ export const PaymentStep = ({
             <Typography variant='body2' color='text.secondary'>
               {shippingInfo?.addressLine1}, {shippingInfo?.addressLine2}, {shippingInfo?.city}, {shippingInfo?.state}, {shippingInfo?.country}, {shippingInfo?.postalCode}
             </Typography>
-
-            {/* <Typography variant='body1' color='text.primary' fontWeight="bold" sx={{ mt: 2 }}>
-              Datos de contacto cargados:
-            </Typography>
-            <Typography variant='body2' color='text.secondary'>
-              {shippingInfo?.email}, {shippingInfo?.phone}, {shippingInfo?.name}
-            </Typography> */}
           </Box>
         )}
       </Box>
@@ -235,7 +305,7 @@ export const PaymentStep = ({
           variant="outlined" 
           onClick={onBack} 
           fullWidth
-          disabled={isPending}
+          disabled={isPending} // || isLoading || isLoadingCustomer
         >
           Volver
         </Button>
@@ -244,8 +314,11 @@ export const PaymentStep = ({
           onClick={handleConfirm}
           fullWidth
           disabled={isPending}
+          sx={{
+            position: 'relative',
+          }}
         >
-          Confirmar orden
+          {isPending ? 'Procesando...' : 'Confirmar orden'} {/* isLoading || isLoadingCustomer ? 'Cargando datos...'  */}
         </Button>
       </Box>
     </Box>

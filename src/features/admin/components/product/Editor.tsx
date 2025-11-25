@@ -7,8 +7,8 @@ import {
 import { FieldErrors, UseFormSetValue } from 'react-hook-form';
 import StarterKit from '@tiptap/starter-kit';
 import { ReactNode, useEffect } from 'react';
-import { ProductFormValues } from '../schema/productSchema';
 import { Box, Button, Typography, Stack } from '@mui/material';
+import { ProductFormValues } from '@features/admin/schema/productSchema';
 
 interface Props {
 	setValue: UseFormSetValue<ProductFormValues>;

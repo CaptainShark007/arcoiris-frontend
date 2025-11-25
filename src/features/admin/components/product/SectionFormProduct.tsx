@@ -18,8 +18,10 @@ export const SectionFormProduct = ({
 				display: 'flex',
 				flexDirection: 'column',
 				gap: 2,
-				bgcolor: 'white',
+				bgcolor: '#f9fafb',
 				height: 'fit-content',
+				boxShadow: 'none',
+        border: '1px solid #E5E7EB',
 			}}
 		>
 			{titleSection && (
