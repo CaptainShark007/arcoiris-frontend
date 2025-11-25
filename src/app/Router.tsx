@@ -33,7 +33,6 @@ export default function Router() {
         <Route path='*' element={<Error404 />} />
       </Route>
 
-<<<<<<< HEAD
       {/* Rutas del dashboard */}
       <Route path='dashboard' element={<DashboardLayout />}>
         <Route index element={<Navigate to='productos' replace />} />
@@ -43,19 +42,6 @@ export default function Router() {
         <Route path='ordenes' element={<DashboardOrdersPage />} />
         <Route path='ordenes/:id' element={<DashboardOrderPage />} />
       </Route>
-=======
-      {/* Paginas del administrador */}
-      <Route path='panel' element={<DashboardLayout />} >
-        <Route index element={<Navigate to='productos' replace />} />
-        <Route path='productos' element={<DashboardProductsPage />} />
-        <Route path='productos/nuevo' element={<DashboardNewProductPage />} />
-        <Route path='productos/editar/:slug' element={<DashboardProductSlugPage />} />
-        <Route path='pedidos' element={<DashboardOrdersPage />} />
-        <Route path='pedidos/:id' element={<DashboardOrderPage />} />
-
-      </Route>
-
->>>>>>> origin/develop
     </Routes>
   );
 }
