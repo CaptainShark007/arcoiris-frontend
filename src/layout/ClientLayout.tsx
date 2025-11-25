@@ -2,10 +2,11 @@ import { Loader } from "@shared/components";
 import { useUsers } from "@shared/hooks";
 import { NavLink, Outlet } from "react-router";
 import { AppBar, Box, Button, Container, Toolbar } from "@mui/material";
-import { useAuthStateChange, useLogout } from "@features/auth/hooks";
+import { useAuthStateChange, useLogout, useRoleUser } from "@features/auth/hooks";
 
 export const ClientLayout = () => {
-  const { isLoading: isLoadingSession } = useUsers();
+  const { session, isLoading: isLoadingSession } = useUsers();
+  const { data: role, isLoading: isLoadingRole } = useRoleUser(session?.user.id as string);
 
   // Maneja cambios de estado de autenticación
   useAuthStateChange();
@@ -13,7 +14,7 @@ export const ClientLayout = () => {
   // Hook personalizado para logout
   const { mutate: handleLogout, isPending: isLoggingOut } = useLogout();
 
-  if (isLoadingSession) return <Loader />;
+  if (isLoadingSession || isLoadingRole) return <Loader />;
 
   return (
     <Box display="flex" flexDirection="column" gap={3} >
@@ -41,6 +42,24 @@ export const ClientLayout = () => {
           >
             Pedidos
           </Button>
+
+          {
+            role === "admin" && (
+              <Button
+                component={NavLink}
+                to="/panel"
+                sx={{
+                  fontWeight: 500,
+                  textTransform: "none",
+                  fontSize: "0.95rem",
+                  "&.active": { fontWeight: 700 },
+                  //"&:hover": { textDecoration: "underline" },
+                }}
+              >
+                Panel Administrador
+              </Button>
+            )
+          }
 
           <Button
             onClick={() => handleLogout()}

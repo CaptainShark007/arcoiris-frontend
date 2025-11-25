@@ -11,7 +11,7 @@ export const useAuthStateChange = () => {
     const unsubscribe = subscribeToAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         queryClient.invalidateQueries({ queryKey: ["users"] });
-        navigate("/");
+        navigate("/acceder", { replace: true });
       }
     });
 
