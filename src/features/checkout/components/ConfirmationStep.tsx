@@ -47,11 +47,8 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
 
   // DESCOMENTAR para usar la version real
   /* const { data, isLoading, isError } = useOrder(orderId || 0);
-
   if (isError) return <Typography variant='body2' sx={{ textAlign: 'center' }}>Error al cargar los detalles de la orden.</Typography>;
-
   if (isLoading) return <Loader />
-
   if (!data) return <Typography variant='body2' sx={{ textAlign: 'center' }}>No hay datos disponibles.</Typography>; */
 
   const data = mockData; // COMENTAR para usar la version de prueba

@@ -1,7 +1,7 @@
 import { supabase } from '@/supabase/client';
-import { OrderInput } from '@shared/types';
+import { CreateOrderResponse, OrderInput } from '@shared/types';
 
-export const createOrder = async (order: OrderInput) => {
+/* export const createOrder = async (order: OrderInput) => {
   try {
     console.log('Iniciando creación de orden:', order);
 
@@ -187,6 +187,96 @@ export const createOrder = async (order: OrderInput) => {
     console.error('Error completo en createOrder:', error);
     throw error;
   }
+}; */
+
+export const createOrder = async (order: OrderInput): Promise<CreateOrderResponse> => {
+  try {
+    console.log('Iniciando creación de orden con stored procedure:', order);
+
+    // 1. Obtener el usuario autenticado
+    const { data: userData, error: errorUser } = await supabase.auth.getUser();
+
+    if (errorUser) {
+      return {
+        success: false,
+        error: `Error de autenticación: ${errorUser.message}`,
+        message: 'No se pudo autenticar el usuario',
+      };
+    }
+
+    if (!userData.user) {
+      return {
+        success: false,
+        error: 'Usuario no autenticado',
+        message: 'Debes iniciar sesión para crear una orden',
+      };
+    }
+
+    const userId = userData.user.id;
+    console.log('Usuario autenticado:', userId);
+
+    // 2. Preparar los datos para el stored procedure
+    const cartItemsJson = order.cartItems.map(item => ({
+      variantId: item.variantId,
+      quantity: item.quantity,
+      price: item.price,
+    }));
+
+    // 3. Llamar al stored procedure
+    const { data, error } = await (supabase.rpc as any)(
+      'create_order_transaction', 
+      {
+        p_user_id: userId,
+        p_user_email: userData.user.email || '',
+        p_user_full_name: userData.user.user_metadata?.full_name || 'Cliente',
+        p_address_line1: order.address.addressLine1,
+        p_address_line2: order.address.addressLine2 || '',
+        p_city: order.address.city,
+        p_postal_code: order.address.postalCode || '',
+        p_state: order.address.state,
+        p_country: order.address.country,
+        p_cart_items: cartItemsJson,
+        p_total_amount: order.totalAmount,
+      }
+    );
+
+    if (error) {
+      console.error('Error del stored procedure:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Error al crear la orden',
+      };
+    }
+
+    // 4. Procesar la respuesta del stored procedure
+    if (!data || !data.success) {
+      console.error('Error en la ejecución:', data?.error);
+      return {
+        success: false,
+        error: data?.error || 'Error desconocido',
+        detail: data?.detail,
+        message: data?.message || 'No se pudo crear la orden',
+      };
+    }
+
+    console.log('Orden creada exitosamente:', data);
+    return {
+      success: true,
+      orderId: data.orderId,
+      customerId: data.customerId,
+      addressId: data.addressId,
+      message: 'Orden creada exitosamente',
+    };
+
+  } catch (error) {
+    console.error('Error en createOrder:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+      message: 'Error interno al procesar la orden',
+    };
+  }
 };
 
 // metodo para obtener ordenes de un cliente
@@ -297,7 +387,7 @@ export const getAllOrders = async () => {
 	const { data, error } = await supabase
 		.from('orders')
 		.select(
-			'id, total_amount, status, created_at, customers(full_name, email)'
+			'id, total_amount, status, created_at, customers(full_name, email, phone)'
 		)
 		.order('created_at', { ascending: false });
 
@@ -331,7 +421,7 @@ export const getOrderByIdAdmin = async (id: number) => {
 	const { data: order, error } = await supabase
 		.from('orders')
 		.select(
-			'*, addresses(*), customers(full_name, email), order_items(quantity, price, variants(color_name, storage, products(name, images)))'
+			'*, addresses(*), customers(full_name, email), order_items(quantity, price, variants(color_name, storage, finish, products(name, images)))'
 		)
 		.eq('id', id)
 		.single();
@@ -362,6 +452,7 @@ export const getOrderByIdAdmin = async (id: number) => {
 			price: item.price,
 			color_name: item.variants?.color_name,
 			storage: item.variants?.storage,
+      finish: item.variants?.finish,
 			productName: item.variants?.products?.name,
 			productImage: item.variants?.products?.images[0],
 		})),

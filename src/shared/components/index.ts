@@ -29,3 +29,4 @@ export * from './ProductBadge';
 export * from './Pagination';
 export * from './DeleteProductModal';
 export * from './DeleteCategoryModal';
+export * from './UnderConstruction';

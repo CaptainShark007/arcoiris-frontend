@@ -1,21 +1,17 @@
+import { DatosOrden } from '@shared/types';
 import { supabase } from '../supabase/client'
 
-interface DatosOrden {
-  id: string | number;
-  email: string;
-  nombreCliente: string;
-  total: number;
-  items: Array<{
-    nombre: string;
-    cantidad: number;
-    precio: number;
-  }>;
-}
+const ADMIN_EMAIL = 'eliasdiegogomez37@gmail.com';
 
 export async function enviarEmailOrden(datosOrden: DatosOrden) {
   try {
+    // Enviar email al admin con todos los detalles
     const { data, error } = await supabase.functions.invoke('send-order-email', {
-      body: datosOrden,
+      body: {
+        ...datosOrden,
+        to: ADMIN_EMAIL, // Asegurar que se envíe al admin
+        isAdminNotification: true, // Indicador para el backend
+      },
     });
 
     if (error) {
@@ -23,7 +19,7 @@ export async function enviarEmailOrden(datosOrden: DatosOrden) {
       return { success: false, error: error.message };
     }
 
-    console.log('Email enviado:', data);
+    console.log('✅ Email de orden enviado al admin:', data);
     return { success: true, data };
 
   } catch (error) {

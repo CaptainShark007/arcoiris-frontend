@@ -132,3 +132,33 @@ export const getCustomerByUserId = async (userId: string) => {
 
   return data;
 }
+
+export const subscribeToAuthStateChange = (callback: (event: string, session: any) => void) => {
+
+  const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+  });
+
+  return () => {
+    listener.subscription.unsubscribe();
+  };
+
+}
+
+// metodo para obtener el rol del usuario
+export const getUserRole = async (userId: string) => {
+
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Error al obtener el rol del usuario");
+  }
+
+  return data?.role;
+
+}

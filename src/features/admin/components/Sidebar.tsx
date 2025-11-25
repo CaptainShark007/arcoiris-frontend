@@ -1,14 +1,15 @@
-import { signOut } from '@/actions';
 import { Box, Button, Link as MuiLink } from '@mui/material';
 import { Link, NavLink } from 'react-router';
 import logo from '@/assets/images/logo_comercio_v2.png';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { dashboardLinks } from '@shared/constants/links';
+import { useAuthStateChange, useLogout } from '@features/auth/hooks';
 
 export const Sidebar = () => {
-  const handleLogout = async () => {
-    await signOut();
-  };
+
+  useAuthStateChange();
+
+  const { mutate: handleLogout, isPending: isLoggingOut } = useLogout();
 
   return (
     <Box
@@ -75,6 +76,7 @@ export const Sidebar = () => {
       <Button
         fullWidth
         variant="contained"
+        disabled={isLoggingOut}
         sx={{
           backgroundColor: '#ff0000ff',
           py: 1.25,
@@ -88,10 +90,10 @@ export const Sidebar = () => {
             backgroundColor: '#bf0000ff',
           },
         }}
-        onClick={handleLogout}
+        onClick={() => handleLogout()}
       >
         <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-          Cerrar sesión
+          {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
         </Box>
         <LogoutIcon sx={{ display: { xs: 'block', lg: 'none' } }} />
       </Button>
