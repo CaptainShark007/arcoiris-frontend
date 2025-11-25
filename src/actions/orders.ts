@@ -421,7 +421,7 @@ export const getOrderByIdAdmin = async (id: number) => {
 	const { data: order, error } = await supabase
 		.from('orders')
 		.select(
-			'*, addresses(*), customers(full_name, email), order_items(quantity, price, variants(color_name, storage, products(name, images)))'
+			'*, addresses(*), customers(full_name, email), order_items(quantity, price, variants(color_name, storage, finish, products(name, images)))'
 		)
 		.eq('id', id)
 		.single();
@@ -452,6 +452,7 @@ export const getOrderByIdAdmin = async (id: number) => {
 			price: item.price,
 			color_name: item.variants?.color_name,
 			storage: item.variants?.storage,
+      finish: item.variants?.finish,
 			productName: item.variants?.products?.name,
 			productImage: item.variants?.products?.images[0],
 		})),
