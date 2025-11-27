@@ -239,6 +239,7 @@ export type Database = {
           features: string[]
           id: string
           images: string[]
+          is_active: boolean | null
           name: string
           slug: string
         }
@@ -250,6 +251,7 @@ export type Database = {
           features: string[]
           id?: string
           images: string[]
+          is_active?: boolean | null
           name: string
           slug: string
         }
@@ -261,6 +263,7 @@ export type Database = {
           features?: string[]
           id?: string
           images?: string[]
+          is_active?: boolean | null
           name?: string
           slug?: string
         }
@@ -338,12 +341,49 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_order_transaction: {
+        Args: {
+          p_address_line1: string
+          p_address_line2: string
+          p_cart_items: Json
+          p_city: string
+          p_country: string
+          p_postal_code: string
+          p_state: string
+          p_total_amount: number
+          p_user_email: string
+          p_user_full_name: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       create_product_with_variants: {
         Args: {
           p_brand: string
           p_description: Json
           p_features: string[]
           p_name: string
+          p_slug: string
+          p_variants: Json
+        }
+        Returns: {
+          message: string
+          product_id: string
+          success: boolean
+        }[]
+      }
+      delete_product_cascade: {
+        Args: { p_product_id: string }
+        Returns: undefined
+      }
+      update_product_with_variants: {
+        Args: {
+          p_brand: string
+          p_description: Json
+          p_features: string[]
+          p_images: string[]
+          p_name: string
+          p_product_id: string
           p_slug: string
           p_variants: Json
         }

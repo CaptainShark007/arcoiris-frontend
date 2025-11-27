@@ -1,6 +1,7 @@
 import InventoryIcon from '@mui/icons-material/Inventory';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HandshakeIcon from '@mui/icons-material/Handshake';
+import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 
 export const dashboardLinks = [
 	{
@@ -11,7 +12,7 @@ export const dashboardLinks = [
 	},
 	{
 		id: 2,
-		title: 'Ordenes',
+		title: 'Pedidos',
 		href: '/panel/pedidos',
 		icon: <ShoppingCartIcon />,
 	},
@@ -20,5 +21,11 @@ export const dashboardLinks = [
 		title: 'Socios',
 		href: '/panel/socios',
 		icon: <HandshakeIcon />,
+	},
+	{
+		id: 4,
+		title: 'Banners',
+		href: '/panel/banners',
+		icon: <ViewCarouselIcon />,
 	}
 ];

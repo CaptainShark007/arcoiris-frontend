@@ -9,12 +9,23 @@ const DashboardOrdersPage = () => {
   if (isLoading || !data) return <Loader />;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-      <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-        Órdenes
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: 2.5,
+      px: { xs: 1, sm: 0 },
+    }}>
+      <Typography variant="h5" sx={{ fontWeight: 'bold', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+        Pedidos
       </Typography>
 
-      <Card sx={{ p: 2.5, bgcolor: '#F9FAFB', boxShadow: 'none', border: '1px solid #E5E7EB' }}>
+      <Card sx={{ 
+        p: { xs: 1.5, sm: 2.5 },
+        bgcolor: '#F9FAFB', 
+        boxShadow: 'none', 
+        border: '1px solid #E5E7EB',
+        overflow: 'hidden',
+      }}>
         <TableOrdersAdmin orders={data} />
       </Card>
     </Box>

@@ -7,12 +7,12 @@ import { useEffect, useState } from 'react';
 import { getSession, getUserRole } from '@/actions';
 import { Loader } from '@shared/components';
 import { useAuthStateChange } from '@features/auth/hooks';
+import { useSidebar } from '@/shared/contexts/SidebarContext';
 
 export const DashboardLayout = () => {
-
   const navigate = useNavigate();
-
   const { isLoading, session } = useUsers();
+  const { isOpen } = useSidebar();
   const [roleLoading, setRoleLoading] = useState(true);
 
   useAuthStateChange();
@@ -21,7 +21,7 @@ export const DashboardLayout = () => {
     const checkRole = async () => {
       setRoleLoading(true);
       const session = await getSession();
-  
+
       if (!session) {
         navigate('/acceder');
       }
@@ -33,10 +33,9 @@ export const DashboardLayout = () => {
       }
 
       setRoleLoading(false);
-    }
+    };
 
     checkRole();
-
   }, [navigate]);
 
   if (isLoading || !session || roleLoading) return <Loader />;
@@ -44,33 +43,37 @@ export const DashboardLayout = () => {
   return (
     <>
       <Toaster
-        position='top-right'
+        position="top-right"
         reverseOrder={false}
         toastOptions={{
           duration: 4000,
-          /* style: {
-            background: '#363636',
-            color: '#fff',
-          }, */
         }}
       />
       <Box
         sx={{
           display: 'flex',
-          backgroundColor: '#f3f4f6',
+          backgroundColor: '#f3f4f6', // f3f4f6
           minHeight: '100vh',
           fontFamily: 'Montserrat, sans-serif',
         }}
       >
         <Sidebar />
         <Box
-          component='main'
+          component="main"
           sx={{
             flex: 1,
-            ml: { xs: '140px', lg: '270px' },
-            mt: 7,
-            mx: 5,
+            // Solo margen en desktop
+            ml: { xs: 0, sm: 0, md: 0, lg: isOpen ? '260px' : '110px' },
+            // Padding suave sin márgenes extra
+            p: { xs: 1, sm: 2, md: 2 },
+            mt: { xs: '60px', lg: 0 },
+            transition: 'margin-left 400ms cubic-bezier(0.4, 0, 0.2, 1)',
             color: '#1e293b',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            maxHeight: { xs: 'calc(100vh - 60px)', lg: '100vh' },
+            width: '100%',
+            boxSizing: 'border-box',
           }}
         >
           <Outlet />

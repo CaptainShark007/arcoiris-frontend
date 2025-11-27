@@ -1,3 +1,4 @@
+import { extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
 import { CategoryInput } from '@shared/types';
 
@@ -109,8 +110,33 @@ export const updateCategory = async (
     if (categoryInput.description !== undefined)
       updateData.description = categoryInput.description;
 
+    // Obtener la categoría anterior para saber qué imagen borrar
+    const { data: oldCategory, error: fetchError } = await supabase
+      .from('categories')
+      .select('image')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching old category:', fetchError);
+    }
+
     // Si hay imagen nueva, subirla
     if (categoryInput.image && typeof categoryInput.image !== 'string') {
+      // Primero, borrar la imagen anterior si existe
+      if (oldCategory?.image) {
+        try {
+          const oldImagePath = extractFilePath(oldCategory.image);
+          await supabase.storage
+            .from('product-images')
+            .remove([oldImagePath]);
+        } catch (deleteError) {
+          console.error('Error deleting old image:', deleteError);
+          // No lanzar error aquí, continuar con la actualización
+        }
+      }
+
+      // Subir la nueva imagen
       const imageFile = categoryInput.image as any;
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${imageFile.name}`;
       const folderPath = `categories/${fileName}`;
@@ -133,8 +159,22 @@ export const updateCategory = async (
         .getPublicUrl(data.path);
 
       updateData.image = publicUrlData.publicUrl;
+    } else if (categoryInput.image === null) {
+      // Si explícitamente se pasa null, borrar la imagen
+      if (oldCategory?.image) {
+        try {
+          const oldImagePath = extractFilePath(oldCategory.image);
+          await supabase.storage
+            .from('product-images')
+            .remove([oldImagePath]);
+        } catch (deleteError) {
+          console.error('Error deleting image:', deleteError);
+        }
+      }
+      updateData.image = null;
     }
 
+    // Actualizar la categoría
     const { data, error } = await supabase
       .from('categories')
       .update(updateData)
@@ -153,7 +193,6 @@ export const updateCategory = async (
     throw error;
   }
 };
-
 
 // Eliminar una categoría (con validacion de productos asociados)
 

@@ -3,6 +3,7 @@ export * from './product/useProducts';
 export * from './product/useDeleteProduct';
 export * from './product/useUpdateProduct';
 export * from './product/useUpdateProductCategory';
+export * from './product/useToggleProduct';
 // categories
 export * from './category/useAllCategories';
 export * from './category/useCreateCategory';

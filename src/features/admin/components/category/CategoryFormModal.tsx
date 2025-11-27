@@ -9,6 +9,8 @@ import {
   Box,
   Typography,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useCreateCategory, useUpdateCategory } from '@features/admin/hooks';
 import { generateCategorySlug } from '@/actions/categories';
@@ -29,6 +31,9 @@ export const CategoryFormModal = ({
   mode,
   category,
 }: CategoryFormModalProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
   const { mutate: updateCategory, isPending: isUpdating } = useUpdateCategory();
 
@@ -42,7 +47,6 @@ export const CategoryFormModal = ({
 
   const [isCompressing, setIsCompressing] = useState(false);
 
-  // Pre-llenar datos si es edición
   useEffect(() => {
     if (mode === 'edit' && category) {
       setFormData({
@@ -76,7 +80,6 @@ export const CategoryFormModal = ({
     if (e.target.files?.[0]) {
       const file = e.target.files[0];
 
-      // Validar tipo
       if (
         !['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
           file.type
@@ -86,13 +89,11 @@ export const CategoryFormModal = ({
         return;
       }
 
-      // Validar tamaño antes de comprimir
       if (file.size > 5 * 1024 * 1024) {
         toast.error('La imagen no debe exceder 5MB');
         return;
       }
 
-      // Comprimir si es mayor a 1.5MB
       setIsCompressing(true);
       try {
         let processedFile = file;
@@ -107,9 +108,6 @@ export const CategoryFormModal = ({
           imagePreview: previewUrl,
         });
 
-        /* toast.success(
-          `Imagen ${file.size > 1.5 * 1024 * 1024 ? 'comprimida' : 'cargada'} correctamente`
-        ); */
         toast.success('Imagen procesada correctamente');
       } catch (error) {
         console.error('Error compressing image:', error);
@@ -135,7 +133,6 @@ export const CategoryFormModal = ({
     }
 
     if (mode === 'create') {
-      // Para crear, la imagen es recomendada pero no obligatoria
       createCategory({
         name: formData.name,
         slug: formData.slug,
@@ -143,14 +140,15 @@ export const CategoryFormModal = ({
         image: formData.image || undefined,
       } as any);
     } else if (mode === 'edit' && category) {
-      // Para editar, solo actualizar campos que cambiaron
       updateCategory({
         id: category.id,
         data: {
           name: formData.name,
           slug: formData.slug,
           description: formData.description || null,
-          ...(formData.image && { image: formData.image }),
+          image: formData.image === null && !formData.imagePreview 
+            ? null 
+            : formData.image || undefined,
         },
       });
     }
@@ -166,13 +164,18 @@ export const CategoryFormModal = ({
       onClose={onClose}
       maxWidth='sm'
       fullWidth
-      sx={{ gap: 2 }}
+      sx={{
+        '& .MuiDialog-paper': {
+          margin: isMobile ? '16px' : '32px',
+        },
+      }}
     >
       <DialogTitle
         sx={{
           fontWeight: 'bold',
           bgcolor: '#f9fafb',
           borderBottom: '1px solid #e5e7eb',
+          fontSize: isMobile ? '1.25rem' : '1.5rem',
         }}
       >
         {mode === 'create' ? 'Crear Categoría' : 'Editar Categoría'}
@@ -186,9 +189,9 @@ export const CategoryFormModal = ({
           pt: 2,
           bgcolor: '#f9fafb',
           borderBottom: '1px solid #e5e7eb',
+          p: isMobile ? 1.5 : 2,
         }}
       >
-        {/* Nombre */}
         <TextField
           fullWidth
           label='Nombre'
@@ -196,11 +199,10 @@ export const CategoryFormModal = ({
           onChange={handleNameChange}
           disabled={isPending}
           size='small'
-          sx={{ mt: 2 }}
           required
+          sx={{ mt: 2 }}
         />
 
-        {/* Slug */}
         <TextField
           fullWidth
           label='Slug'
@@ -212,7 +214,6 @@ export const CategoryFormModal = ({
           required
         />
 
-        {/* Descripción */}
         <TextField
           fullWidth
           label='Descripción (opcional)'
@@ -226,7 +227,6 @@ export const CategoryFormModal = ({
           rows={3}
         />
 
-        {/* Imagen */}
         <Box>
           <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
             Imagen de la Categoría
@@ -237,8 +237,8 @@ export const CategoryFormModal = ({
               sx={{
                 mb: 2,
                 position: 'relative',
-                width: 150,
-                height: 150,
+                width: isMobile ? 120 : 150,
+                height: isMobile ? 120 : 150,
                 border: '1px solid #e5e7eb',
                 borderRadius: 1,
                 overflow: 'hidden',
@@ -300,24 +300,25 @@ export const CategoryFormModal = ({
             variant='caption'
             sx={{ display: 'block', mt: 1, color: '#6b7280' }}
           >
-            Solo puedes subir 1 sola imagene por categoría. Formatos permitidos:
-            JPEG, PNG, WEBP.
+            Solo puedes subir 1 imagen por categoría. Formatos permitidos: JPEG, PNG, WEBP.
           </Typography>
         </Box>
       </DialogContent>
 
       <DialogActions
         sx={{
-          p: 2,
+          p: isMobile ? 1.5 : 2,
           gap: 1,
           bgcolor: '#f9fafb',
           borderTop: '1px solid #e5e7eb',
+          flexDirection: isMobile ? 'column-reverse' : 'row',
         }}
       >
         <Button
           variant='outlined'
           onClick={onClose}
           disabled={isPending || isCompressing}
+          sx={{ width: isMobile ? '100%' : 'auto' }}
         >
           Cancelar
         </Button>
@@ -325,7 +326,10 @@ export const CategoryFormModal = ({
           variant='contained'
           onClick={handleSave}
           disabled={isPending || isCompressing}
-          sx={{ backgroundColor: '#0007d7ff' }}
+          sx={{ 
+            backgroundColor: '#0007d7ff',
+            width: isMobile ? '100%' : 'auto',
+          }}
         >
           {isPending
             ? 'Guardando...'
