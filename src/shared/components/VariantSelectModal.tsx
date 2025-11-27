@@ -254,7 +254,7 @@ export const VariantSelectModal = ({
     return (
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 600 }}>Producto no disponible</DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ py: 2, px: { xs: 1.5, md: 2 } }}>
           <Alert severity="warning">
             Este producto no tiene variantes disponibles en este momento.
           </Alert>
@@ -270,7 +270,7 @@ export const VariantSelectModal = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600, pb: 1 }}>
+      <DialogTitle sx={{ fontWeight: 600, pb: 1.5, fontSize: { xs: "1.1rem", md: "1.25rem" } }}>
         Configurar producto
       </DialogTitle>
 
@@ -315,7 +315,7 @@ export const VariantSelectModal = ({
                 }}
               >
                 <img
-                  src={product.images?.[0] ?? "/placeholder-product.jpg"}
+                  src={product.images?.[0] ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png"}
                   alt={product.name}
                   style={{ maxWidth: "100%", maxHeight: 240, objectFit: "contain" }}
                 />
@@ -329,7 +329,7 @@ export const VariantSelectModal = ({
                   Marca: {product.brand}
                 </Typography>
 
-                {product.features && product.features.length > 0 && (
+                {/* {product.features && product.features.length > 0 && (
                   <Box sx={{ mt: 1 }}>
                     <Typography variant="caption" color="text.secondary">
                       Características:
@@ -345,7 +345,7 @@ export const VariantSelectModal = ({
                       ))}
                     </Box>
                   </Box>
-                )}
+                )} */}
               </Box>
             </Box>
 
@@ -357,10 +357,10 @@ export const VariantSelectModal = ({
                 mt: 1,
               }}
             >
-              <Stack spacing={3}>
+              <Stack spacing={2}>
                 {/* Botón limpiar filtros */}
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: { xs: "0.9rem", md: "1rem" } }}>
                     Opciones
                   </Typography>
                   {(selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
@@ -373,21 +373,24 @@ export const VariantSelectModal = ({
                           finish: null,
                         })
                       }
-                      sx={{ textTransform: "none", fontSize: "0.875rem" }}
+                      sx={{ textTransform: "none", fontSize: "0.75rem", padding: "4px 8px" }}
                     >
-                      Limpiar filtros
+                      Limpiar
                     </Button>
                   )}
                 </Box>
                 {/* Color */}
                 {attributesPresent.hasColor && allOptions.colorOptions.length > 0 && (
-                  <FormControl fullWidth size="medium">
-                    <InputLabel id="modal-color-label">Color</InputLabel>
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="modal-color-label" sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                      Color
+                    </InputLabel>
                     <Select
                       labelId="modal-color-label"
                       value={selectedOptions.color || ""}
                       label="Color"
                       onChange={(e) => handleOptionChange("color", e.target.value || null)}
+                      sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}
                     >
                       <MenuItem value=""><em>Seleccionar color</em></MenuItem>
                       {allOptions.colorOptions.map((color) => {
@@ -401,22 +404,24 @@ export const VariantSelectModal = ({
                               opacity: isValid ? 1 : 0.5,
                             }}
                           >
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, width: "100%" }}>
                               <Box
                                 sx={{
-                                  width: 20,
-                                  height: 20,
+                                  width: 18,
+                                  height: 18,
                                   borderRadius: "50%",
                                   backgroundColor: color.hex,
                                   border: "1px solid rgba(0,0,0,0.1)",
                                   boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                                   opacity: isValid ? 1 : 0.5,
+                                  flexShrink: 0,
                                 }}
                               />
                               <ListItemText
                                 primary={color.name}
                                 secondary={!isValid ? "No disponible" : undefined}
-                                secondaryTypographyProps={{ variant: "caption" }}
+                                primaryTypographyProps={{ fontSize: { xs: "0.9rem", md: "1rem" } }}
+                                secondaryTypographyProps={{ variant: "caption", fontSize: "0.75rem" }}
                               />
                             </Box>
                           </MenuItem>
@@ -428,13 +433,16 @@ export const VariantSelectModal = ({
 
                 {/* Storage */}
                 {attributesPresent.hasStorage && allOptions.storageOptions.length > 0 && (
-                  <FormControl fullWidth size="medium">
-                    <InputLabel id="modal-storage-label">Presentación</InputLabel>
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="modal-storage-label" sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                      Presentación
+                    </InputLabel>
                     <Select
                       labelId="modal-storage-label"
                       value={selectedOptions.storage || ""}
                       label="Presentación"
                       onChange={(e) => handleOptionChange("storage", e.target.value || null)}
+                      sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}
                     >
                       <MenuItem value=""><em>Seleccionar presentación</em></MenuItem>
                       {allOptions.storageOptions.map((storage) => {
@@ -451,7 +459,8 @@ export const VariantSelectModal = ({
                             <ListItemText
                               primary={storage}
                               secondary={!isValid ? "No disponible" : undefined}
-                              secondaryTypographyProps={{ variant: "caption" }}
+                              primaryTypographyProps={{ fontSize: { xs: "0.9rem", md: "1rem" } }}
+                              secondaryTypographyProps={{ variant: "caption", fontSize: "0.75rem" }}
                             />
                           </MenuItem>
                         );
@@ -462,13 +471,16 @@ export const VariantSelectModal = ({
 
                 {/* Finish */}
                 {attributesPresent.hasFinish && allOptions.finishOptions.length > 0 && (
-                  <FormControl fullWidth size="medium">
-                    <InputLabel id="modal-finish-label">Terminación</InputLabel>
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="modal-finish-label" sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+                      Terminación
+                    </InputLabel>
                     <Select
                       labelId="modal-finish-label"
                       value={selectedOptions.finish || ""}
                       label="Terminación"
                       onChange={(e) => handleOptionChange("finish", e.target.value || null)}
+                      sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}
                     >
                       <MenuItem value=""><em>Seleccionar terminación</em></MenuItem>
                       {allOptions.finishOptions.map((finish) => {
@@ -485,7 +497,8 @@ export const VariantSelectModal = ({
                             <ListItemText
                               primary={finish || "Sin terminación"}
                               secondary={!isValid ? "No disponible" : undefined}
-                              secondaryTypographyProps={{ variant: "caption" }}
+                              primaryTypographyProps={{ fontSize: { xs: "0.9rem", md: "1rem" } }}
+                              secondaryTypographyProps={{ variant: "caption", fontSize: "0.75rem" }}
                             />
                           </MenuItem>
                         );
@@ -494,46 +507,49 @@ export const VariantSelectModal = ({
                   </FormControl>
                 )}
 
-                <Divider />
+                <Divider sx={{ my: 0.5 }} />
 
                 {/* Variante seleccionada */}
                 {selectedVariant && (
                   <Box>
                     <Typography
-                      variant="subtitle2"
+                      variant="caption"
                       color="text.secondary"
-                      sx={{ mb: 2 }}
+                      sx={{ mb: 1, display: "block", fontSize: { xs: "0.8rem", md: "0.875rem" } }}
                     >
-                      Variante seleccionada:
+                      Variante:
                     </Typography>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 1 }}>
                       {attributesPresent.hasColor && selectedVariant.color_name && (
                         <Chip
-                          label={`Color: ${selectedVariant.color_name}`}
+                          label={selectedVariant.color_name}
                           size="small"
                           avatar={
                             <Box
                               sx={{
-                                width: 16,
-                                height: 16,
+                                width: 14,
+                                height: 14,
                                 borderRadius: "50%",
                                 backgroundColor: selectedVariant.color,
                                 ml: 0.5,
                               }}
                             />
                           }
+                          sx={{ fontSize: "0.75rem" }}
                         />
                       )}
                       {attributesPresent.hasStorage && selectedVariant.storage && (
                         <Chip
-                          label={`Presentación: ${selectedVariant.storage}`}
+                          label={selectedVariant.storage}
                           size="small"
+                          sx={{ fontSize: "0.75rem" }}
                         />
                       )}
                       {attributesPresent.hasFinish && selectedVariant.finish && (
                         <Chip
-                          label={`Terminación: ${selectedVariant.finish}`}
+                          label={selectedVariant.finish}
                           size="small"
+                          sx={{ fontSize: "0.75rem" }}
                         />
                       )}
                     </Box>
@@ -542,31 +558,32 @@ export const VariantSelectModal = ({
 
                 {/* Cantidad */}
                 <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 2 }}>
+                  <Typography variant="caption" sx={{ mb: 1, display: "block", fontSize: { xs: "0.8rem", md: "0.875rem" }, fontWeight: 600 }}>
                     Cantidad
                   </Typography>
 
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <IconButton
                       size="small"
                       onClick={decreaseQuantity}
                       disabled={quantity <= 1 || !selectedVariant}
+                      sx={{ padding: "4px" }}
                     >
-                      <RemoveIcon />
+                      <RemoveIcon sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" } }} />
                     </IconButton>
 
                     <Box
                       sx={{
-                        minWidth: 80,
+                        minWidth: 50,
                         textAlign: "center",
                         border: "1px solid",
                         borderColor: "divider",
                         borderRadius: 1,
-                        py: 1,
-                        px: 2,
+                        py: 0.5,
+                        px: 1,
                       }}
                     >
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, fontSize: { xs: "0.9rem", md: "1rem" } }}>
                         {quantity}
                       </Typography>
                     </Box>
@@ -577,19 +594,20 @@ export const VariantSelectModal = ({
                       disabled={
                         !selectedVariant || quantity >= (selectedVariant?.stock || 0)
                       }
+                      sx={{ padding: "4px" }}
                     >
-                      <AddIcon />
+                      <AddIcon sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" } }} />
                     </IconButton>
 
                     {selectedVariant && (
-                      <Typography variant="caption" color="text.secondary">
-                        {selectedVariant.stock} disponibles
+                      <Typography variant="caption" color="text.secondary" sx={{ ml: "auto", fontSize: { xs: "0.7rem", md: "0.8rem" } }}>
+                        {selectedVariant.stock} disp.
                       </Typography>
                     )}
                   </Box>
                 </Box>
 
-                <Divider />
+                <Divider sx={{ my: 0.5 }} />
 
                 {/* Precios */}
                 <Box
@@ -600,19 +618,19 @@ export const VariantSelectModal = ({
                   }}
                 >
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Precio unitario
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: "0.7rem", md: "0.8rem" } }}>
+                      Unitario
                     </Typography>
-                    <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                    <Typography variant="body2" color="primary" sx={{ fontWeight: 600, fontSize: { xs: "1rem", md: "1.1rem" } }}>
                       {formatPrice(unitPrice)}
                     </Typography>
                   </Box>
 
                   <Box sx={{ textAlign: "right" }}>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: "0.7rem", md: "0.8rem" } }}>
                       Total
                     </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", md: "1.3rem" } }}>
                       {formatPrice(totalPrice)}
                     </Typography>
                   </Box>
@@ -620,14 +638,14 @@ export const VariantSelectModal = ({
 
                 {/* Alertas */}
                 {!selectedVariant && (selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
-                  <Alert severity="warning">
-                    Esta combinación no está disponible. Intenta con otras opciones.
+                  <Alert severity="warning" sx={{ py: 1, fontSize: { xs: "0.8rem", md: "0.875rem" } }}>
+                    Combinación no disponible
                   </Alert>
                 )}
 
                 {selectedVariant && selectedVariant.stock === 0 && (
-                  <Alert severity="error">
-                    Producto agotado para esta combinación
+                  <Alert severity="error" sx={{ py: 1, fontSize: { xs: "0.8rem", md: "0.875rem" } }}>
+                    Agotado
                   </Alert>
                 )}
 
@@ -636,10 +654,11 @@ export const VariantSelectModal = ({
                   selectedVariant.stock <= 10 && (
                     <Alert
                       severity={selectedVariant.stock <= 3 ? "warning" : "info"}
+                      sx={{ py: 1, fontSize: { xs: "0.8rem", md: "0.875rem" } }}
                     >
                       {selectedVariant.stock <= 3
-                        ? `¡Últimas unidades! Solo ${selectedVariant.stock} en stock.`
-                        : `Stock limitado: ${selectedVariant.stock} unidades disponibles.`}
+                        ? `¡Últimas ${selectedVariant.stock}!`
+                        : `Solo ${selectedVariant.stock} disponibles`}
                     </Alert>
                   )}
               </Stack>
@@ -648,8 +667,8 @@ export const VariantSelectModal = ({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, gap: 1 }}>
-        <Button onClick={onClose} color="inherit" disabled={isSubmitting}>
+      <DialogActions sx={{ p: 2, gap: 1, flexDirection: { xs: "column-reverse", md: "row" } }}>
+        <Button onClick={onClose} color="inherit" disabled={isSubmitting} fullWidth={false}>
           Cancelar
         </Button>
         <Button
@@ -658,6 +677,7 @@ export const VariantSelectModal = ({
           disabled={!selectedVariant || selectedVariant.stock <= 0 || isSubmitting}
           startIcon={isSubmitting ? <CircularProgress size={16} /> : null}
           sx={{ minWidth: 140 }}
+          fullWidth
         >
           {isSubmitting ? "Agregando..." : "Agregar al carrito"}
         </Button>
