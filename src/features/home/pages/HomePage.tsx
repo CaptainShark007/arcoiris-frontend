@@ -1,10 +1,13 @@
 import { Box, Container, Typography, CircularProgress } from "@mui/material";
-import { carouselSlides, categories } from '../data/mockData'
+import { carouselSlides } from '../data/mockData'
 import { CategoryCarousel, HeroCarousel, ProductCarousel } from '../components';
 import { useHomeProducts } from '../hooks/useHomeProducts';
+import { useCategories } from "@features/shop/hooks/products/useCategories";
+import { Loader } from "@shared/components";
 
 const HomePage = () => {
   const { recentProducts, popularProducts, isLoading, isError } = useHomeProducts();
+  const { categories, isLoading: isCategoriesLoading } = useCategories();
 
   if (isError) {
     return (
@@ -15,6 +18,8 @@ const HomePage = () => {
       </Container>
     );
   }
+
+  if (isCategoriesLoading) return <Loader />;
 
   return (
     <Box className="homepage">

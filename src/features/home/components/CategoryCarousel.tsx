@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Box, IconButton, useTheme, useMediaQuery } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { CategoryCard } from "./CategoryCard";
-import type { Category } from "../types/home.types";
+import { Category } from "@shared/types";
+
 
 interface CategoryCarouselProps {
   categories: Category[];

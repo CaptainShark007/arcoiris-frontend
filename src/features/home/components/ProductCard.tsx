@@ -42,7 +42,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         id: variant.id,
         name: product.name,
         price: variant.price,
-        image: product.images[0],
+        image: product.images[0] ?? 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png',
         variant: {
           color: variant.color_name,
           storage: variant.storage,
@@ -84,7 +84,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
         <CardMedia
           component='img'
-          image={product.images[0]}
+          image={product.images[0] ?? 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'}
           alt={product.name}
           sx={{ height: 200, objectFit: 'contain', p: 1 }}
         />

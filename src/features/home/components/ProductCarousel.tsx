@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Box, IconButton, useTheme, useMediaQuery } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { ProductCard } from "./ProductCard";
-import type { Product } from "../types/home.types";
+import { Product } from "@shared/types";
 
 interface ProductCarouselProps {
   products: Product[];
@@ -11,7 +11,7 @@ interface ProductCarouselProps {
 
 export const ProductCarousel: React.FC<ProductCarouselProps> = ({ 
   products,
-  showOriginalPrice = false 
+  //showOriginalPrice = false 
 }) => {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
@@ -74,7 +74,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
               >
                 <ProductCard 
                   product={product} 
-                  showOriginalPrice={showOriginalPrice}
+                  //showOriginalPrice={showOriginalPrice}
                 />
               </Box>
             ))}
