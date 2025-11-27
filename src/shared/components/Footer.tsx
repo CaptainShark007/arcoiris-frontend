@@ -2,6 +2,7 @@ import { Box, Typography, TextField, Button, Container, Link, IconButton } from 
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import logo from "../../assets/images/logo_comercio_v2.png";
 import { FormEvent } from "react";
@@ -247,6 +248,19 @@ export const Footer = () => {
                 }}
               >
                 <WhatsAppIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                component="a"
+                href="mailto:tienda.arcoiris.team@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                size="small"
+                sx={{
+                  color: "text.primary",
+                  "&:hover": { color: "primary.main", bgcolor: "rgba(0, 102, 255, 0.08)" },
+                }}
+              >
+                <MailOutlineIcon fontSize="small" />
               </IconButton>
             </Box>
           </Box>
