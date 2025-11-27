@@ -10,26 +10,32 @@ const OrdersUserPage = () => {
   if (isLoading || !orders) return <Loader />;
 
   return (
-    <Box sx={{ p: 3, mb: 5 }}>
+    <Box sx={{ 
+      p: { xs: 1, sm: 3 }, 
+      mb: 5,
+      maxWidth: '100%',
+      overflow: 'hidden'
+    }}>
       <Box display="flex" flexDirection="row" alignItems="center" gap={1} mb={3}>
-        <Typography variant="h4" component="h1">
+        <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
           Pedidos
         </Typography>
-        <Typography variant="h6" sx={{ color: "text.secondary" }}>
+        <Typography variant="h6" sx={{ color: "text.secondary", fontSize: { xs: '0.875rem', sm: '1.25rem' } }}>
           {orders.length}
         </Typography>
       </Box>
 
       {orders.length === 0 ? (
-        <Box>
-          <Typography variant="body1" mb={2}>
-            Todavia no has hecho ningun pedido
+        <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+          <Typography variant="body1" mb={2} sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+            Todavía no has hecho ningún pedido
           </Typography>
           <Button
             component={Link}
             to="/tienda"
             variant="contained"
             color="primary"
+            size={window.innerWidth < 600 ? "small" : "medium"}
           >
             Empezar a comprar
           </Button>

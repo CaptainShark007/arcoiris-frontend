@@ -121,7 +121,7 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
                     categories.map((category: any) => (
                       <TableRow key={category.id}>
                         <TableCell sx={{ p: 1 }}>
-                          {category.image ? (
+                          {/* {category.image ? (
                             <Box
                               component="img"
                               src={category.image}
@@ -149,7 +149,24 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
                             >
                               Sin imagen
                             </Box>
-                          )}
+                          )} */}
+                          <Box
+                            component="img"
+                            src={
+                              category.image
+                                ? category.image
+                                : "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png"
+                            }
+                            alt={category.name}
+                            sx={{
+                              width: 50,
+                              height: 50,
+                              objectFit: 'contain',
+                              borderRadius: 1,
+                              border: '1px solid #e5e7eb',
+                              backgroundColor: '#fff',
+                            }}
+                          />
                         </TableCell>
                         <TableCell sx={{ fontWeight: 500 }}>
                           {category.name}

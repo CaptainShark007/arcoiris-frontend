@@ -150,7 +150,10 @@ export const CategoryFormModal = ({
           name: formData.name,
           slug: formData.slug,
           description: formData.description || null,
-          ...(formData.image && { image: formData.image }),
+          //...(formData.image && { image: formData.image }),
+          image: formData.image === null && !formData.imagePreview 
+            ? null 
+            : formData.image || undefined,
         },
       });
     }

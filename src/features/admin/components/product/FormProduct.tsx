@@ -15,7 +15,10 @@ import { Loader } from '@shared/components';
 import { useProduct } from '@features/product/hooks/useProduct';
 import { JSONContent } from '@tiptap/react';
 import { useCreateProduct, useUpdateProduct } from '@features/admin/hooks';
-import { ProductFormValues, productSchema } from '@features/admin/schema/productSchema';
+import {
+  ProductFormValues,
+  productSchema,
+} from '@features/admin/schema/productSchema';
 
 interface Props {
   titleForm: string;
@@ -37,8 +40,8 @@ export const FormProduct = ({ titleForm }: Props) => {
   const { product, isLoading } = useProduct(slug);
 
   const { mutate: createProduct, isPending } = useCreateProduct();
-
-  const { mutate: updateProduct, isPending: isUpdatePending } = useUpdateProduct(product?.id || '');
+  const { mutate: updateProduct, isPending: isUpdatePending } =
+    useUpdateProduct(product?.id || '');
 
   const navigate = useNavigate();
 
@@ -68,8 +71,9 @@ export const FormProduct = ({ titleForm }: Props) => {
     }
   }, [product, isLoading, setValue]);
 
-  const onSubmit = handleSubmit((data) => {
-    // console.log('data form product:', data);
+  const onSubmit = (data: ProductFormValues) => {
+    console.log('Datos a enviar:', data);
+    console.log('Errores del formulario:', errors);
 
     if (slug) {
       updateProduct({
@@ -110,7 +114,7 @@ export const FormProduct = ({ titleForm }: Props) => {
           })) ?? [],
       });
     }
-  });
+  };
 
   const watchName = watch('name');
 
@@ -127,133 +131,182 @@ export const FormProduct = ({ titleForm }: Props) => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 3,
-        position: 'relative',
-        pb: 10,
-				//bgcolor: '#f9fafb',
+        gap: { xs: 1.5, sm: 2, md: 2.5 },
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'hidden',
+        boxSizing: 'border-box',
       }}
     >
+      {/* Header */}
       <Box
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-					//bgcolor: '#f9fafb',
+          flexWrap: 'wrap',
+          gap: 1.5,
         }}
       >
-        <Box sx={{ 
-					display: 'flex', 
-					alignItems: 'center', 
-					gap: 1.5,
-					//bgcolor: '#f9fafb',
-				}}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 0.75, sm: 1 },
+          }}
+        >
           <IconButton
             onClick={() => navigate(-1)}
             sx={{
-              //bgcolor: 'white',
-              //border: '1px solid #e2e8f0',
               transition: 'all 400ms',
               '&:hover': { transform: 'scale(1.05)' },
+              p: { xs: 0.25, sm: 0.5 },
             }}
           >
-            <ArrowBackIosIcon sx={{ fontSize: '1.2rem' }} />
+            <ArrowBackIosIcon sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }} />
           </IconButton>
           <Typography
-            variant='h5'
-            sx={{ fontWeight: 'bold', textTransform: 'capitalize' }}
+            variant='h6'
+            sx={{
+              fontWeight: 'bold',
+              textTransform: 'capitalize',
+              fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
+            }}
           >
             {titleForm}
           </Typography>
         </Box>
       </Box>
 
-      <Box
-        component='form'
-        onSubmit={onSubmit}
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
-          gap: 3,
-          alignContent: 'start',
-					//bgcolor: '#f9fafb',
-        }}
-      >
-        <SectionFormProduct titleSection='Detalles del Producto'>
-          <InputForm
-            type='text'
-            placeholder='Ejemplo: Esmalte Sintético'
-            label='nombre'
-            name='name'
-            register={register}
-            errors={errors}
-            required
-          />
-          <FeaturesInput control={control} errors={errors} />
-        </SectionFormProduct>
-
-        <SectionFormProduct>
-          <InputForm
-            type='text'
-            label='Slug'
-            name='slug'
-            placeholder='esmalte-sintetico'
-            register={register}
-            errors={errors}
-          />
-          <InputForm
-            type='text'
-            label='Marca'
-            name='brand'
-            placeholder='DaMa'
-            register={register}
-            errors={errors}
-            required
-          />
-        </SectionFormProduct>
-
-        <SectionFormProduct titleSection='Variantes del Producto'>
-          <VariantsInput
-            control={control}
-            errors={errors}
-            register={register}
-          />
-        </SectionFormProduct>
-
-        <SectionFormProduct titleSection='Imágenes del producto'>
-          <UploaderImages errors={errors} setValue={setValue} watch={watch} />
-        </SectionFormProduct>
-
-        <Box sx={{ gridColumn: 'span', lg: { gridColumn: '1/-1' } }}>
-          <SectionFormProduct titleSection='Descripción del producto'>
-            <Editor
-              setValue={setValue}
+      {/* Form Grid */}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Box
+          //component="form"
+          //onSubmit={onSubmit}
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: '1fr',
+              md: '1fr',
+              lg: '2fr 1fr',
+            },
+            gap: { xs: 1.5, sm: 2, md: 2.5 },
+            alignContent: 'start',
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Detalles del Producto */}
+          <SectionFormProduct titleSection='Detalles del Producto'>
+            <InputForm
+              type='text'
+              placeholder='Ejemplo: Esmalte Sintético'
+              label='nombre'
+              name='name'
+              register={register}
               errors={errors}
-              initialContent={product?.description as JSONContent | undefined}
+              required
+            />
+            <FeaturesInput control={control} errors={errors} />
+          </SectionFormProduct>
+
+          {/* Datos adicionales */}
+          <SectionFormProduct>
+            <InputForm
+              type='text'
+              label='Slug'
+              name='slug'
+              placeholder='esmalte-sintetico'
+              register={register}
+              errors={errors}
+            />
+            <InputForm
+              type='text'
+              label='Marca'
+              name='brand'
+              placeholder='DaMa'
+              register={register}
+              errors={errors}
+              required
             />
           </SectionFormProduct>
+
+          {/* Variantes */}
+          <Box sx={{ gridColumn: { xs: 'span', sm: 'span', lg: '1 / -1' } }}>
+            <SectionFormProduct titleSection='Variantes del Producto'>
+              <VariantsInput
+                control={control}
+                errors={errors}
+                register={register}
+              />
+            </SectionFormProduct>
+          </Box>
+
+          {/* Imágenes */}
+          <Box sx={{ gridColumn: { xs: 'span', sm: 'span', lg: '1 / -1' } }}>
+            <SectionFormProduct titleSection='Imágenes del producto'>
+              <UploaderImages
+                errors={errors}
+                setValue={setValue}
+                watch={watch}
+              />
+            </SectionFormProduct>
+          </Box>
+
+          {/* Descripción */}
+          <Box sx={{ gridColumn: { xs: 'span', sm: 'span', lg: '1 / -1' } }}>
+            <SectionFormProduct titleSection='Descripción del producto'>
+              <Editor
+                setValue={setValue}
+                errors={errors}
+                initialContent={product?.description as JSONContent | undefined}
+              />
+            </SectionFormProduct>
+          </Box>
         </Box>
 
+        {/* Action Buttons */}
         <Box
           sx={{
             display: 'flex',
-            gap: 1.5,
-            position: 'absolute',
-            top: 0,
-            right: 0,
+            gap: { xs: 1, sm: 1.5 },
+            justifyContent: { xs: 'stretch', sm: 'flex-end' },
+            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            mt: { xs: 1, sm: 1.5 },
           }}
         >
-          <Button variant='outlined' onClick={() => navigate(-1)}>
+          <Button
+            variant='outlined'
+            onClick={() => navigate(-1)}
+            sx={{
+              flex: { xs: 1, sm: 'none' },
+              textTransform: 'none',
+              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+              py: { xs: 0.75, sm: 1 },
+            }}
+          >
             Cancelar
           </Button>
           <Button
             variant='contained'
             type='submit'
-            sx={{ backgroundColor: '#0007d7ff' }}
+            sx={{
+              flex: { xs: 1, sm: 'none' },
+              backgroundColor: '#0007d7ff',
+              textTransform: 'none',
+              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+              py: { xs: 0.75, sm: 1 },
+              '&:hover': {
+                backgroundColor: '#0005a0ff',
+              },
+            }}
           >
             Guardar Producto
           </Button>
         </Box>
-      </Box>
+      </form>
     </Box>
   );
 };

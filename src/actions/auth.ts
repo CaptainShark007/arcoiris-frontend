@@ -25,25 +25,24 @@ export const signUp = async ({ email, password, fullName, phoneNumber }: IAuthRe
     });
 
     if (error) {
-      throw new Error("Error en el registro");
+      if (error.message.includes("already registered")) {
+        throw new Error("El correo electrónico ya está registrado");
+      }
+      if (error.message.includes("Password")) {
+        throw new Error("La contraseña debe tener al menos 6 caracteres");
+      }
+      throw new Error(error.message || "Error en el registro");
     }
 
     const userId = data.user?.id;
-
-    if (!userId) {
-      throw new Error("Error al obtener el ID del usuario");
-    }
+    if (!userId) throw new Error("Error al obtener el ID del usuario");
 
     // 2. Autenticar el usuario recién creado (opcional, ya que supabase lo hace automáticamente)
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
-    if (signInError) {
-      console.error(signInError);
-      throw new Error("Email o contraseña incorrectos");
-    }
+    if (signInError) throw new Error("Email o contraseña incorrectos");
 
     // 3. Insertar el rol por defecto
     const { error: roleError } = await supabase.from("user_roles").insert({
@@ -51,10 +50,7 @@ export const signUp = async ({ email, password, fullName, phoneNumber }: IAuthRe
       role: "customer",
     });
 
-    if (roleError) {
-      console.error(roleError);
-      throw new Error("Error al asignar el rol de usuario");
-    }
+    if (roleError) throw new Error("Error al asignar el rol de usuario");
 
     // 4. Insertar los datos del usuario en la tabla customers
     const { error: customerError } = await supabase.from("customers").insert({
@@ -64,33 +60,40 @@ export const signUp = async ({ email, password, fullName, phoneNumber }: IAuthRe
       email,
     });
 
-    if (customerError) {
-      console.error(customerError);
-      throw new Error("Error al insertar los datos del cliente");
-    }
+    if (customerError) throw new Error("Error al insertar los datos del cliente");
 
     return data;
 
   } catch (error) {
-    console.error(error)
-    throw new Error("Error en el registro")
+    const message = error instanceof Error ? error.message : "Error en el registro";
+    throw new Error(message);
   }
 
 }
 
 export const signIn = async ({ email, password }: IAuthLogin) => {
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  if (error) {
-    console.error(error);
-    throw new Error("Email o contraseña incorrectos");
+    if (error) {
+      if (error.message.includes("Invalid login credentials")) {
+        throw new Error("Email o contraseña incorrectos");
+      }
+      if (error.message.includes("Email not confirmed")) {
+        throw new Error("Por favor confirma tu email antes de iniciar sesión");
+      }
+      throw new Error(error.message || "Error al iniciar sesión");
+    }
+
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error al iniciar sesión";
+    throw new Error(message);
   }
-
-  return data;
 
 }
 

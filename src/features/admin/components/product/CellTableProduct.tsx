@@ -1,4 +1,4 @@
-import { TableCell } from '@mui/material';
+import { TableCell, useMediaQuery, useTheme } from '@mui/material';
 
 interface Props {
   content: string;
@@ -6,8 +6,19 @@ interface Props {
 }
 
 export const CellTableProduct = ({ content, sx }: Props) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   return (
-    <TableCell sx={{ fontWeight: 400, letterSpacing: '-0.025em', ...sx }}>
+    <TableCell 
+      sx={{ 
+        fontWeight: 400, 
+        letterSpacing: '-0.025em', 
+        fontSize: isMobile ? '0.8rem' : '0.875rem',
+        py: isMobile ? 1 : 2,
+        ...sx 
+      }}
+    >
       {content}
     </TableCell>
   );

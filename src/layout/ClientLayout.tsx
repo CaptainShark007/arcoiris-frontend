@@ -1,12 +1,24 @@
+import React from "react";
 import { Loader } from "@shared/components";
 import { useUsers } from "@shared/hooks";
 import { NavLink, Outlet } from "react-router";
-import { AppBar, Box, Button, Container, Toolbar } from "@mui/material";
+import { 
+  AppBar, 
+  Box, 
+  Button, 
+  Container, 
+  Toolbar, 
+  useMediaQuery, 
+  useTheme,
+  Typography
+} from "@mui/material";
 import { useAuthStateChange, useLogout, useRoleUser } from "@features/auth/hooks";
 
 export const ClientLayout = () => {
   const { session, isLoading: isLoadingSession } = useUsers();
   const { data: role, isLoading: isLoadingRole } = useRoleUser(session?.user.id as string);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Maneja cambios de estado de autenticación
   useAuthStateChange();
@@ -17,7 +29,7 @@ export const ClientLayout = () => {
   if (isLoadingSession || isLoadingRole) return <Loader />;
 
   return (
-    <Box display="flex" flexDirection="column" gap={3} >
+    <Box display="flex" flexDirection="column" gap={3}>
       <AppBar
         position="static"
         elevation={0}
@@ -28,55 +40,87 @@ export const ClientLayout = () => {
           backgroundColor: "background.paper",
         }}
       >
-        <Toolbar sx={{ justifyContent: "center", gap: 4 }}>
-          <Button
-            component={NavLink}
-            to="/cuenta/pedidos"
-            sx={{
-              fontWeight: 500,
-              textTransform: "none",
-              fontSize: "0.95rem",
-              "&.active": { fontWeight: 700 },
-              //"&:hover": { textDecoration: "underline" },
+        <Toolbar sx={{ 
+          justifyContent: "space-between",
+          px: { xs: 1, sm: 2 },
+          flexWrap: 'wrap',
+          gap: { xs: 1, sm: 2 },
+        }}>
+          {/* Título */}
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
+              fontWeight: 600,
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              flexShrink: 0,
+              color: 'primary.main',
             }}
           >
-            Pedidos
-          </Button>
+            Perfil
+          </Typography>
 
-          {
-            role === "admin" && (
+          {/* Botones - siempre visibles */}
+          <Box sx={{ 
+            display: "flex", 
+            gap: { xs: 1, sm: 4 },
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end',
+            flex: { xs: 1, sm: 'auto' },
+          }}>
+            <Button
+              component={NavLink}
+              to="/cuenta/pedidos"
+              size={isMobile ? "small" : "medium"}
+              sx={{
+                fontWeight: 500,
+                textTransform: "none",
+                fontSize: { xs: "0.8rem", sm: "0.95rem" },
+                "&.active": { fontWeight: 700 },
+                minWidth: 'auto',
+                px: { xs: 1, sm: 2 },
+              }}
+            >
+              Pedidos
+            </Button>
+
+            {role === "admin" && (
               <Button
                 component={NavLink}
                 to="/panel"
+                size={isMobile ? "small" : "medium"}
                 sx={{
                   fontWeight: 500,
                   textTransform: "none",
-                  fontSize: "0.95rem",
+                  fontSize: { xs: "0.8rem", sm: "0.95rem" },
                   "&.active": { fontWeight: 700 },
-                  //"&:hover": { textDecoration: "underline" },
+                  minWidth: 'auto',
+                  px: { xs: 1, sm: 2 },
                 }}
               >
-                Panel Administrador
+                Panel
               </Button>
-            )
-          }
+            )}
 
-          <Button
-            onClick={() => handleLogout()}
-            disabled={isLoggingOut}
-            sx={{
-              fontWeight: 500,
-              textTransform: "none",
-              fontSize: "0.95rem",
-              //"&:hover": { textDecoration: "underline" },
-            }}
-          >
-            {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-          </Button>
+            <Button
+              onClick={() => handleLogout()}
+              disabled={isLoggingOut}
+              size={isMobile ? "small" : "medium"}
+              sx={{
+                fontWeight: 500,
+                textTransform: "none",
+                fontSize: { xs: "0.8rem", sm: "0.95rem" },
+                minWidth: 'auto',
+                px: { xs: 1, sm: 2 },
+              }}
+            >
+              {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
 
-      <Container sx={{ flex: 1 }}>
+      <Container sx={{ flex: 1, px: { xs: 1, sm: 2 } }}>
         <Outlet />
       </Container>
     </Box>

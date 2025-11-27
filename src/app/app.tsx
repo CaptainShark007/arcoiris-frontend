@@ -11,6 +11,7 @@ import LazyFallback from '@shared/components/LazyFallback';
 import { theme } from '@shared/constants/theme';
 import { ToastProvider } from '@shared/providers/ToastProvider';
 import { queryClient } from './queryClient';
+import { SidebarProvider } from '@shared/contexts/SidebarContext';
 
 export default function App() {
   return (
@@ -22,7 +23,9 @@ export default function App() {
           <QueryClientProvider client={queryClient}>
             <ToastProvider>
               <BrowserRouter>
+              <SidebarProvider>
                 <Router />
+              </SidebarProvider>
               </BrowserRouter>
             </ToastProvider>
           </QueryClientProvider>
