@@ -21,13 +21,14 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useState, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo_comercio_v2.png';
-import { NotificationPopup } from './PopupNotification';
+import { NotificationPopup } from './NotificationPopup';
 import { useCustomer, useUsers } from '@shared/hooks';
 import { Loader } from './Loader';
 import LoginIcon from '@mui/icons-material/Login';
 import { useCartStore } from '../../storage/useCartStore';
 import { CartSidebar } from './CartSidebar';
 import { HeaderSearch } from './HeaderSearch';
+import { useCategories } from '@features/shop/hooks/products/useCategories';
 
 export const Navbar = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -43,6 +44,8 @@ export const Navbar = () => {
   const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
 
   const initial = customer?.full_name?.[0]?.toUpperCase() || 'U';
+
+  const { categories, isLoading: isLoadingCategories } = useCategories();
 
   const handleOpen = (event: MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -128,27 +131,20 @@ export const Navbar = () => {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              <MenuItem
-                component={Link}
-                to='/categorias/electronicas'
-                onClick={handleClose}
-              >
-                Electronica
-              </MenuItem>
-              <MenuItem
-                component={Link}
-                to='/categorias/ropas'
-                onClick={handleClose}
-              >
-                Ropas
-              </MenuItem>
-              <MenuItem
-                component={Link}
-                to='/categorias/hogar'
-                onClick={handleClose}
-              >
-                Hogar
-              </MenuItem>
+              {isLoadingCategories ? (
+                <MenuItem>Cargando...</MenuItem>
+              ) : (
+                categories?.map((cat) => (
+                  <MenuItem
+                    key={cat.id}
+                    component={Link}
+                    to={`/categorias/${cat.slug}`}
+                    onClick={handleClose}
+                  >
+                    {cat.name}
+                  </MenuItem>
+                ))
+              )}
             </Menu>
             <Button
               component={Link}
