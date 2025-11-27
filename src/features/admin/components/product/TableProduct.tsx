@@ -594,7 +594,7 @@ export const TableProduct = () => {
                           gap: 0.5,
                           fontSize: '0.8rem',
                           fontWeight: 500,
-                          color: '#10b981',
+                          //color: '#10b981',
                         }}
                       >
                         Activar

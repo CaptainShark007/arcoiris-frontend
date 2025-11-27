@@ -20,9 +20,11 @@ export const getFilteredProducts = async ({
   const to = from + itemsPerPage - 1;
 
   // consulta base
+  // mostrar solo los productos activos
   let query = supabase
     .from('products')
-    .select('*, variants (*), categories(id, name, slug)', { count: 'exact' }) // nuevo: obtener categorias relacionadas
+    .select('*, variants (*), categories(id, name, slug)', { count: 'exact' })
+    .eq('is_active', true)
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -63,7 +65,10 @@ export const getFilteredProducts = async ({
 
 // metodo para obtener todas las marcas unicas de la tabla products
 export const getBrands = async (): Promise<string[]> => {
-  const { data, error } = await supabase.from('products').select('brand');
+  const { data, error } = await supabase
+    .from('products')
+    .select('brand')
+    .eq('is_active', true);
 
   if (error) {
     console.log('Error fetching brands:', error.message);
@@ -82,6 +87,7 @@ export const getRecentProducts = async () => {
   const { data, error } = await supabase
     .from('products')
     .select('*, variants (*)')
+    .eq('is_active', true)
     .order('created_at', { ascending: false })
     .limit(8);
 
@@ -111,6 +117,7 @@ export const getRandomProducts = async () => {
   const { data, error } = await supabase
     .from('products')
     .select('*, variants (*)')
+    .eq('is_active', true)
     .limit(20);
 
   if (error) {
@@ -143,6 +150,7 @@ export const getProductBySlug = async (slug: string) => {
     .from('products')
     .select('*, variants (*)')
     .eq('slug', slug)
+    .eq('is_active', true)
     .single(); // seleccionar un solo registro
 
     if (error) {
@@ -153,6 +161,10 @@ export const getProductBySlug = async (slug: string) => {
   return data;
 
 }
+
+// **************************************************************************************************
+// *************************************** ADMINISTRADOR ********************************************
+// **************************************************************************************************
 
 // metodo para obtener las variantes de un producto
 export const getProductVariants = async (productId: string) => {
@@ -170,6 +182,7 @@ export const getProductVariants = async (productId: string) => {
   return data || [];
 }
 
+// metodo para obtener todos los productos con sus variantes paginados
 export const getProducts = async (page: number) => {
 	const itemsPerPage = 10;
 	const from = (page - 1) * itemsPerPage;
@@ -193,20 +206,7 @@ export const getProducts = async (page: number) => {
 	return { products, count };
 };
 
-
-
-
-
-
-
-
-
-
-// **************************************************************************************************
-// *************************************** ADMINISTRADOR ********************************************
-// **************************************************************************************************
-// ************************ CRUD de productos (crear, actualizar, eliminar)**************************
-
+// metodo para actualizar la categoria de un producto
 export const updateProductCategory = async (productId: string, categoryId: string | null) => {
 
   const { data, error } = await supabase
@@ -225,6 +225,7 @@ export const updateProductCategory = async (productId: string, categoryId: strin
 
 }
 
+// ************************ CRUD de productos (crear, actualizar, eliminar)**************************
 // **************************************************************************************************
 // *************************************** CREAR PRODUCTO ********************************************
 // *************************************** FORMA DEL VIDEO *******************************************
