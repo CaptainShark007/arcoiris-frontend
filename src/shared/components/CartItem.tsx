@@ -1,11 +1,5 @@
 import { memo } from 'react';
-import {
-  Box,
-  IconButton,
-  Typography,
-  Card,
-  CardMedia,
-} from '@mui/material';
+import { Box, IconButton, Typography, Card, CardMedia } from '@mui/material';
 import { Add, Remove, Delete } from '@mui/icons-material';
 import { useCartStore } from '../../storage/useCartStore';
 import type { CartItem as CartItemType } from '../types/cart';
@@ -51,24 +45,22 @@ export const CartItem = memo(({ item }: CartItemProps) => {
         position: 'relative',
         boxShadow: 'none',
         borderRadius: 0,
-        //border: 1,
         borderBottom: 1,
         borderColor: 'divider',
-        p: 1.5,
-        gap: 1.5,
-        height: 'auto',
-        bgcolor: 'background.default',
+        p: { xs: 1, sm: 1.5 },
+        gap: { xs: 1, sm: 1.5 },
+        flexDirection: { xs: 'column', sm: 'row' }, // ⭐ MOBILE: columna
+        alignItems: { xs: 'center', sm: 'flex-start' },
       }}
     >
       {/* Imagen */}
       <CardMedia
         component='img'
         sx={{
-          width: 120,
-          height: 120,
+          width: { xs: 90, sm: 120 },
+          height: { xs: 90, sm: 120 },
           objectFit: 'contain',
-          //borderRadius: 1,
-          flexShrink: 0,
+          borderRadius: 1,
         }}
         image={item.image}
         alt={item.name}
@@ -80,37 +72,50 @@ export const CartItem = memo(({ item }: CartItemProps) => {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
-          minWidth: 0,
-          pr: 4,
+          textAlign: { xs: 'center', sm: 'left' }, // ⭐ Mobile centrado
+          width: '100%',
+          mt: { xs: 1, sm: 0 },
+          pr: { xs: 0, sm: 4 },
         }}
       >
-        {/* Nombre y precio */}
-        <Box>
-          <Typography
-            variant='subtitle1'
-            sx={{
-              fontWeight: 600,
-              mb: 0.5,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {item.name}
-          </Typography>
+        <Typography
+          variant='subtitle1'
+          sx={{
+            fontWeight: 600,
+            mb: 0.5,
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+          }}
+        >
+          {item.name}
+        </Typography>
 
-          <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-            {variants}
-          </Typography>
+        <Typography
+          variant='body2'
+          color='text.secondary'
+          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' }, mb: 1 }}
+        >
+          {variants}
+        </Typography>
 
-          <Typography variant='subtitle2' color='primary' fontWeight='bold'>
-            {formatPrice(item.price)}
-          </Typography>
-        </Box>
+        <Typography
+          variant='subtitle2'
+          color='primary'
+          fontWeight='bold'
+          sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+        >
+          {formatPrice(item.price)}
+        </Typography>
 
         {/* Cantidad */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box
+          sx={{
+            mt: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: { xs: 'center', sm: 'flex-start' },
+            gap: 1.2,
+          }}
+        >
           <IconButton
             size='small'
             onClick={handleDecrement}
@@ -118,25 +123,12 @@ export const CartItem = memo(({ item }: CartItemProps) => {
             sx={{
               border: 1,
               borderColor: 'divider',
-              p: 0.5,
-              '&:hover': {
-                bgcolor: 'action.hover',
-              },
             }}
           >
             <Remove fontSize='small' />
           </IconButton>
 
-          <Typography
-            variant='body2'
-            sx={{
-              minWidth: 28,
-              textAlign: 'center',
-              fontWeight: 600,
-            }}
-          >
-            {item.quantity}
-          </Typography>
+          <Typography sx={{ fontWeight: 600 }}>{item.quantity}</Typography>
 
           <IconButton
             size='small'
@@ -145,10 +137,6 @@ export const CartItem = memo(({ item }: CartItemProps) => {
             sx={{
               border: 1,
               borderColor: 'divider',
-              p: 0.5,
-              '&:hover': {
-                bgcolor: 'action.hover',
-              },
             }}
           >
             <Add fontSize='small' />
@@ -156,18 +144,15 @@ export const CartItem = memo(({ item }: CartItemProps) => {
         </Box>
       </Box>
 
-      {/* Botón eliminar */}
+      {/* Eliminar */}
       <IconButton
         onClick={handleRemove}
         size='small'
         sx={{
           position: 'absolute',
-          top: 8,
-          right: 8,
+          top: { xs: 6, sm: 10 },
+          right: { xs: 6, sm: 10 },
           color: 'error.main',
-          '&:hover': {
-            bgcolor: 'error.lighter',
-          },
         }}
       >
         <Delete fontSize='small' />

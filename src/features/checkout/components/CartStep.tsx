@@ -10,11 +10,11 @@ interface CartStepProps {
 
 export const CartStep = ({ onNext }: CartStepProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const items = useCartStore(state => state.items);
+  const items = useCartStore((state) => state.items);
   const { totalQuantity, totalPrice } = useCartStore();
   const { setOrderSummary } = useCheckoutStore();
 
-  const filteredItems = items.filter(item => 
+  const filteredItems = items.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -37,76 +37,65 @@ export const CartStep = ({ onNext }: CartStepProps) => {
 
   return (
     <Box>
-      <Stack 
-        direction="row" 
-        justifyContent="space-between" 
-        alignItems="center"
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        justifyContent='space-between'
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
         spacing={2}
-        sx={{ 
-          mb: 1,
-          backgroundColor: 'background.default',
-        }}
+        sx={{ mb: 2 }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 'semibold' }}>
+        <Typography
+          variant='h5'
+          sx={{
+            fontSize: { xs: '1.2rem', sm: '1.5rem' },
+            fontWeight: 600,
+            textAlign: { xs: 'center', sm: 'left' },
+            width: '100%',
+          }}
+        >
           Vista previa de la orden
         </Typography>
 
         {items.length > 0 && (
-          <Box sx={{ maxWidth: '600px', width: '100%' }}>
+          <Box sx={{ width: '100%', maxWidth: 600 }}>
             <CartSearch onSearchChange={setSearchQuery} />
           </Box>
         )}
       </Stack>
 
-      {/* CONTENEDOR CON ALTURA FIJA Y SCROLL */}
+      {/* LISTA CON SCROLL */}
       <Box
         sx={{
-          maxHeight: '282px',
+          maxHeight: { xs: '65vh', sm: 300 }, // ⭐ Mucho más cómodo en mobile
           overflowY: 'auto',
-          overflowX: 'hidden',
-          mb: 1,
-          '&::-webkit-scrollbar': {
-            width: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: 'grey.100',
-            borderRadius: '4px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'grey.400',
-            borderRadius: '4px',
-            '&:hover': {
-              backgroundColor: 'grey.500',
-            },
-          },
           borderRadius: 1,
           border: 1,
           borderColor: 'divider',
+          mb: 2,
         }}
       >
         {filteredItems.length > 0 ? (
           <CartList items={filteredItems} />
         ) : searchQuery ? (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography color="text.secondary">
-              No se encontraron productos que coincidan con {searchQuery}
-            </Typography>
+          <Box sx={{ textAlign: 'center', py: 3 }}>
+            <Typography>No se encontraron productos.</Typography>
           </Box>
         ) : (
           <CartList />
         )}
       </Box>
 
-      {/* Botón solo visible en móviles */}
-      <Button 
-        variant="contained" 
+      {/* Botón móvil */}
+      <Button
+        variant='contained'
         onClick={onNext}
         disabled={items.length === 0}
         fullWidth
-        sx={{ 
-          mt: 2, 
-          mb: 8,
-          display: { xs: 'block', md: 'none' }
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          py: 1.5,
+          fontSize: '1rem',
+          mb: 2,
         }}
       >
         Continuar con entrega
