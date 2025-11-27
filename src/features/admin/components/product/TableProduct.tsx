@@ -24,26 +24,41 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
-import { DeleteProductModal, Loader, Pagination } from '@shared/components';
+import { Loader, Pagination } from '@shared/components'; // DeleteProductModal
 import { useCategories } from '@features/shop/hooks/products/useCategories';
-import { useDeleteProduct, useProducts, useUpdateProductCategory } from '@features/admin/hooks';
+import {
+  useProducts,
+  useToggleProduct,
+  useUpdateProductCategory,
+} from '@features/admin/hooks'; // useDeleteProduct
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const tableHeaders = {
-  desktop: ['', 'Nombre', 'Variante', 'Precio', 'Categoría', 'Stock', 'Fecha', ''],
-  mobile: ['Producto', 'Detalles', 'Acciones']
+  desktop: [
+    '',
+    'Nombre',
+    'Variante',
+    'Precio',
+    'Categoría',
+    'Stock',
+    'Fecha',
+    '',
+  ],
+  mobile: ['Producto', 'Detalles', 'Acciones'],
 };
 
 export const TableProduct = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  /* const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{
     id: string;
     name: string;
     variantsCount: number;
     imagesCount: number;
-  } | null>(null);
+  } | null>(null); */
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
@@ -57,10 +72,14 @@ export const TableProduct = () => {
   });
 
   const { categories, isLoading: isCategoriesLoading } = useCategories();
-  const { mutate: deleteProduct, isPending } = useDeleteProduct();
+  //const { mutate: deleteProduct, isPending } = useDeleteProduct();
   const { mutate: updateProductCategory, isPending: isUpdatingCategory } = useUpdateProductCategory();
+  const { mutate: toggleProduct, isPending: isToggling } = useToggleProduct();
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, index: number) => {
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    index: number
+  ) => {
     setAnchorEl(event.currentTarget);
     setOpenMenuIndex(index);
   };
@@ -77,7 +96,7 @@ export const TableProduct = () => {
     });
   };
 
-  const handleDeleteProduct = (product: any) => {
+  /* const handleDeleteProduct = (product: any) => {
     setProductToDelete({
       id: product.id,
       name: product.name,
@@ -86,15 +105,15 @@ export const TableProduct = () => {
     });
     setDeleteModalOpen(true);
     handleMenuClose();
-  };
+  }; */
 
-  const handleConfirmDelete = () => {
+  /* const handleConfirmDelete = () => {
     if (productToDelete) {
       deleteProduct(productToDelete.id);
       setDeleteModalOpen(false);
       setProductToDelete(null);
     }
-  };
+  }; */
 
   const handleCategoryChange = (product: any, newCategory: any) => {
     if (newCategory) {
@@ -106,24 +125,46 @@ export const TableProduct = () => {
   };
 
   const renderMobileView = () => (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, bgcolor: '#F9FAFB', mb: 2 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        bgcolor: '#F9FAFB',
+        mb: 2,
+      }}
+    >
       {products?.map((product, index) => {
         const selectedVariantIndex = selectedVariants[product.id] ?? 0;
         const selectedVariant = product.variants[selectedVariantIndex];
-        const selectedCategory = categories.find((cat) => cat.id === product.category_id);
+        const selectedCategory = categories.find(
+          (cat) => cat.id === product.category_id
+        );
+        const productIsActive = product.is_active ?? true;
 
         return (
-          <Card key={index} sx={{ p: 2, border: '1px solid #E5E7EB', bgcolor: '#F9FAFB', boxShadow: 'none' }}>
+          <Card
+            key={index}
+            sx={{
+              p: 2,
+              border: '1px solid #E5E7EB',
+              boxShadow: 'none',
+              bgcolor: productIsActive ? 'inherit' : '#fef2f2',
+              transition: 'all 200ms ease',
+            }}
+          >
             {/* Imagen y nombre */}
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', mb: 2 }}>
+            <Box
+              sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', mb: 2 }}
+            >
               <Box
-                component="img"
+                component='img'
                 src={
                   product.images[0] ||
                   'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
                 }
-                alt="Imagen Product"
-                loading="lazy"
+                alt='Imagen Product'
+                loading='lazy'
                 sx={{
                   width: 60,
                   height: 60,
@@ -133,31 +174,48 @@ export const TableProduct = () => {
                 }}
               />
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, wordBreak: 'break-word' }}>
+                <Typography
+                  variant='subtitle2'
+                  sx={{ fontWeight: 600, mb: 0.5, wordBreak: 'break-word' }}
+                >
                   {product.name}
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                <Typography
+                  variant='body2'
+                  sx={{ color: 'text.secondary', fontWeight: 500 }}
+                >
                   {formatPrice(selectedVariant.price)}
                 </Typography>
               </Box>
             </Box>
 
             {/* Detalles */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}
+            >
               {/* Variante */}
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+                <Typography
+                  variant='caption'
+                  sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}
+                >
                   Variante
                 </Typography>
                 <Select
                   value={selectedVariantIndex}
-                  onChange={(e) => handleVariantChange(product.id, Number(e.target.value))}
-                  size="small"
+                  onChange={(e) =>
+                    handleVariantChange(product.id, Number(e.target.value))
+                  }
+                  size='small'
                   fullWidth
                   sx={{ fontSize: '0.8rem' }}
                 >
                   {product.variants.map((variant, variantIndex) => {
-                    const variantLabel = [variant.color_name, variant.storage, variant.finish]
+                    const variantLabel = [
+                      variant.color_name,
+                      variant.storage,
+                      variant.finish,
+                    ]
                       .filter(Boolean)
                       .join(' • ');
                     return (
@@ -171,12 +229,20 @@ export const TableProduct = () => {
 
               {/* Categoría */}
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
+                <Typography
+                  variant='caption'
+                  sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}
+                >
                   Categoría
                 </Typography>
                 <Autocomplete
-                  options={[{ id: 'clear', name: 'Sin categoría' }, ...categories]}
-                  getOptionLabel={(option) => (option.id === 'clear' ? 'Sin categoría' : option.name)}
+                  options={[
+                    { id: 'clear', name: 'Sin categoría' },
+                    ...categories,
+                  ]}
+                  getOptionLabel={(option) =>
+                    option.id === 'clear' ? 'Sin categoría' : option.name
+                  }
                   value={selectedCategory || null}
                   onChange={(_event, newValue) => {
                     if (newValue?.id === 'clear') {
@@ -189,29 +255,45 @@ export const TableProduct = () => {
                     }
                   }}
                   loading={isCategoriesLoading || isUpdatingCategory}
-                  size="small"
+                  size='small'
                   fullWidth
-                  noOptionsText="No hay categorías"
+                  noOptionsText='No hay categorías'
                   sx={{ '& .MuiOutlinedInput-root': { fontSize: '0.8rem' } }}
                   renderInput={(params) => (
-                    <TextField {...params} placeholder="Asignar categoría" size="small" />
+                    <TextField
+                      {...params}
+                      placeholder='Asignar categoría'
+                      size='small'
+                    />
                   )}
                 />
               </Box>
 
               {/* Stock y Fecha */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              <Box
+                sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}
+              >
                 <Box>
-                  <Typography variant="caption" sx={{ fontWeight: 600, display: 'block' }}>
+                  <Typography
+                    variant='caption'
+                    sx={{ fontWeight: 600, display: 'block' }}
+                  >
                     Stock
                   </Typography>
-                  <Typography variant="body2">{selectedVariant.stock.toString()}</Typography>
+                  <Typography variant='body2'>
+                    {selectedVariant.stock.toString()}
+                  </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" sx={{ fontWeight: 600, display: 'block' }}>
+                  <Typography
+                    variant='caption'
+                    sx={{ fontWeight: 600, display: 'block' }}
+                  >
                     Fecha
                   </Typography>
-                  <Typography variant="body2">{formatDate(product.created_at)}</Typography>
+                  <Typography variant='body2'>
+                    {formatDate(product.created_at)}
+                  </Typography>
                 </Box>
               </Box>
             </Box>
@@ -221,8 +303,8 @@ export const TableProduct = () => {
               <Button
                 component={RouterLink}
                 to={`/panel/productos/editar/${product.slug}`}
-                size="small"
-                variant="contained"
+                size='small'
+                variant='contained'
                 sx={{
                   backgroundColor: '#0007d7ff',
                   fontSize: '0.75rem',
@@ -234,7 +316,7 @@ export const TableProduct = () => {
               >
                 Editar
               </Button>
-              <Button
+              {/* <Button
                 onClick={() => handleDeleteProduct(product)}
                 size="small"
                 color="error"
@@ -246,7 +328,46 @@ export const TableProduct = () => {
                 }}
               >
                 Eliminar
-              </Button>
+              </Button> */}
+              {productIsActive ? (
+                <Button
+                  onClick={() => toggleProduct({ productId: product.id, isActive: false })}
+                  disabled={isToggling}
+                  size="small"
+                  sx={{
+                    border: 1,
+                    borderColor: '#0007d7ff',
+                    color: '#0007d7ff',
+                    fontSize: '0.75rem',
+                    textTransform: 'none',
+                    py: 0.75,
+                    px: 1.5,
+                    '&:hover': { backgroundColor: '#f0f4ff' },
+                  }}
+                >
+                  Desactivar
+                  <VisibilityOffIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => toggleProduct({ productId: product.id, isActive: true })}
+                  disabled={isToggling}
+                  size="small"
+                  sx={{
+                    border: 1,
+                    borderColor: '#0007d7ff',
+                    color: '#0007d7ff',
+                    fontSize: '0.75rem',
+                    textTransform: 'none',
+                    py: 0.75,
+                    px: 1.5,
+                    '&:hover': { backgroundColor: '#f0fdf4' },
+                  }}
+                >
+                  Activar
+                  <VisibilityIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
+                </Button>
+              )}
             </Box>
           </Card>
         );
@@ -273,7 +394,14 @@ export const TableProduct = () => {
       }}
     >
       <Table sx={{ minWidth: 900 }}>
-        <TableHead sx={{ backgroundColor: '#F9FAFB', position: 'sticky', top: 0, zIndex: 10 }}>
+        <TableHead
+          sx={{
+            backgroundColor: '#F9FAFB',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+          }}
+        >
           <TableRow>
             {tableHeaders.desktop.map((header, index) => (
               <TableCell
@@ -298,20 +426,26 @@ export const TableProduct = () => {
           {products?.map((product, index) => {
             const selectedVariantIndex = selectedVariants[product.id] ?? 0;
             const selectedVariant = product.variants[selectedVariantIndex];
-            const selectedCategory = categories.find((cat) => cat.id === product.category_id);
-            const categoryOptions = [{ id: 'clear', name: 'Sin categoría' }, ...categories];
+            const selectedCategory = categories.find(
+              (cat) => cat.id === product.category_id
+            );
+            const categoryOptions = [
+              { id: 'clear', name: 'Sin categoría' },
+              ...categories,
+            ];
+            const productIsActive = product.is_active ?? true;
 
             return (
-              <TableRow key={index} sx={{ borderBottom: '1px solid #F9FAFB' }}>
+              <TableRow key={index} sx={{ borderBottom: '1px solid #F9FAFB', backgroundColor: productIsActive ? 'inherit' : '#fef2f2' }}>
                 <TableCell sx={{ p: { md: 1, lg: 1.5 }, width: '70px' }}>
                   <Box
-                    component="img"
+                    component='img'
                     src={
                       product.images[0] ||
                       'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
                     }
-                    alt="Imagen Product"
-                    loading="lazy"
+                    alt='Imagen Product'
+                    loading='lazy'
                     sx={{
                       width: { md: 50, lg: 64 },
                       height: { md: 50, lg: 64 },
@@ -321,16 +455,24 @@ export const TableProduct = () => {
                   />
                 </TableCell>
                 <CellTableProduct content={product.name} />
-                <TableCell sx={{ fontWeight: 500, minWidth: 140, px: { md: 1, lg: 2 } }}>
+                <TableCell
+                  sx={{ fontWeight: 500, minWidth: 140, px: { md: 1, lg: 2 } }}
+                >
                   <Select
                     value={selectedVariantIndex}
-                    onChange={(e) => handleVariantChange(product.id, Number(e.target.value))}
-                    size="small"
+                    onChange={(e) =>
+                      handleVariantChange(product.id, Number(e.target.value))
+                    }
+                    size='small'
                     fullWidth
                     sx={{ fontSize: { md: '0.8rem', lg: '0.875rem' } }}
                   >
                     {product.variants.map((variant, variantIndex) => {
-                      const variantLabel = [variant.color_name, variant.storage, variant.finish]
+                      const variantLabel = [
+                        variant.color_name,
+                        variant.storage,
+                        variant.finish,
+                      ]
                         .filter(Boolean)
                         .join(' • ');
                       return (
@@ -341,11 +483,18 @@ export const TableProduct = () => {
                     })}
                   </Select>
                 </TableCell>
-                <CellTableProduct content={formatPrice(selectedVariant.price)} sx={{ fontWeight: 'bold' }} />
-                <TableCell sx={{ fontWeight: 500, minWidth: 180, px: { md: 1, lg: 2 } }}>
+                <CellTableProduct
+                  content={formatPrice(selectedVariant.price)}
+                  sx={{ fontWeight: 'bold' }}
+                />
+                <TableCell
+                  sx={{ fontWeight: 500, minWidth: 180, px: { md: 1, lg: 2 } }}
+                >
                   <Autocomplete
                     options={categoryOptions}
-                    getOptionLabel={(option) => (option.id === 'clear' ? 'Sin categoría' : option.name)}
+                    getOptionLabel={(option) =>
+                      option.id === 'clear' ? 'Sin categoría' : option.name
+                    }
                     value={selectedCategory || null}
                     onChange={(_event, newValue) => {
                       if (newValue?.id === 'clear') {
@@ -358,23 +507,39 @@ export const TableProduct = () => {
                       }
                     }}
                     loading={isCategoriesLoading || isUpdatingCategory}
-                    size="small"
+                    size='small'
                     fullWidth
-                    noOptionsText="No hay categorías"
-                    sx={{ '& .MuiOutlinedInput-root': { fontSize: { md: '0.8rem', lg: '0.875rem' } } }}
+                    noOptionsText='No hay categorías'
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        fontSize: { md: '0.8rem', lg: '0.875rem' },
+                      },
+                    }}
                     renderInput={(params) => (
-                      <TextField {...params} placeholder="Asignar categoría" size="small" />
+                      <TextField
+                        {...params}
+                        placeholder='Asignar categoría'
+                        size='small'
+                      />
                     )}
                   />
                 </TableCell>
                 <CellTableProduct content={selectedVariant.stock.toString()} />
                 <CellTableProduct content={formatDate(product.created_at)} />
-                <TableCell sx={{ position: 'relative', p: { md: 0.5, lg: 1 }, width: '50px' }}>
+                <TableCell
+                  sx={{
+                    position: 'relative',
+                    p: { md: 0.5, lg: 1 },
+                    width: '50px',
+                  }}
+                >
                   <Button
                     onClick={(e) => handleMenuOpen(e, index)}
                     sx={{ color: '#1e293b', minWidth: 'auto', p: 0.5 }}
                   >
-                    <MoreHorizIcon sx={{ fontSize: { md: '1.2rem', lg: '1.5rem' } }} />
+                    <MoreHorizIcon
+                      sx={{ fontSize: { md: '1.2rem', lg: '1.5rem' } }}
+                    />
                   </Button>
                   <Menu
                     anchorEl={anchorEl}
@@ -396,7 +561,7 @@ export const TableProduct = () => {
                       Editar
                       <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
                     </MenuItem>
-                    <MenuItem
+                    {/* <MenuItem
                       onClick={() => handleDeleteProduct(product)}
                       sx={{
                         fontSize: '0.8rem',
@@ -405,7 +570,37 @@ export const TableProduct = () => {
                       }}
                     >
                       Eliminar
-                    </MenuItem>
+                    </MenuItem> */}
+                    {productIsActive ? (
+                      <MenuItem
+                        onClick={() => toggleProduct({ productId: product.id, isActive: false })}
+                        disabled={isToggling}
+                        sx={{
+                          display: 'flex',
+                          gap: 0.5,
+                          fontSize: '0.8rem',
+                          fontWeight: 500,
+                        }}
+                      >
+                        Desactivar
+                        <VisibilityOffIcon sx={{ fontSize: '0.875rem' }} />
+                      </MenuItem>
+                    ) : (
+                      <MenuItem
+                        onClick={() => toggleProduct({ productId: product.id, isActive: true })}
+                        disabled={isToggling}
+                        sx={{
+                          display: 'flex',
+                          gap: 0.5,
+                          fontSize: '0.8rem',
+                          fontWeight: 500,
+                          color: '#10b981',
+                        }}
+                      >
+                        Activar
+                        <VisibilityIcon sx={{ fontSize: '0.875rem' }} />
+                      </MenuItem>
+                    )}
                   </Menu>
                 </TableCell>
               </TableRow>
@@ -416,7 +611,7 @@ export const TableProduct = () => {
     </TableContainer>
   );
 
-  if (!products || isLoading || !totalProducts || isPending) return <Loader />;
+  if (!products || isLoading || !totalProducts) return <Loader />; // || isPending
 
   return (
     <Card
@@ -434,7 +629,14 @@ export const TableProduct = () => {
         overflow: 'hidden',
       }}
     >
-      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+      <Typography
+        variant='h6'
+        sx={{
+          fontWeight: 'bold',
+          mb: 2,
+          fontSize: { xs: '1rem', sm: '1.25rem' },
+        }}
+      >
         Gestión de Productos
       </Typography>
 
@@ -442,7 +644,7 @@ export const TableProduct = () => {
 
       <Pagination page={page} setPage={setPage} totalItems={totalProducts} />
 
-      {productToDelete && (
+      {/* {productToDelete && (
         <DeleteProductModal
           open={deleteModalOpen}
           productName={productToDelete.name}
@@ -455,7 +657,7 @@ export const TableProduct = () => {
           }}
           isLoading={isPending}
         />
-      )}
+      )} */}
     </Card>
   );
 };

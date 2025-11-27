@@ -90,6 +90,7 @@ export interface ProductInput {
 	description: JSONContent;
 	images: File[];
 	variants: VariantInput[];
+	is_active: boolean | null;
 }
 
 export interface VariantInput {

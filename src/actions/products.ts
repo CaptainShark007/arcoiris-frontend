@@ -918,3 +918,22 @@ export const updateProduct = async (productId: string, productInput: ProductInpu
     throw new Error(error instanceof Error ? error.message : 'Error al actualizar el producto.');
   }
 };
+
+// funcion para activar o desactivar un producto
+export const toggleProductStatus = async (productId: string, isActive: boolean) => {
+
+  const { data, error } = await supabase
+    .from('products')
+    .update({ is_active: isActive })
+    .eq('id', productId)
+    .select()
+    .single();
+
+  if (error) {
+    console.log('Error al actualizar el estado del producto:', error.message);
+    throw new Error('Error al actualizar el estado del producto. Vuelve a intentarlo.');
+  }
+
+  return data;
+
+}
