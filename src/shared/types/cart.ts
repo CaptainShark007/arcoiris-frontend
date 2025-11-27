@@ -1,11 +1,3 @@
-/* export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  quantity: number;
-} */
-
 export interface CartItem {
   id: string;
   name: string;
@@ -13,10 +5,11 @@ export interface CartItem {
   image: string;
   quantity: number;
   variant?: {
-    color: string;
-    storage?: string;
+    color: string | null;
+    storage?: string | null;
     finish?: string | null;
-    colorHex?: string;
+    colorHex?: string | null;
+    stock?: number | null;
   };
 }
 

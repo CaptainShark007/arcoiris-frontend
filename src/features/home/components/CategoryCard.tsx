@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography, /* Card ,*/ CardActionArea } from "@mui/material";
-import type { Category } from "../types/home.types";
+import { Category } from "@shared/types";
+
 
 interface CategoryCardProps {
   category: Category;
@@ -23,7 +24,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
       <CardActionArea>
         <Box
           component="img"
-          src={category.image}
+          src={category.image ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png"}
           alt={category.name}
           sx={{
             width: "100%",

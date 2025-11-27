@@ -3,7 +3,10 @@ import { Fab, Tooltip } from "@mui/material";
 
 export const WhatsappButton = () => {
   const handleClick = () => {
-    window.open("https://w.app/zo5esm", "_blank");
+    const message = encodeURIComponent("Hola! Tengo una consulta sobre un producto.");
+    const phone = "5493624049548";
+
+    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
   };
 
   return (

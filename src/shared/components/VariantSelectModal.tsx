@@ -213,6 +213,7 @@ export const VariantSelectModal = ({
           storage: selectedVariant.storage,
           finish: selectedVariant.finish,
           colorHex: selectedVariant.color,
+          stock: selectedVariant.stock,
         },
       });
 

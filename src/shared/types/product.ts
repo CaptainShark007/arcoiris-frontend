@@ -11,9 +11,9 @@ export interface VariantProduct {
 	id: string;
 	stock: number;
 	price: number;
-	storage: string;
-	color: string;
-	color_name: string;
+	storage: string | null;
+	color: string | null;
+	color_name: string | null;
   finish: string | null;
 }
 

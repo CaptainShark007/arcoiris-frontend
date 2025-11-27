@@ -1,8 +1,8 @@
 import { Box, Typography, TextField, Button, Container, Link, IconButton } from "@mui/material";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import logo from "../../assets/images/logo_comercio_v2.png";
 import { FormEvent } from "react";
@@ -211,6 +211,10 @@ export const Footer = () => {
             {/* Social Icons */}
             <Box sx={{ display: "flex", gap: 1 }}>
               <IconButton
+                component="a"
+                href="https://www.facebook.com/share/19rHBtzMM2/"
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: "text.primary",
@@ -220,6 +224,10 @@ export const Footer = () => {
                 <FacebookIcon fontSize="small" />
               </IconButton>
               <IconButton
+                component="a"
+                href="https://www.instagram.com/tiendaarcoiris352?utm_source=qr&igsh=MWUxNzBrdXBleGpkdg=="
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: "text.primary",
@@ -229,6 +237,10 @@ export const Footer = () => {
                 <InstagramIcon fontSize="small" />
               </IconButton>
               <IconButton
+                component="a"
+                href="https://wa.me/5493624049548"
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: "text.primary",
@@ -238,13 +250,17 @@ export const Footer = () => {
                 <WhatsAppIcon fontSize="small" />
               </IconButton>
               <IconButton
+                component="a"
+                href="mailto:tienda.arcoiris.team@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 size="small"
                 sx={{
                   color: "text.primary",
                   "&:hover": { color: "primary.main", bgcolor: "rgba(0, 102, 255, 0.08)" },
                 }}
               >
-                <LinkedInIcon fontSize="small" />
+                <MailOutlineIcon fontSize="small" />
               </IconButton>
             </Box>
           </Box>
