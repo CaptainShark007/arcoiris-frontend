@@ -43,11 +43,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         name: product.name,
         price: variant.price,
         image: product.images[0] ?? 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png',
+        quantity: 1,
         variant: {
           color: variant.color_name,
           storage: variant.storage,
           finish: variant.finish,
           colorHex: variant.color,
+          stock: variant.stock,
         },
       });
 

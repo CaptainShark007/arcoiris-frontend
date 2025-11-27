@@ -20,11 +20,16 @@ export const CartItem = memo(({ item }: CartItemProps) => {
   const removeItem = useCartStore((state) => state.removeItem);
 
   const handleIncrement = () => {
-    updateQuantity(item.id, item.quantity + 1);
+    const maxStock = item.variant?.stock ?? 1;
+    if (item.quantity < maxStock) {
+      updateQuantity(item.id, item.quantity + 1);
+    }
   };
 
   const handleDecrement = () => {
-    updateQuantity(item.id, item.quantity - 1);
+    if (item.quantity > 1) {
+      updateQuantity(item.id, item.quantity - 1);
+    }
   };
 
   const handleRemove = () => {
@@ -37,7 +42,7 @@ export const CartItem = memo(({ item }: CartItemProps) => {
     item.variant?.finish,
   ]
     .filter(Boolean)
-    .join(' - ');
+    .join(' • ');
 
   return (
     <Card
@@ -62,7 +67,7 @@ export const CartItem = memo(({ item }: CartItemProps) => {
           width: 120,
           height: 120,
           objectFit: 'contain',
-          borderRadius: 1,
+          //borderRadius: 1,
           flexShrink: 0,
         }}
         image={item.image}
@@ -109,6 +114,7 @@ export const CartItem = memo(({ item }: CartItemProps) => {
           <IconButton
             size='small'
             onClick={handleDecrement}
+            disabled={item.quantity <= 1}
             sx={{
               border: 1,
               borderColor: 'divider',
@@ -135,6 +141,7 @@ export const CartItem = memo(({ item }: CartItemProps) => {
           <IconButton
             size='small'
             onClick={handleIncrement}
+            disabled={item.quantity >= (item.variant?.stock ?? 1)}
             sx={{
               border: 1,
               borderColor: 'divider',

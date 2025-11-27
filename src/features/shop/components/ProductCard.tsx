@@ -61,11 +61,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         name: product.name,
         price: variant.price,
         image: product.images[0],
+        quantity: 1,
         variant: {
           color: variant.color_name,
           storage: variant.storage,
           finish: variant.finish,
           colorHex: variant.color,
+          stock: variant.stock,
         },
       });
 

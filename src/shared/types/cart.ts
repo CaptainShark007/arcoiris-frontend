@@ -1,11 +1,3 @@
-/* export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  quantity: number;
-} */
-
 export interface CartItem {
   id: string;
   name: string;
@@ -17,6 +9,7 @@ export interface CartItem {
     storage?: string | null;
     finish?: string | null;
     colorHex?: string | null;
+    stock?: number | null;
   };
 }
 

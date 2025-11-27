@@ -41,7 +41,7 @@ export const useCartStore = create<CartStore>()(
           }
 
           const totals = calculateTotals(newItems);
-          console.log('Carrito actualizado', { items: newItems, ...totals });
+          //console.log('Carrito actualizado', { items: newItems, ...totals });
           return { items: newItems, ...totals };
         }),
 
@@ -58,7 +58,7 @@ export const useCartStore = create<CartStore>()(
             // Si la cantidad es 0 o menor, elimina el item
             const newItems = state.items.filter((item) => item.id !== id);
             const totals = calculateTotals(newItems);
-            console.log('🛒 Cart Updated (removed):', { items: newItems, ...totals });
+            //console.log('Cart Updated (removed):', { items: newItems, ...totals });
             return { items: newItems, ...totals };
           }
 
@@ -66,7 +66,7 @@ export const useCartStore = create<CartStore>()(
             item.id === id ? { ...item, quantity } : item
           );
           const totals = calculateTotals(newItems);
-          console.log('Carrito actualizado (cantidad):', { items: newItems, ...totals });
+          //console.log('Carrito actualizado (cantidad):', { items: newItems, ...totals });
           return { items: newItems, ...totals };
         }),
 
