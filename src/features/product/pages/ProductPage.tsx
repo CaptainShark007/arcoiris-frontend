@@ -20,6 +20,8 @@ import {
   Chip,
   ListItemText,
   Alert,
+  Divider,
+  Paper,
 } from '@mui/material';
 import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 
@@ -41,7 +43,6 @@ const ProductPage = () => {
   });
   const [quantity, setQuantity] = useState(1);
 
-  // Detectar qué atributos están presentes
   const attributesPresent = useMemo(() => {
     if (!product?.variants || product.variants.length === 0) {
       return { hasColor: false, hasStorage: false, hasFinish: false };
@@ -54,7 +55,6 @@ const ProductPage = () => {
     return { hasColor, hasStorage, hasFinish };
   }, [product?.variants]);
 
-  // Obtener TODAS las opciones disponibles
   const allOptions = useMemo(() => {
     if (!product?.variants) {
       return {
@@ -87,7 +87,6 @@ const ProductPage = () => {
     };
   }, [product?.variants]);
 
-  // Verificar si una combinación de opciones es válida
   const isOptionValid = useMemo(() => {
     if (!product?.variants) {
       return {
@@ -131,7 +130,6 @@ const ProductPage = () => {
     };
   }, [product?.variants, selectedOptions]);
 
-  // Encontrar la variante exacta
   const selectedVariant = useMemo(() => {
     if (!product?.variants) return null;
 
@@ -156,7 +154,6 @@ const ProductPage = () => {
     );
   }, [product?.variants, selectedOptions, attributesPresent]);
 
-  // Cambiar una opción
   const handleOptionChange = (field: keyof SelectedOptions, value: string | null) => {
     setSelectedOptions((prev) => ({
       ...prev,
@@ -164,7 +161,6 @@ const ProductPage = () => {
     }));
   };
 
-  // Seleccionar primera opción por defecto cuando el producto carga
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
       const firstVariant = product.variants[0];
@@ -230,41 +226,49 @@ const ProductPage = () => {
   const totalPrice = unitPrice * quantity;
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1400, margin: '0 auto' }}>
+    <Box sx={{ p: { xs: 1.5, sm: 2, md: 4 }, maxWidth: 1400, margin: '0 auto' }}>
+      {/* Sección principal: Imagen y detalles */}
       <Box
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          gap: 4,
+          gap: { xs: 2, sm: 3, md: 4 },
           alignItems: 'flex-start',
+          mb: 3,
         }}
       >
         {/* Columna de imágenes */}
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', position: { xs: 'relative', md: 'sticky' }, top: { md: 20 } }}>
           <GridImages images={product.images} />
         </Box>
 
         {/* Columna de detalles */}
-        <Box sx={{ maxWidth: 600 }}>
-          <Typography variant='h4' fontWeight={700} gutterBottom>
-            {product.name}
-          </Typography>
-
-          <Stack direction='row' alignItems='center' spacing={2} sx={{ mb: 3 }}>
-            <Typography variant='h5' color='primary' fontWeight={600}>
-              {formatPrice(unitPrice)}
+        <Box>
+          {/* Encabezado del producto */}
+          <Box sx={{ mb: { xs: 2, md: 3 } }}>
+            <Typography fontWeight={700} gutterBottom sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' }, lineHeight: 1.3 }}>
+              {product.name}
             </Typography>
-            {isOutOfStock && <Tag contentTag='agotado' />}
-          </Stack>
 
-          <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-            Marca: {product.brand}
-          </Typography>
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
+              Marca: <Typography component='span' fontWeight={600}>{product.brand}</Typography>
+            </Typography>
 
-          {/* Opciones */}
-          <Box sx={{ mb: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant='subtitle2' fontWeight={600}>
+            {/* Precio y estado */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.875rem' }, color: 'primary.main' }}>
+                {formatPrice(unitPrice)}
+              </Typography>
+              {isOutOfStock && <Tag contentTag='agotado' />}
+            </Box>
+          </Box>
+
+          <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
+
+          {/* Opciones del producto */}
+          <Box sx={{ mb: { xs: 2, md: 3 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+              <Typography fontWeight={600} sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
                 Opciones
               </Typography>
               {(selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
@@ -277,7 +281,7 @@ const ProductPage = () => {
                       finish: null,
                     })
                   }
-                  sx={{ textTransform: 'none', fontSize: '0.75rem', padding: '4px 8px' }}
+                  sx={{ textTransform: 'none', fontSize: { xs: '0.75rem', md: '0.875rem' }, color: 'text.secondary' }}
                 >
                   Limpiar
                 </Button>
@@ -286,9 +290,9 @@ const ProductPage = () => {
 
             {/* Color */}
             {attributesPresent.hasColor && allOptions.colorOptions.length > 0 && (
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 2 }}>
                 <FormControl fullWidth size='small'>
-                  <InputLabel id='color-label'>Color</InputLabel>
+                  <InputLabel id='color-label' sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Color</InputLabel>
                   <Select
                     labelId='color-label'
                     value={selectedOptions.color || ''}
@@ -305,11 +309,9 @@ const ProductPage = () => {
                           key={color.name}
                           value={color.name}
                           disabled={!isValid}
-                          sx={{
-                            opacity: isValid ? 1 : 0.5,
-                          }}
+                          sx={{ opacity: isValid ? 1 : 0.5 }}
                         >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <Box
                               sx={{
                                 width: 18,
@@ -337,9 +339,9 @@ const ProductPage = () => {
 
             {/* Storage */}
             {attributesPresent.hasStorage && allOptions.storageOptions.length > 0 && (
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 2 }}>
                 <FormControl fullWidth size='small'>
-                  <InputLabel>Presentación</InputLabel>
+                  <InputLabel sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Presentación</InputLabel>
                   <Select
                     value={selectedOptions.storage || ''}
                     label='Presentación'
@@ -371,9 +373,9 @@ const ProductPage = () => {
 
             {/* Finish */}
             {attributesPresent.hasFinish && allOptions.finishOptions.length > 0 && (
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 2 }}>
                 <FormControl fullWidth size='small'>
-                  <InputLabel>Terminación</InputLabel>
+                  <InputLabel sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Terminación</InputLabel>
                   <Select
                     value={selectedOptions.finish ?? ''}
                     label='Terminación'
@@ -406,8 +408,8 @@ const ProductPage = () => {
 
           {/* Variante seleccionada */}
           {selectedVariant && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 1 }}>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant='caption' color='text.secondary' fontWeight={600} sx={{ display: 'block', mb: 1 }}>
                 Variante seleccionada:
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -440,27 +442,29 @@ const ProductPage = () => {
 
           {/* Alertas */}
           {!selectedVariant && (selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
-            <Alert severity='warning' sx={{ mb: 2 }}>
+            <Alert severity='warning' sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
               Combinación no disponible
             </Alert>
           )}
 
           {selectedVariant && selectedVariant.stock === 0 && (
-            <Alert severity='error' sx={{ mb: 2 }}>
+            <Alert severity='error' sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
               Agotado
             </Alert>
           )}
 
           {selectedVariant && selectedVariant.stock > 0 && selectedVariant.stock <= 10 && (
-            <Alert severity={selectedVariant.stock <= 3 ? 'warning' : 'info'} sx={{ mb: 2 }}>
+            <Alert severity={selectedVariant.stock <= 3 ? 'warning' : 'info'} sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
               {selectedVariant.stock <= 3
                 ? `¡Últimas ${selectedVariant.stock} unidades!`
                 : `Solo ${selectedVariant.stock} disponibles`}
             </Alert>
           )}
 
-          {/* Cantidad y carrito */}
-          <Stack spacing={2}>
+          <Divider sx={{ my: { xs: 1.5, md: 2.5 } }} />
+
+          {/* Cantidad y precios */}
+          <Stack spacing={{ xs: 1.5, md: 2 }} sx={{ mb: { xs: 2, md: 3 } }}>
             {/* Selector de cantidad */}
             <Box>
               <Typography variant='caption' fontWeight={600} sx={{ display: 'block', mb: 1 }}>
@@ -471,9 +475,9 @@ const ProductPage = () => {
                   size='small'
                   onClick={handleDecrement}
                   disabled={quantity <= 1 || !selectedVariant}
-                  sx={{ padding: '4px' }}
+                  sx={{ padding: '6px', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
                 >
-                  <RemoveIcon />
+                  <RemoveIcon fontSize='small' />
                 </IconButton>
 
                 <Box
@@ -483,24 +487,26 @@ const ProductPage = () => {
                     border: '1px solid',
                     borderColor: 'divider',
                     borderRadius: 1,
-                    py: 0.5,
-                    px: 1,
+                    py: 0.75,
+                    px: 1.5,
                   }}
                 >
-                  <Typography fontWeight={500}>{quantity}</Typography>
+                  <Typography fontWeight={600} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                    {quantity}
+                  </Typography>
                 </Box>
 
                 <IconButton
                   size='small'
                   onClick={handleIncrement}
                   disabled={!selectedVariant || quantity >= (selectedVariant?.stock || 0)}
-                  sx={{ padding: '4px' }}
+                  sx={{ padding: '6px', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
                 >
-                  <AddIcon />
+                  <AddIcon fontSize='small' />
                 </IconButton>
 
                 {selectedVariant && (
-                  <Typography variant='caption' color='text.secondary' sx={{ ml: 'auto' }}>
+                  <Typography variant='caption' color='text.secondary' sx={{ ml: 'auto', fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                     {selectedVariant.stock} disponibles
                   </Typography>
                 )}
@@ -508,24 +514,26 @@ const ProductPage = () => {
             </Box>
 
             {/* Precios */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderTop: '1px solid', borderColor: 'divider' }}>
-              <Box>
-                <Typography variant='caption' color='text.secondary'>
-                  Unitario
-                </Typography>
-                <Typography color='primary' fontWeight={600}>
-                  {formatPrice(unitPrice)}
-                </Typography>
+            <Paper variant='outlined' sx={{ p: { xs: 1.5, md: 2 } }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                <Box>
+                  <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                    Unitario
+                  </Typography>
+                  <Typography color='primary' fontWeight={700} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                    {formatPrice(unitPrice)}
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                    Total
+                  </Typography>
+                  <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.5rem' } }}>
+                    {formatPrice(totalPrice)}
+                  </Typography>
+                </Box>
               </Box>
-              <Box sx={{ textAlign: 'right' }}>
-                <Typography variant='caption' color='text.secondary'>
-                  Total
-                </Typography>
-                <Typography variant='h6' fontWeight={700}>
-                  {formatPrice(totalPrice)}
-                </Typography>
-              </Box>
-            </Box>
+            </Paper>
 
             {/* Botón agregar al carrito */}
             <Button
@@ -535,20 +543,53 @@ const ProductPage = () => {
               onClick={handleAddToCart}
               disabled={!selectedVariant || isOutOfStock}
               sx={{
-                height: 48,
+                height: { xs: 44, md: 48 },
                 borderRadius: 2,
                 fontWeight: 600,
                 textTransform: 'none',
-                fontSize: '1rem',
+                fontSize: { xs: '0.95rem', md: '1rem' },
               }}
             >
               {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
             </Button>
           </Stack>
+
+          {/* Features */}
+          {product.features && product.features.length > 0 && (
+            <Paper variant='outlined' sx={{ p: { xs: 1.5, md: 2.5 }, bgcolor: 'background.paper' }}>
+              <Typography fontWeight={600} sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, mb: 1.5 }}>
+                Características principales
+              </Typography>
+              <Stack spacing={1}>
+                {product.features.map((feature: string, idx: number) => (
+                  <Box key={idx} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        backgroundColor: 'primary.main',
+                        mt: 1,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <Typography sx={{ fontSize: { xs: '0.875rem', md: '0.95rem' } }}>
+                      {feature}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
+          )}
         </Box>
       </Box>
 
-      <ProductDescription content={product.description as any} />
+      <Divider sx={{ my: { xs: 2, md: 4 } }} />
+
+      {/* Descripción del producto */}
+      <Box sx={{ mb: 2 }}>
+        <ProductDescription content={product.description as any} />
+      </Box>
     </Box>
   );
 };

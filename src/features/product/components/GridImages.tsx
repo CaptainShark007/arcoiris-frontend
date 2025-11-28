@@ -31,7 +31,7 @@ export const GridImages = ({ images }: Props) => {
                 activeImage === image
                   ? "2px solid #000"
                   : "2px solid transparent",
-              borderRadius: 2,
+              borderRadius: 1,
               p: 0.5,
               transition: "all 0.2s ease",
               "&:hover": {
@@ -62,7 +62,7 @@ export const GridImages = ({ images }: Props) => {
           alt="Imagen del producto"
           sx={{
             width: "100%",
-            borderRadius: 2,
+            borderRadius: 1,
             boxShadow: 3,
             maxHeight: 500,
             objectFit: "contain",
