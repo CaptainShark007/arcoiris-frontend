@@ -17,7 +17,7 @@ import { OrderWithCustomer } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { useChangeStatusOrder } from '@features/admin/hooks';
 
-const tableHeaders = ['Cliente', 'Fecha', 'Estado', 'Total'];
+const tableHeaders = ['N°', 'Cliente', 'Fecha', 'Estado', 'Total'];
 
 const statusOptions = [
   { value: 'pending', label: 'Pendiente' },
@@ -149,6 +149,10 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
                 },
               }}
             >
+              {/* N° */}
+              <TableCell sx={{ p: 2, fontWeight: 600, fontSize: '0.875rem' }}>
+                {order.id}
+              </TableCell>
               {/* Cliente */}
               <TableCell sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>

@@ -94,7 +94,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         sx={{
           textAlign: 'center',
           p: 2,
-          borderRadius: 2,
+          borderRadius: 1,
           bgcolor: 'background.paper',
           boxShadow: 1,
           transition: '0.3s ease',

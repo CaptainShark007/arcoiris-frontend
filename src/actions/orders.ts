@@ -383,20 +383,29 @@ export const getOrderById = async (orderId: number) => {
 // *********************************************************************************************
 //                                    ADMINISTRADOR
 // *********************************************************************************************
-export const getAllOrders = async () => {
-	const { data, error } = await supabase
+export const getAllOrders = async (page: number = 1, pageSize: number = 10) => {
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+	const { data, error, count } = await supabase
 		.from('orders')
 		.select(
-			'id, total_amount, status, created_at, customers(full_name, email, phone)'
+			'id, total_amount, status, created_at, customers(full_name, email, phone)', { count: 'exact' }
 		)
-		.order('created_at', { ascending: false });
+		.order('created_at', { ascending: false })
+    .range(from, to);
 
 	if (error) {
 		console.log(error);
 		throw new Error(error.message);
 	}
 
-	return data;
+	return {
+    data,
+    count: count || 0,
+  }
+  
 };
 
 export const updateOrderStatus = async ({
