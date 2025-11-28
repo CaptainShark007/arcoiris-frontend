@@ -1,194 +1,6 @@
 import { supabase } from '@/supabase/client';
 import { CreateOrderResponse, OrderInput } from '@shared/types';
 
-/* export const createOrder = async (order: OrderInput) => {
-  try {
-    console.log('Iniciando creación de orden:', order);
-
-    // 1. Obtener el usuario autenticado
-    const { data: userData, error: errorUser } = await supabase.auth.getUser();
-
-    if (errorUser) {
-      throw new Error(`Error de autenticación: ${errorUser.message}`);
-    }
-
-    if (!userData.user) {
-      throw new Error('Usuario no autenticado');
-    }
-
-    const userId = userData.user.id;
-    console.log('Usuario autenticado:', userId);
-
-    // 2. Obtener o crear customer
-    let customerId: string;
-
-    const { data: customer, error: errorCustomer } = await supabase
-      .from('customers')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (errorCustomer) {
-      throw new Error(`Error al buscar cliente: ${errorCustomer.message}`);
-    }
-
-    if (customer) {
-      customerId = customer.id;
-      console.log('Cliente existente:', customerId);
-    } else {
-      // Crear nuevo customer si no existe
-      const { data: newCustomer, error: createCustomerError } = await supabase
-        .from('customers')
-        .insert({
-          user_id: userId,
-          email: userData.user.email!,
-          full_name: userData.user.user_metadata?.full_name || 'Cliente',
-          phone: null,
-        })
-        .select('id')
-        .single();
-
-      if (createCustomerError) {
-        throw new Error(`Error al crear cliente: ${createCustomerError.message}`);
-      }
-      
-      customerId = newCustomer.id;
-      console.log('Nuevo cliente creado:', customerId);
-    }
-
-    // 3. Verificar stock y existencia de todas las variantes
-    const variantIds = order.cartItems.map(item => item.variantId);
-    
-    const { data: variants, error: variantsError } = await supabase
-      .from('variants')
-      .select('id, stock, products(name)')
-      .in('id', variantIds);
-
-    if (variantsError) {
-      throw new Error(`Error al verificar variantes: ${variantsError.message}`);
-    }
-
-    console.log('Variantes encontradas:', variants);
-
-    // Verificar que todas las variantes existen
-    const foundVariantIds = variants?.map(v => v.id) || [];
-    const missingVariants = variantIds.filter(id => !foundVariantIds.includes(id));
-    
-    if (missingVariants.length > 0) {
-      throw new Error(`Los siguientes productos no existen: ${missingVariants.join(', ')}`);
-    }
-
-    // Verificar stock suficiente
-    const outOfStockItems = order.cartItems.filter(item => {
-      const variant = variants.find(v => v.id === item.variantId);
-      return variant && variant.stock < item.quantity;
-    });
-
-    if (outOfStockItems.length > 0) {
-      const productNames = outOfStockItems.map(item => {
-        const variant = variants.find(v => v.id === item.variantId);
-        return `${variant?.products?.name || 'Producto'} (ID: ${item.variantId})`;
-      });
-      throw new Error(`Stock insuficiente para: ${productNames.join(', ')}`);
-    }
-
-    console.log('Stock verificado');
-
-    // 4. Guardar la dirección del envío
-    const { data: addressData, error: addressError } = await supabase
-      .from('addresses')
-      .insert({
-        address_line1: order.address.addressLine1,
-        address_line2: order.address.addressLine2 || '',
-        city: order.address.city,
-        postal_code: order.address.postalCode || '',
-        state: order.address.state,
-        country: order.address.country,
-        customer_id: customerId,
-      })
-      .select('id')
-      .single();
-
-    if (addressError) {
-      throw new Error(`Error al crear dirección: ${addressError.message}`);
-    }
-
-    console.log('Dirección creada:', addressData.id);
-
-    // 5. Crear la orden
-    const { data: orderData, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        customer_id: customerId,
-        address_id: addressData.id,
-        total_amount: order.totalAmount,
-        status: 'pending',
-      })
-      .select('id')
-      .single();
-
-    if (orderError) {
-      throw new Error(`Error al crear orden: ${orderError.message}`);
-    }
-
-    console.log('Orden creada:', orderData.id);
-
-    // 6. Guardar los detalles de la orden
-    const orderItems = order.cartItems.map(item => ({
-      order_id: orderData.id,
-      variant_id: item.variantId,
-      quantity: item.quantity,
-      price: item.price,
-    }));
-
-    const { error: orderItemsError } = await supabase
-      .from('order_items')
-      .insert(orderItems);
-
-    if (orderItemsError) {
-      throw new Error(`Error al crear items de orden: ${orderItemsError.message}`);
-    }
-
-    console.log('Items de orden creados');
-
-    // 7. Actualizar el stock de las variantes - CORREGIDO
-    for (const item of order.cartItems) {
-      // Primero obtener el stock actual
-      const { data: currentVariant, error: getStockError } = await supabase
-        .from('variants')
-        .select('stock')
-        .eq('id', item.variantId)
-        .single();
-
-      if (getStockError) {
-        throw new Error(`Error al obtener stock de variante ${item.variantId}: ${getStockError.message}`);
-      }
-
-      // Calcular nuevo stock
-      const newStock = currentVariant.stock - item.quantity;
-
-      // Actualizar con el valor calculado
-      const { error: updateStockError } = await supabase
-        .from('variants')
-        .update({ stock: newStock })
-        .eq('id', item.variantId);
-
-      if (updateStockError) {
-        throw new Error(`Error al actualizar stock para variante ${item.variantId}: ${updateStockError.message}`);
-      }
-
-      console.log(`Stock actualizado para variante ${item.variantId}: ${currentVariant.stock} -> ${newStock}`);
-    }
-
-    console.log('Orden completada exitosamente:', orderData.id);
-    return orderData;
-
-  } catch (error) {
-    console.error('Error completo en createOrder:', error);
-    throw error;
-  }
-}; */
-
 export const createOrder = async (order: OrderInput): Promise<CreateOrderResponse> => {
   try {
     console.log('Iniciando creación de orden con stored procedure:', order);
@@ -280,6 +92,7 @@ export const createOrder = async (order: OrderInput): Promise<CreateOrderRespons
 };
 
 // metodo para obtener ordenes de un cliente
+// usado en la pagina de pedidos del usuario - perfil
 export const getOrdersByCustomerId = async () => {
   const { data, error } = await supabase.auth.getUser();
 
@@ -316,6 +129,7 @@ export const getOrdersByCustomerId = async () => {
 };
 
 // metodo para obtener los detalles de una orden
+// usado en la pagina de detalles de orden del usuario - perfil
 export const getOrderById = async (orderId: number) => {
   const { data, error: errorUsers } = await supabase.auth.getUser();
 
@@ -336,11 +150,6 @@ export const getOrderById = async (orderId: number) => {
   }
 
   const customerId = customer.id;
-
-  // --- CAMBIO 1: QUERY ---
-  // Simplificamos el select de order_items.
-  // Quitamos toda la jerarquía de `variants(...)` y `products(...)`
-  // Agregamos `product_snapshot`
   const { data: order, error } = await supabase
     .from('orders')
     .select(
@@ -372,22 +181,13 @@ export const getOrderById = async (orderId: number) => {
       postalCode: order.addresses?.postal_code,
       country: order.addresses?.country,
     },
-    // --- CAMBIO 2: MAPEO ---
-    // Ahora leemos directamente del JSON `product_snapshot`
-    // Ya no dependemos de item.variants ni item.variants.products
     orderItems: order.order_items.map((item: any) => ({
       quantity: item.quantity,
       price: item.price,
-      
-      // Accedemos a las propiedades dentro del snapshot
       color_name: item.product_snapshot?.color, 
       storage: item.product_snapshot?.storage,
       productName: item.product_snapshot?.name,
       productImage: item.product_snapshot?.image,
-      
-      // NOTA: 'finish' no lo guardamos en el snapshot del SP anterior.
-      // Si lo necesitas, avísame para actualizar el Stored Procedure.
-      // Por ahora lo dejamos como opcional o null.
       finish: item.product_snapshot?.finish || null, 
     })),
   };
@@ -422,6 +222,8 @@ export const getAllOrders = async (page: number = 1, pageSize: number = 10) => {
   
 };
 
+// Metodo para actualizar el estado de una orden 
+// usado en el panel de administrador
 export const updateOrderStatus = async ({
 	id,
 	status,
@@ -440,10 +242,9 @@ export const updateOrderStatus = async ({
 	}
 };
 
+// Metodo para obtener los detalles de una orden por su ID (admin)
+// usado en el panel de administrador
 export const getOrderByIdAdmin = async (id: number) => {
-  // 1. CAMBIO EN LA QUERY:
-  // Quitamos los joins a variants y products.
-  // Agregamos 'product_snapshot'.
   const { data: order, error } = await supabase
     .from('orders')
     .select(
@@ -473,20 +274,13 @@ export const getOrderByIdAdmin = async (id: number) => {
       postalCode: order.addresses?.postal_code,
       country: order.addresses?.country,
     },
-    // 2. CAMBIO EN EL MAPEO:
-    // Leemos todo desde el snapshot JSON
     orderItems: order.order_items.map((item: any) => ({
       quantity: item.quantity,
       price: item.price,
-      
-      // Mapeo desde el snapshot
       color_name: item.product_snapshot?.color,
       storage: item.product_snapshot?.storage,
       productName: item.product_snapshot?.name,
       productImage: item.product_snapshot?.image,
-      
-      // OJO: Si necesitas 'finish', asegúrate de haberlo agregado al SP
-      // Si no lo agregaste al JSON, esto vendrá undefined.
       finish: item.product_snapshot?.finish || null, 
     })),
   };
