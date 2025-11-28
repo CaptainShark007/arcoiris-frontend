@@ -152,6 +152,7 @@ export type Database = {
           id: string
           order_id: number
           price: number
+          product_snapshot: Json
           quantity: number
           variant_id: string
         }
@@ -160,6 +161,7 @@ export type Database = {
           id?: string
           order_id: number
           price: number
+          product_snapshot: Json
           quantity: number
           variant_id: string
         }
@@ -168,6 +170,7 @@ export type Database = {
           id?: string
           order_id?: number
           price?: number
+          product_snapshot?: Json
           quantity?: number
           variant_id?: string
         }

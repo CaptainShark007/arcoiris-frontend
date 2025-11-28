@@ -155,7 +155,7 @@ const OrderUserPage = () => {
                       color='text.secondary'
                       display='block'
                     >
-                      {product.color_name} / {product.storage}
+                      {[product.color_name, product.storage, product.finish].filter(Boolean).join(' • ')}
                     </Typography>
                     <Typography
                       variant='caption'

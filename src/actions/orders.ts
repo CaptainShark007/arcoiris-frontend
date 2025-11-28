@@ -337,10 +337,14 @@ export const getOrderById = async (orderId: number) => {
 
   const customerId = customer.id;
 
+  // --- CAMBIO 1: QUERY ---
+  // Simplificamos el select de order_items.
+  // Quitamos toda la jerarquía de `variants(...)` y `products(...)`
+  // Agregamos `product_snapshot`
   const { data: order, error } = await supabase
     .from('orders')
     .select(
-      '*, addresses(*), customers(full_name, email, phone), order_items(quantity, price, variants(color_name, storage, finish, products(name, images)))'
+      '*, addresses(*), customers(full_name, email, phone), order_items(quantity, price, product_snapshot)'
     )
     .eq('customer_id', customerId)
     .eq('id', orderId)
@@ -368,14 +372,23 @@ export const getOrderById = async (orderId: number) => {
       postalCode: order.addresses?.postal_code,
       country: order.addresses?.country,
     },
-    orderItems: order.order_items.map((item) => ({
+    // --- CAMBIO 2: MAPEO ---
+    // Ahora leemos directamente del JSON `product_snapshot`
+    // Ya no dependemos de item.variants ni item.variants.products
+    orderItems: order.order_items.map((item: any) => ({
       quantity: item.quantity,
       price: item.price,
-      color_name: item.variants?.color_name,
-      finish: item.variants?.finish,
-      storage: item.variants?.storage,
-      productName: item.variants?.products?.name,
-      productImage: item.variants?.products?.images[0],
+      
+      // Accedemos a las propiedades dentro del snapshot
+      color_name: item.product_snapshot?.color, 
+      storage: item.product_snapshot?.storage,
+      productName: item.product_snapshot?.name,
+      productImage: item.product_snapshot?.image,
+      
+      // NOTA: 'finish' no lo guardamos en el snapshot del SP anterior.
+      // Si lo necesitas, avísame para actualizar el Stored Procedure.
+      // Por ahora lo dejamos como opcional o null.
+      finish: item.product_snapshot?.finish || null, 
     })),
   };
 };
@@ -383,6 +396,7 @@ export const getOrderById = async (orderId: number) => {
 // *********************************************************************************************
 //                                    ADMINISTRADOR
 // *********************************************************************************************
+// Metodo usado en el panel de administrador para obtener todas las ordenes
 export const getAllOrders = async (page: number = 1, pageSize: number = 10) => {
 
   const from = (page - 1) * pageSize;
@@ -427,43 +441,53 @@ export const updateOrderStatus = async ({
 };
 
 export const getOrderByIdAdmin = async (id: number) => {
-	const { data: order, error } = await supabase
-		.from('orders')
-		.select(
-			'*, addresses(*), customers(full_name, email), order_items(quantity, price, variants(color_name, storage, finish, products(name, images)))'
-		)
-		.eq('id', id)
-		.single();
+  // 1. CAMBIO EN LA QUERY:
+  // Quitamos los joins a variants y products.
+  // Agregamos 'product_snapshot'.
+  const { data: order, error } = await supabase
+    .from('orders')
+    .select(
+      '*, addresses(*), customers(full_name, email), order_items(quantity, price, product_snapshot)'
+    )
+    .eq('id', id)
+    .single();
 
-	if (error) {
-		console.log(error);
-		throw new Error(error.message);
-	}
+  if (error) {
+    console.log(error);
+    throw new Error(error.message);
+  }
 
-	return {
-		customer: {
-			email: order?.customers?.email,
-			full_name: order.customers?.full_name,
-		},
-		totalAmount: order.total_amount,
-		status: order.status,
-		created_at: order.created_at,
-		address: {
-			addressLine1: order.addresses?.address_line1,
-			addressLine2: order.addresses?.address_line2,
-			city: order.addresses?.city,
-			state: order.addresses?.state,
-			postalCode: order.addresses?.postal_code,
-			country: order.addresses?.country,
-		},
-		orderItems: order.order_items.map(item => ({
-			quantity: item.quantity,
-			price: item.price,
-			color_name: item.variants?.color_name,
-			storage: item.variants?.storage,
-      finish: item.variants?.finish,
-			productName: item.variants?.products?.name,
-			productImage: item.variants?.products?.images[0],
-		})),
-	};
+  return {
+    customer: {
+      email: order?.customers?.email,
+      full_name: order.customers?.full_name,
+    },
+    totalAmount: order.total_amount,
+    status: order.status,
+    created_at: order.created_at,
+    address: {
+      addressLine1: order.addresses?.address_line1,
+      addressLine2: order.addresses?.address_line2,
+      city: order.addresses?.city,
+      state: order.addresses?.state,
+      postalCode: order.addresses?.postal_code,
+      country: order.addresses?.country,
+    },
+    // 2. CAMBIO EN EL MAPEO:
+    // Leemos todo desde el snapshot JSON
+    orderItems: order.order_items.map((item: any) => ({
+      quantity: item.quantity,
+      price: item.price,
+      
+      // Mapeo desde el snapshot
+      color_name: item.product_snapshot?.color,
+      storage: item.product_snapshot?.storage,
+      productName: item.product_snapshot?.name,
+      productImage: item.product_snapshot?.image,
+      
+      // OJO: Si necesitas 'finish', asegúrate de haberlo agregado al SP
+      // Si no lo agregaste al JSON, esto vendrá undefined.
+      finish: item.product_snapshot?.finish || null, 
+    })),
+  };
 };
