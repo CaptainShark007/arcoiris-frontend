@@ -83,7 +83,7 @@ const RegisterPage = () => {
         />
 
         <TextField
-          label="Celular (opcional)"
+          label="Celular"
           fullWidth
           {...register("phoneNumber")}
           error={!!errors.phoneNumber}
