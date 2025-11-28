@@ -1,33 +1,72 @@
-import { Box, Typography, Button, IconButton } from '@mui/material';
-import { useCarousel } from '@shared/hooks/useCarousel';
-import type { CarouselSlide } from '../types/home.types';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
+import { useCarousel } from "../../../shared/hooks/useCarousel";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { CarouselSlide } from "@shared/types";
 
 interface HeroCarouselProps {
   slides: CarouselSlide[];
+  mobileSlides?: CarouselSlide[];
 }
 
-export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
+export const HeroCarousel = ({ slides, mobileSlides }: HeroCarouselProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const { currentIndex, isAnimating, nextSlide, prevSlide, goToSlide } =
     useCarousel({
       slidesCount: slides.length,
       autoPlay: true,
-      autoPlayInterval: 5000,
+      autoPlayInterval: 10000,
       infinite: true,
     });
 
-  const extendedSlides = [slides[slides.length - 1], ...slides, slides[0]];
+  const displaySlides = isMobile && mobileSlides ? mobileSlides : slides;
+  const extendedSlides = [
+    displaySlides[displaySlides.length - 1],
+    ...displaySlides,
+    displaySlides[0],
+  ];
+
+  /* const getImageSource = (slide: CarouselSlide) => {
+    if (isMobile && slide.mobileImage) {
+      return slide.mobileImage ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerMobile.png";
+    }
+    return slide.image ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerDesktop.png";
+  }; */
+
+  const getImageSource = (slide: CarouselSlide) => {
+    
+    const defaultMobile = "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerMobile.png";
+    const defaultDesktop = "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerDesktop.png";
+
+    // 1. Si es móvil
+    if (isMobile) {
+      // Retorna la imagen móvil si existe, sino, el fallback móvil
+     return slide.mobileImage ? slide.mobileImage : defaultMobile;
+    }
+
+    // 2. Si es escritorio
+    // Retorna la imagen desktop si existe, sino, el fallback desktop
+    return slide.image ? slide.image : defaultDesktop;
+  
+  };
 
   return (
-    <Box sx={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+    <Box
+      sx={{
+        position: "relative",
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
       {/* Slides Container */}
       <Box
         sx={{
-          display: 'flex',
+          display: "flex",
           transition: isAnimating
-            ? 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
-            : 'none',
+            ? "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)"
+            : "none",
           transform: `translateX(-${currentIndex * 100}%)`,
         }}
       >
@@ -35,180 +74,122 @@ export const HeroCarousel = ({ slides }: HeroCarouselProps) => {
           <Box
             key={`${slide.id}-${index}`}
             sx={{
-              minWidth: '100%',
-              position: 'relative',
-              height: { xs: 400, md: 400 },
+              minWidth: "100%",
+              position: "relative",
+              // Altura basada en el ratio de tus imágenes
+              paddingTop: {
+                xs: "62.5%", // 400/640 = 0.625 (móvil)
+                md: "31.25%", // 600/1920 = 0.3125 (desktop)
+              },
               flexShrink: 0,
+              overflow: "hidden",
             }}
           >
             <Box
-              component='img'
-              src={slide.image}
+              component="img"
+              src={getImageSource(slide)}
               alt={slide.title}
-              loading={index === 1 ? 'eager' : 'lazy'} // Primera imagen eager, resto lazy
               sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center',
-                display: 'block',
-                bgcolor: 'action.hover',
-              }}
-            />
-
-            <Box
-              sx={{
-                position: 'absolute',
+                position: "absolute",
                 top: 0,
                 left: 0,
-                right: 0,
-                bottom: 0,
-                background:
-                  'linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 100%)',
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: isMobile 
+                  ? (slide.mobilePosition || "center center")
+                  : (slide.desktopPosition || "center center"),
               }}
             />
-
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: { xs: '5%', md: '10%' },
-                transform: 'translateY(-50%)',
-                color: 'white',
-                maxWidth: { xs: '85%', md: '45%' },
-                zIndex: 1,
-              }}
-            >
-              <Typography
-                variant='h2'
-                sx={{
-                  fontWeight: 'bold',
-                  mb: 2,
-                  fontSize: { xs: '2rem', md: '3.5rem' },
-                  textShadow: '2px 2px 8px rgba(0,0,0,0.8)',
-                }}
-              >
-                {slide.title}
-              </Typography>
-              <Typography
-                variant='h5'
-                sx={{
-                  mb: 4,
-                  fontSize: { xs: '1.1rem', md: '1.5rem' },
-                  opacity: 0.95,
-                  textShadow: '1px 1px 4px rgba(0,0,0,0.8)',
-                }}
-              >
-                {slide.subtitle}
-              </Typography>
-              <Button
-                variant='contained'
-                size='large'
-                sx={{
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  '&:hover': {
-                    bgcolor: 'primary.dark',
-                    transform: 'scale(1.05)',
-                  },
-                  transition: 'all 0.3s ease',
-                  /* borderRadius: 24, */
-                }}
-                onClick={() => console.log(slide.buttonText)}
-              >
-                {slide.buttonText}
-              </Button>
-            </Box>
           </Box>
         ))}
       </Box>
 
+      {/* Botones de navegación */}
       <IconButton
         onClick={prevSlide}
         disabled={isAnimating}
         sx={{
-          position: 'absolute',
-          top: '50%',
-          left: 8,
-          transform: 'translateY(-50%)',
-          bgcolor: 'background.paper',
-          color: 'primary.main',
-          opacity: 0.9,
+          position: "absolute",
+          top: "50%",
+          left: { xs: 4, md: 16 },
+          transform: "translateY(-50%)",
+          bgcolor: "rgba(255,255,255,0.9)",
+          color: "primary.main",
           zIndex: 2,
-          '&:hover': {
-            bgcolor: 'background.paper',
-            opacity: 1,
-            transform: 'translateY(-50%) scale(1.1)',
+          width: { xs: 36, md: 48 },
+          height: { xs: 36, md: 48 },
+          "&:hover": {
+            bgcolor: "white",
+            transform: "translateY(-50%) scale(1.1)",
           },
-          transition: 'all 0.3s ease',
-          '&:disabled': {
-            bgcolor: 'background.paper',
-            opacity: 0.5,
+          transition: "all 0.3s ease",
+          "&:disabled": {
+            bgcolor: "rgba(255,255,255,0.5)",
           },
+          display: { xs: "none", sm: "flex" },
         }}
       >
-        <ArrowBackIosNewIcon />
+        <ArrowBackIosNewIcon fontSize={isMobile ? "small" : "medium"} />
       </IconButton>
 
       <IconButton
         onClick={nextSlide}
         disabled={isAnimating}
         sx={{
-          position: 'absolute',
-          top: '50%',
-          right: 8,
-          transform: 'translateY(-50%)',
-          bgcolor: 'background.paper',
-          color: 'primary.main',
-          opacity: 0.9,
+          position: "absolute",
+          top: "50%",
+          right: { xs: 4, md: 16 },
+          transform: "translateY(-50%)",
+          bgcolor: "rgba(255,255,255,0.9)",
+          color: "primary.main",
           zIndex: 2,
-          '&:hover': {
-            bgcolor: 'background.paper',
-            opacity: 1,
-            transform: 'translateY(-50%) scale(1.1)',
+          width: { xs: 36, md: 48 },
+          height: { xs: 36, md: 48 },
+          "&:hover": {
+            bgcolor: "white",
+            transform: "translateY(-50%) scale(1.1)",
           },
-          transition: 'all 0.3s ease',
-          '&:disabled': {
-            bgcolor: 'background.paper',
-            opacity: 0.5,
+          transition: "all 0.3s ease",
+          "&:disabled": {
+            bgcolor: "rgba(255,255,255,0.5)",
           },
+          display: { xs: "none", sm: "flex" },
         }}
       >
-        <ArrowForwardIosIcon />
+        <ArrowForwardIosIcon fontSize={isMobile ? "small" : "medium"} />
       </IconButton>
 
+      {/* Indicadores */}
       <Box
         sx={{
-          position: 'absolute',
-          bottom: 30,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          gap: 1.5,
+          position: "absolute",
+          bottom: { xs: 16, md: 24 },
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          gap: 1,
           zIndex: 2,
         }}
       >
-        {slides.map((_, index) => (
+        {displaySlides.map((_, index) => (
           <Box
             key={index}
             onClick={() => goToSlide(index)}
             sx={{
-              width: currentIndex - 1 === index ? 40 : 12,
-              height: 12,
+              width:
+                currentIndex - 1 === index
+                  ? { xs: 24, md: 40 }
+                  : { xs: 8, md: 12 },
+              height: { xs: 8, md: 12 },
               borderRadius: 6,
               bgcolor:
-                currentIndex - 1 === index
-                  ? 'background.paper'
-                  : 'rgba(255,255,255,0.5)',
-              cursor: 'pointer',
-              transition: 'all 0.4s ease',
-              '&:hover': {
-                bgcolor: 'background.paper',
-                transform: 'scale(1.1)',
+                currentIndex - 1 === index ? "white" : "rgba(255,255,255,0.5)",
+              cursor: "pointer",
+              transition: "all 0.4s ease",
+              "&:hover": {
+                bgcolor: "white",
+                transform: "scale(1.1)",
               },
             }}
           />

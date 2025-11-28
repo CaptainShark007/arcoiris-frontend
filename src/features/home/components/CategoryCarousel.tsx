@@ -1,182 +1,234 @@
-import { Box, /* Typography, */ IconButton, Button } from '@mui/material';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { useCarousel } from '@shared/hooks/useCarousel';
-import type { Category } from '../types/home.types';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { Box, IconButton, useTheme, useMediaQuery } from "@mui/material";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { Category } from "@shared/types";
+import { CategoryCard } from "./CategoryCard";
 
 interface CategoryCarouselProps {
   categories: Category[];
 }
 
-export const CategoryCarousel = ({ categories }: CategoryCarouselProps) => {
-  const itemsPerSlide = 6; // Muestra 5 categorías por slide
-  const totalSlides = Math.ceil(categories.length / itemsPerSlide);
+export const CategoryCarousel: React.FC<CategoryCarouselProps> = ({ categories }) => {
+  const theme = useTheme();
 
-  const { currentIndex, isAnimating, nextSlide, prevSlide } = useCarousel({
-    slidesCount: totalSlides,
-    autoPlay: false,
-    infinite: true,
-  });
+  // 1. Configuración Responsive
+  const isXs = useMediaQuery(theme.breakpoints.only("xs"));
+  const isSm = useMediaQuery(theme.breakpoints.only("sm"));
 
-  // Crear slides con las categorías
-  const createSlides = () => {
-    const slides = [];
-    for (let i = 0; i < totalSlides; i++) {
-      const start = i * itemsPerSlide;
-      let slideCategories = categories.slice(start, start + itemsPerSlide);
+  let visibleItems = 4;
+  if (isXs) visibleItems = 2;
+  else if (isSm) visibleItems = 3;
 
-      // Si el último slide tiene menos items, completar con los primeros
-      if (slideCategories.length < itemsPerSlide) {
-        slideCategories = [
-          ...slideCategories,
-          ...categories.slice(0, itemsPerSlide - slideCategories.length),
-        ];
-      }
-      slides.push(slideCategories);
+  // 2. Lógica del Carrusel Infinito
+  const CLONES_COUNT = 5;
+  const originalLength = categories.length;
+  const shouldClone = originalLength > visibleItems;
+
+  const extendedCategories = shouldClone
+    ? Array(CLONES_COUNT).fill(categories).flat()
+    : categories;
+
+  const START_INDEX = shouldClone
+    ? Math.floor(extendedCategories.length / 2) - (originalLength % 2 === 0 ? 0 : 1)
+    : 0;
+
+  const [currentIndex, setCurrentIndex] = useState(START_INDEX);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const isAnimating = useRef(false);
+
+  // Estado para manejo de Swipe (Táctil)
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50; // Mínima distancia en px para considerar un swipe
+
+  // 3. Manejo de Navegación (Next / Prev)
+  const handleNext = useCallback(() => {
+    if (isAnimating.current || !shouldClone) return;
+    setIsTransitioning(true);
+    isAnimating.current = true;
+    setCurrentIndex((prev) => prev + 1);
+  }, [shouldClone]);
+
+  const handlePrev = useCallback(() => {
+    if (isAnimating.current || !shouldClone) return;
+    setIsTransitioning(true);
+    isAnimating.current = true;
+    setCurrentIndex((prev) => prev - 1);
+  }, [shouldClone]);
+
+  // 4. Lógica de "Teleportación"
+  const handleTransitionEnd = () => {
+    isAnimating.current = false;
+    if (!shouldClone) return;
+
+    const totalLength = extendedCategories.length;
+    const singleSetLength = originalLength;
+
+    if (currentIndex >= totalLength - visibleItems - 1) {
+      setIsTransitioning(false);
+      setCurrentIndex(currentIndex - singleSetLength);
+    } else if (currentIndex <= visibleItems + 1) {
+      setIsTransitioning(false);
+      setCurrentIndex(currentIndex + singleSetLength);
     }
-    return slides;
   };
 
-  const slides = createSlides();
-  const extendedSlides = [slides[slides.length - 1], ...slides, slides[0]];
+  useEffect(() => {
+    if (shouldClone && !isTransitioning) {
+      // Lógica opcional de resize
+    }
+  }, [visibleItems, shouldClone, isTransitioning]);
+
+  // Manejadores de Eventos Táctiles
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrev();
+    }
+  };
+
+  const itemWidthPercent = 100 / visibleItems;
+
+  // Cálculo para saber qué punto (dot) está activo.
+  // Usamos el modulo (%) para mapear el índice gigante al índice original (0 a N).
+  // Nota: currentIndex puede ser un número muy grande debido a la clonación.
+  const activeDotIndex = currentIndex % originalLength;
 
   return (
-    <Box sx={{ position: 'relative', py: 2 }}>
-      <Box sx={{ overflow: 'hidden', mx: 6 }}>
-        <Box
+    <Box sx={{ position: "relative", width: "100%", py: 2 }}>
+      
+      {/* Botón Anterior - Oculto en XS/SM (Mobile), visible en MD+ */}
+      {shouldClone && (
+        <IconButton
+          onClick={handlePrev}
           sx={{
-            display: 'flex',
-            transition: isAnimating
-              ? 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
-              : 'none',
-            transform: `translateX(-${currentIndex * 100}%)`,
+            display: { xs: "none", md: "flex" },
+            position: "absolute",
+            left: -8,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 2,
+            backgroundColor: "rgba(255, 255, 255, 0.7)",
+            boxShadow: theme.shadows[3],
+            transition: "all 0.3s ease",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              boxShadow: theme.shadows[6],
+              transform: "translateY(-50%) scale(1.1)",
+            },
           }}
         >
-          {extendedSlides.map((slideCategories, slideIndex) => (
+          <ChevronLeftIcon color="primary" />
+        </IconButton>
+      )}
+
+      {/* Contenedor Viewport con eventos táctiles */}
+      <Box 
+        sx={{ overflow: "hidden", width: "100%", mx: "auto", py: 1 }}
+        // Eventos nativos de React para swipe
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        <Box
+          onTransitionEnd={handleTransitionEnd}
+          sx={{
+            display: "flex",
+            transform: `translateX(-${currentIndex * itemWidthPercent}%)`,
+            transition: isTransitioning ? "transform 0.5s ease-in-out" : "none",
+            width: "100%",
+          }}
+        >
+          {extendedCategories.map((cat, index) => (
             <Box
-              key={slideIndex}
+              key={`${cat.id}-${index}`}
               sx={{
-                minWidth: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                gap: 6,
-                px: 2,
-                flexShrink: 0,
+                flex: `0 0 ${itemWidthPercent}%`,
+                maxWidth: `${itemWidthPercent}%`,
+                px: { xs: 0.5, sm: 1, md: 1.5 },
+                boxSizing: "border-box",
+                // Deshabilitar selección de texto al arrastrar en desktop/mobile
+                userSelect: "none", 
               }}
             >
-              {slideCategories.map((category, idx) => (
-                <Box
-                  key={`${category.id}-${slideIndex}-${idx}`}
-                  sx={{
-                    flex: '0 0 auto',
-                    textAlign: 'center',
-                    width: 180,
-                    /* backgroundColor: "red", */
-                    p: 1,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 160,
-                      height: 160,
-                      /* borderRadius: "50%", */
-                      overflow: 'hidden',
-                      mx: 'auto',
-                      mb: 1,
-                      /* boxShadow: 3, */
-                      cursor: 'pointer',
-                      transition: 'transform 0.3s ease',
-                      '&:hover': { transform: 'scale(1.05)' },
-                    }}
-                  >
-                    <img
-                      src={category.image}
-                      alt={category.name}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        display: 'block',
-                      }}
-                    />
-                  </Box>
-                  {/* <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    {category.name.toUpperCase()}
-                  </Typography> */}
-                  <Button
-                    variant='outlined'
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: 12,
-                      color: 'primary.main',
-                      borderColor: 'primary.main',
-                      borderWidth: 2,
-                    }}
-                  >
-                    {category.name.toUpperCase()}
-                  </Button>
-                </Box>
-              ))}
+              {/* Prevenimos que la imagen sea arrastrable por defecto para no romper el swipe */}
+              <Box sx={{ "& img": { pointerEvents: "none" } }}>
+                <CategoryCard category={cat} />
+              </Box>
             </Box>
           ))}
         </Box>
       </Box>
 
-      {/* Botón Anterior */}
-      <IconButton
-        onClick={prevSlide}
-        disabled={isAnimating}
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: 8,
-          transform: 'translateY(-50%)',
-          bgcolor: 'action.disabled',
-          color: 'text.primary',
-          opacity: 0.6,
-          zIndex: 2,
-          '&:hover': {
-            bgcolor: 'action.disabled',
-            opacity: 0.8,
-            transform: 'translateY(-50%) scale(1.1)',
-          },
-          transition: 'all 0.3s ease',
-          '&:disabled': {
-            bgcolor: 'action.disabled',
-            opacity: 0.3,
-          },
-        }}
-      >
-        <ArrowBackIosNewIcon />
-      </IconButton>
+      {/* Botón Siguiente - Oculto en XS/SM, visible en MD+ */}
+      {shouldClone && (
+        <IconButton
+          onClick={handleNext}
+          sx={{
+            display: { xs: "none", md: "flex" },
+            position: "absolute",
+            right: -8,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 2,
+            backgroundColor: "rgba(255, 255, 255, 0.7)",
+            boxShadow: theme.shadows[3],
+            transition: "all 0.3s ease",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              boxShadow: theme.shadows[6],
+              transform: "translateY(-50%) scale(1.1)",
+            },
+          }}
+        >
+          <ChevronRightIcon color="primary" />
+        </IconButton>
+      )}
 
-      {/* Botón Siguiente */}
-      <IconButton
-        onClick={nextSlide}
-        disabled={isAnimating}
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          right: 8,
-          transform: 'translateY(-50%)',
-          bgcolor: 'action.disabled',
-          color: 'text.primary',
-          opacity: 0.6,
-          zIndex: 2,
-          '&:hover': {
-            bgcolor: 'action.disabled',
-            opacity: 0.8,
-            transform: 'translateY(-50%) scale(1.1)',
-          },
-          transition: 'all 0.3s ease',
-          '&:disabled': {
-            bgcolor: 'action.disabled',
-            opacity: 0.3,
-          },
-        }}
-      >
-        <ArrowForwardIosIcon />
-      </IconButton>
+      {/* Indicadores (Dots)*/}
+      {shouldClone && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mt: 2,
+            gap: 1,
+          }}
+        >
+          {categories.map((_, index) => (
+            <Box
+              key={index}
+              sx={{
+                width: index === activeDotIndex ? 24 : 8,
+                height: 8,
+                borderRadius: 4,
+                bgcolor: index === activeDotIndex ? theme.palette.primary.main : theme.palette.action.disabled,
+                transition: "all 0.3s ease",
+                // Opcional: Si quisieras que los dots fueran clickeables, habría que implementar
+                // una lógica compleja para buscar el clon más cercano. 
+                // Por ahora son solo visuales.
+              }}
+            />
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };

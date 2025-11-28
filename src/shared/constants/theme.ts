@@ -129,6 +129,14 @@ export const theme = createTheme({
         body: {
           transition: 'background-color 0.3s ease, color 0.3s ease',
         },
+        '.tiptap:focus, .tiptap *:focus': {
+          outline: 'none !important',
+          border: 'none !important',
+          boxShadow: 'none !important',
+        },
+        '.tiptap p': {
+          margin: 0,
+        },
       },
     },
     MuiAppBar: {

@@ -1,6 +1,8 @@
 import { memo } from 'react';
 import { Card, CardContent, CardMedia, Typography, Box } from '@mui/material';
+import toast from 'react-hot-toast';
 import { LoadingButton } from './LoadingButton';
+import { useCartStore } from '../../storage/useCartStore';
 import type { Product } from '../types';
 
 interface ProductCardProps {
@@ -16,10 +18,27 @@ export const ProductCard = memo(({
   onAddToCart,
   loading = false,
 }: ProductCardProps) => {
+  const addItem = useCartStore((state) => state.addItem);
+
   const discountedPrice =
     product.discount > 0
       ? (product.price * (1 - product.discount / 100)).toFixed(2)
       : product.price.toFixed(2);
+
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      onAddToCart(product);
+    } else {
+      // Implementación por defecto usando el store del carrito
+      addItem({
+        id: product.id.toString(),
+        name: product.name,
+        price: Number(discountedPrice),
+        image: product.image,
+      });
+      toast.success('Producto agregado al carrito');
+    }
+  };
 
   return (
     <Card
@@ -106,11 +125,7 @@ export const ProductCard = memo(({
           variant='contained'
           fullWidth
           loading={loading}
-          onClick={() =>
-            onAddToCart
-              ? onAddToCart(product)
-              : console.log(`Agregar ${product.name} al carrito`)
-          }
+          onClick={handleAddToCart}
         >
           Agregar al Carrito
         </LoadingButton>

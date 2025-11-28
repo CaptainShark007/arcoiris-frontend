@@ -1,3 +1,5 @@
+/* no se usa */
+
 import { Box, IconButton } from '@mui/material';
 import { useCarousel } from '../hooks/useCarousel';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
