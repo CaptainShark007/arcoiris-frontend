@@ -13,7 +13,10 @@ type CartStore = CartState & CartActions;
 
 const calculateTotals = (items: CartItem[]) => {
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalPrice = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
   return { totalQuantity, totalPrice };
 };
 
@@ -33,15 +36,19 @@ export const useCartStore = create<CartStore>()(
             // Si el item ya existe, incrementa su cantidad
             const quantityToAdd = item.quantity || 1;
             newItems = state.items.map((i) =>
-              i.id === item.id ? { ...i, quantity: i.quantity + quantityToAdd } : i
+              i.id === item.id
+                ? { ...i, quantity: i.quantity + quantityToAdd }
+                : i
             );
           } else {
             // Si es nuevo, agrégalo con la cantidad especificada o 1 por defecto
-            newItems = [...state.items, { ...item, quantity: item.quantity || 1 }];
+            newItems = [
+              ...state.items,
+              { ...item, quantity: item.quantity || 1 },
+            ];
           }
 
           const totals = calculateTotals(newItems);
-          //console.log('Carrito actualizado', { items: newItems, ...totals });
           return { items: newItems, ...totals };
         }),
 
@@ -58,7 +65,6 @@ export const useCartStore = create<CartStore>()(
             // Si la cantidad es 0 o menor, elimina el item
             const newItems = state.items.filter((item) => item.id !== id);
             const totals = calculateTotals(newItems);
-            //console.log('Cart Updated (removed):', { items: newItems, ...totals });
             return { items: newItems, ...totals };
           }
 
@@ -66,7 +72,6 @@ export const useCartStore = create<CartStore>()(
             item.id === id ? { ...item, quantity } : item
           );
           const totals = calculateTotals(newItems);
-          //console.log('Carrito actualizado (cantidad):', { items: newItems, ...totals });
           return { items: newItems, ...totals };
         }),
 

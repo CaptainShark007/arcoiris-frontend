@@ -6,7 +6,7 @@ import { CreateProductRPCResult, ProductInput } from '@shared/types';
 export const getFilteredProducts = async ({
   page = 1,
   brands = [],
-  categoriesIds = [], 
+  categoriesIds = [],
   itemsPerPage = 8,
 }: {
   page: number;
@@ -14,7 +14,6 @@ export const getFilteredProducts = async ({
   categoriesIds?: string[];
   itemsPerPage?: number;
 }) => {
-
   const from = (page - 1) * itemsPerPage;
   const to = from + itemsPerPage - 1;
 
@@ -40,19 +39,21 @@ export const getFilteredProducts = async ({
   const { data, error, count } = await query;
 
   if (error) {
-    console.log('Error fetching filtered products:', error.message);
     throw new Error('Error fetching filtered products');
   }
 
   const products = data?.map((p) => {
     // Obtener precios de las variantes
-    const prices = p.variants?.map((v: any) => v.price).filter((price: number) => price > 0) || [];
+    const prices =
+      p.variants
+        ?.map((v: any) => v.price)
+        .filter((price: number) => price > 0) || [];
     const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
     const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-    
+
     return {
       ...p,
-      image: p.images?.[0] ?? "/assets/images/img-default.png",
+      image: p.images?.[0] ?? '/assets/images/img-default.png',
       price: minPrice,
       maxPrice: maxPrice,
       hasMultiplePrices: minPrice !== maxPrice,
@@ -70,7 +71,6 @@ export const getBrands = async (): Promise<string[]> => {
     .eq('is_active', true);
 
   if (error) {
-    console.log('Error fetching brands:', error.message);
     throw new Error('Error fetching brands');
   }
 
@@ -82,7 +82,6 @@ export const getBrands = async (): Promise<string[]> => {
 
 // metodo para obtener los productos recientes
 export const getRecentProducts = async () => {
-
   const { data, error } = await supabase
     .from('products')
     .select('*, variants (*)')
@@ -91,28 +90,29 @@ export const getRecentProducts = async () => {
     .limit(8);
 
   if (error) {
-    console.log('Error fetching recent products:', error.message);
     throw new Error('Error fetching recent products');
   }
 
   // Mapear productos con precio mínimo - adaptado
   const products = data?.map((p) => {
-    const prices = p.variants?.map((v: any) => v.price).filter((price: number) => price > 0) || [];
+    const prices =
+      p.variants
+        ?.map((v: any) => v.price)
+        .filter((price: number) => price > 0) || [];
     const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-    
+
     return {
       ...p,
-      image: p.images?.[0] ?? "/assets/images/img-default.png",
+      image: p.images?.[0] ?? '/assets/images/img-default.png',
       price: minPrice,
     };
   });
 
   return products;
-}
+};
 
 // metodo para obtener productos aleatorios
 export const getRandomProducts = async () => {
-
   const { data, error } = await supabase
     .from('products')
     .select('*, variants (*)')
@@ -120,31 +120,34 @@ export const getRandomProducts = async () => {
     .limit(20);
 
   if (error) {
-    console.log('Error fetching recent products:', error.message);
     throw new Error('Error fetching recent products');
   }
 
   // Mapear productos con precio mínimo
   const productsWithPrice = data?.map((p) => {
-    const prices = p.variants?.map((v: any) => v.price).filter((price: number) => price > 0) || [];
+    const prices =
+      p.variants
+        ?.map((v: any) => v.price)
+        .filter((price: number) => price > 0) || [];
     const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-    
+
     return {
       ...p,
-      image: p.images?.[0] ?? "/assets/images/img-default.png",
+      image: p.images?.[0] ?? '/assets/images/img-default.png',
       price: minPrice,
     };
   });
 
   // seleccionar 4 productos al azar
-  const randomProducts = productsWithPrice.sort(() => 0.5 - Math.random()).slice(0, 8);
+  const randomProducts = productsWithPrice
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 8);
 
   return randomProducts;
-}
+};
 
 // metodo para buscar el producto por su slug
 export const getProductBySlug = async (slug: string) => {
-
   const { data, error } = await supabase
     .from('products')
     .select('*, variants (*)')
@@ -152,14 +155,12 @@ export const getProductBySlug = async (slug: string) => {
     .eq('is_active', true)
     .single(); // seleccionar un solo registro
 
-    if (error) {
-      console.log('Error fetching product by slug:', error.message);
-      throw new Error('Error fetching product by slug');
-    }
+  if (error) {
+    throw new Error('Error fetching product by slug');
+  }
 
   return data;
-
-}
+};
 
 // **************************************************************************************************
 // *************************************** ADMINISTRADOR ********************************************
@@ -173,40 +174,40 @@ export const getProductVariants = async (productId: string) => {
     .eq('product_id', productId);
 
   if (error) {
-    console.log('Error al obtener variantes de producto:', error.message);
     throw new Error(error.message);
   }
 
   return data || [];
-}
+};
 
 // metodo para obtener todos los productos con sus variantes paginados
 export const getProducts = async (page: number) => {
-	const itemsPerPage = 10;
-	const from = (page - 1) * itemsPerPage;
-	const to = from + itemsPerPage - 1;
+  const itemsPerPage = 10;
+  const from = (page - 1) * itemsPerPage;
+  const to = from + itemsPerPage - 1;
 
-	const {
-		data: products,
-		error,
-		count,
-	} = await supabase
-		.from('products')
-		.select('*, variants(*)', { count: 'exact' })
-		.order('created_at', { ascending: false })
-		.range(from, to);
+  const {
+    data: products,
+    error,
+    count,
+  } = await supabase
+    .from('products')
+    .select('*, variants(*)', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to);
 
-	if (error) {
-		console.log(error.message);
-		throw new Error(error.message);
-	}
+  if (error) {
+    throw new Error(error.message);
+  }
 
-	return { products, count };
+  return { products, count };
 };
 
 // metodo para actualizar la categoria de un producto
-export const updateProductCategory = async (productId: string, categoryId: string | null) => {
-
+export const updateProductCategory = async (
+  productId: string,
+  categoryId: string | null
+) => {
   const { data, error } = await supabase
     .from('products')
     .update({ category_id: categoryId })
@@ -215,13 +216,13 @@ export const updateProductCategory = async (productId: string, categoryId: strin
     .single();
 
   if (error) {
-    console.log('Error al actualizar la categoria del producto:', error.message);
-    throw new Error('Error al actualizar la categoria del producto. Vuelve a intentarlo.');
+    throw new Error(
+      'Error al actualizar la categoria del producto. Vuelve a intentarlo.'
+    );
   }
 
   return data;
-
-}
+};
 
 // **************************************************************************************************
 // *************************************** CREAR PRODUCTO ********************************************
@@ -232,23 +233,31 @@ export const updateProductCategory = async (productId: string, categoryId: strin
 const validateProductInput = async (input: ProductInput): Promise<string[]> => {
   const errors: string[] = [];
 
-  if (!input.name?.trim()) errors.push('El nombre del producto es obligatorio.');
+  if (!input.name?.trim())
+    errors.push('El nombre del producto es obligatorio.');
   if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
-  if (!input.brand?.trim()) errors.push('La marca del producto es obligatoria.');
-  if (!input.images?.length) errors.push('Al menos una imagen del producto es obligatoria.');
+  if (!input.brand?.trim())
+    errors.push('La marca del producto es obligatoria.');
+  if (!input.images?.length)
+    errors.push('Al menos una imagen del producto es obligatoria.');
   if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');
-  if (!input.variants?.length) errors.push('El producto debe tener al menos una variante.');
+  if (!input.variants?.length)
+    errors.push('El producto debe tener al menos una variante.');
 
   input.variants?.forEach((v, i) => {
-    if (!v.price || v.price <= 0) errors.push(`El precio de la variante ${i + 1} debe ser mayor a 0.`);
-    if (!v.stock || v.stock < 0) errors.push(`El stock de la variante ${i + 1} no puede ser negativo.`);
+    if (!v.price || v.price <= 0)
+      errors.push(`El precio de la variante ${i + 1} debe ser mayor a 0.`);
+    if (!v.stock || v.stock < 0)
+      errors.push(`El stock de la variante ${i + 1} no puede ser negativo.`);
   });
 
   // Validar y comprimir imagenes
   for (let i = 0; i < input.images.length; i++) {
     const img = input.images[i];
-    
-    if (!['image/jpeg', 'image/jpg', 'image/png' , 'image/webp'].includes(img.type)) {
+
+    if (
+      !['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(img.type)
+    ) {
       errors.push(`La imagen ${i + 1} debe ser JPEG, JPG, PNG o WEBP.`);
       continue;
     }
@@ -259,8 +268,8 @@ const validateProductInput = async (input: ProductInput): Promise<string[]> => {
       try {
         const compressed = await compressImage(img, 1.5);
         input.images[i] = compressed;
-      } catch (err) {
-        console.log(err);
+      } catch (error) {
+        console.error(error);
         errors.push(`No se pudo comprimir la imagen ${i + 1}.`);
       }
     }
@@ -285,8 +294,10 @@ export const createProduct = async (productInput: ProductInput) => {
         p_brand: productInput.brand.trim(),
         p_slug: productInput.slug.trim(),
         p_features: productInput.features || [],
-        p_description: productInput.description ? JSON.parse(JSON.stringify(productInput.description)) : {},
-        p_variants: productInput.variants.map(v => ({
+        p_description: productInput.description
+          ? JSON.parse(JSON.stringify(productInput.description))
+          : {},
+        p_variants: productInput.variants.map((v) => ({
           stock: v.stock,
           price: v.price,
           storage: v.storage || null,
@@ -301,7 +312,9 @@ export const createProduct = async (productInput: ProductInput) => {
 
     const result = (procedureResult.data as any)?.[0] as CreateProductRPCResult;
     if (!result?.success || !result?.product_id) {
-      throw new Error(result?.message || 'Error desconocido al crear el producto.');
+      throw new Error(
+        result?.message || 'Error desconocido al crear el producto.'
+      );
     }
 
     const productId = result.product_id;
@@ -312,8 +325,7 @@ export const createProduct = async (productInput: ProductInput) => {
         const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${image.name}`;
         const filePath = `${productId}/${fileName}`;
 
-        const { data, error } = await supabase
-          .storage
+        const { data, error } = await supabase.storage
           .from('product-images')
           .upload(filePath, image, {
             cacheControl: '3600',
@@ -322,8 +334,7 @@ export const createProduct = async (productInput: ProductInput) => {
 
         if (error) throw new Error(`Error subiendo imagen: ${error.message}`);
 
-        const { data: publicUrlData } = supabase
-          .storage
+        const { data: publicUrlData } = supabase.storage
           .from('product-images')
           .getPublicUrl(data.path);
 
@@ -362,7 +373,6 @@ export const createProduct = async (productInput: ProductInput) => {
     if (fetchError) throw new Error('Error al obtener el producto creado');
 
     return product;
-
   } catch (error) {
     console.error(error);
     throw new Error('Error al crear el producto. Vuelve a intentarlo.');
@@ -384,9 +394,12 @@ export const deleteProduct = async (productId: string) => {
     if (imgError) throw imgError;
 
     // 2. Borrar en BD - transacción atómica
-    const { error: dbError } = await (supabase.rpc as any)('delete_product_cascade', {
-      p_product_id: productId,
-    });
+    const { error: dbError } = await (supabase.rpc as any)(
+      'delete_product_cascade',
+      {
+        p_product_id: productId,
+      }
+    );
 
     if (dbError) throw dbError;
 
@@ -399,8 +412,7 @@ export const deleteProduct = async (productId: string) => {
         return `${folder}/${fileName}`;
       });
 
-      const { error: storageError } = await supabase
-        .storage
+      const { error: storageError } = await supabase.storage
         .from('product-images')
         .remove(paths);
 
@@ -420,15 +432,22 @@ export const deleteProduct = async (productId: string) => {
 
 // USANDO PROCEDIMIENTO ALMACENADO Y VALIDACIONES
 // ==================== VALIDACIÓN ====================
-export const validateProductUpdateInput = async (input: ProductInput, productId: string): Promise<string[]> => {
+export const validateProductUpdateInput = async (
+  input: ProductInput,
+  productId: string
+): Promise<string[]> => {
   const errors: string[] = [];
 
-  if (!input.name?.trim()) errors.push('El nombre del producto es obligatorio.');
+  if (!input.name?.trim())
+    errors.push('El nombre del producto es obligatorio.');
   if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
-  if (!input.brand?.trim()) errors.push('La marca del producto es obligatoria.');
-  if (!input.images?.length) errors.push('Al menos una imagen del producto es obligatoria.');
+  if (!input.brand?.trim())
+    errors.push('La marca del producto es obligatoria.');
+  if (!input.images?.length)
+    errors.push('Al menos una imagen del producto es obligatoria.');
   if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');
-  if (!input.variants?.length) errors.push('El producto debe tener al menos una variante.');
+  if (!input.variants?.length)
+    errors.push('El producto debe tener al menos una variante.');
 
   // Validar slug único (excluyendo este producto)
   const { data: existingSlug, error: slugError } = await supabase
@@ -448,12 +467,16 @@ export const validateProductUpdateInput = async (input: ProductInput, productId:
 
   // Validar y comprimir imágenes
   const validatedImages: (File | string)[] = [];
-  
+
   for (let i = 0; i < input.images.length; i++) {
     const img = input.images[i];
 
     if (img instanceof File) {
-      if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(img.type)) {
+      if (
+        !['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(
+          img.type
+        )
+      ) {
         errors.push(`La imagen ${i + 1} debe ser JPEG, JPG, PNG o WEBP.`);
         continue;
       }
@@ -484,14 +507,19 @@ export const validateProductUpdateInput = async (input: ProductInput, productId:
   return errors;
 };
 
-
-
 // ==================== FUNCIÓN PRINCIPAL ====================
-export const updateProduct = async (productId: string, productInput: ProductInput) => {
+export const updateProduct = async (
+  productId: string,
+  productInput: ProductInput
+) => {
   try {
     // 1. Validar entrada
-    const validationErrors = await validateProductUpdateInput(productInput, productId);
-    if (validationErrors.length > 0) throw new Error(validationErrors.join(' '));
+    const validationErrors = await validateProductUpdateInput(
+      productInput,
+      productId
+    );
+    if (validationErrors.length > 0)
+      throw new Error(validationErrors.join(' '));
 
     // 2. Obtener imágenes actuales
     const { data: currentProduct, error: fetchError } = await supabase
@@ -505,8 +533,12 @@ export const updateProduct = async (productId: string, productInput: ProductInpu
     const existingImages = currentProduct?.images || [];
 
     // 3. Separar imágenes nuevas (File) de URLs existentes
-    const newFiles = productInput.images.filter((img) => img instanceof File) as File[];
-    const existingUrls = productInput.images.filter((img) => typeof img === 'string') as string[];
+    const newFiles = productInput.images.filter(
+      (img) => img instanceof File
+    ) as File[];
+    const existingUrls = productInput.images.filter(
+      (img) => typeof img === 'string'
+    ) as string[];
 
     // 4. Subir solo las imágenes nuevas
     const uploadedNewImagesResponses = await Promise.allSettled(
@@ -575,7 +607,8 @@ export const updateProduct = async (productId: string, productInput: ProductInpu
     if (procedureResult.error) throw new Error(procedureResult.error.message);
 
     const result = procedureResult.data?.[0];
-    if (!result?.success) throw new Error(result?.message || 'Error al actualizar el producto.');
+    if (!result?.success)
+      throw new Error(result?.message || 'Error al actualizar el producto.');
 
     // 9. Retornar producto actualizado
     const { data: updatedProduct } = await supabase
@@ -585,16 +618,21 @@ export const updateProduct = async (productId: string, productInput: ProductInpu
       .single();
 
     return updatedProduct;
-
   } catch (error) {
     console.error('Error en updateProduct:', error);
-    throw new Error(error instanceof Error ? error.message : 'Error al actualizar el producto.');
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Error al actualizar el producto.'
+    );
   }
 };
 
 // funcion para activar o desactivar un producto
-export const toggleProductStatus = async (productId: string, isActive: boolean) => {
-
+export const toggleProductStatus = async (
+  productId: string,
+  isActive: boolean
+) => {
   const { data, error } = await supabase
     .from('products')
     .update({ is_active: isActive })
@@ -603,10 +641,10 @@ export const toggleProductStatus = async (productId: string, isActive: boolean) 
     .single();
 
   if (error) {
-    console.log('Error al actualizar el estado del producto:', error.message);
-    throw new Error('Error al actualizar el estado del producto. Vuelve a intentarlo.');
+    throw new Error(
+      'Error al actualizar el estado del producto. Vuelve a intentarlo.'
+    );
   }
 
   return data;
-
-}
+};

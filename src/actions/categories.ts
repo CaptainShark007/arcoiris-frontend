@@ -4,20 +4,17 @@ import { CategoryInput } from '@shared/types';
 
 // Obtner todas las categorías (administrador)
 export const getAllCategories = async () => {
-
   const { data, error } = await supabase
     .from('categories')
     .select('*')
     .order('display_order', { ascending: true });
 
   if (error) {
-    console.log('Error al obtener categorías:', error.message);
     throw new Error('Error al obtener categorías');
   }
 
   return data;
-
-}
+};
 
 // Obtener categorías activas (para clientes)
 export const getCategories = async () => {
@@ -28,7 +25,6 @@ export const getCategories = async () => {
     .order('display_order', { ascending: true });
 
   if (error) {
-    console.log('Error fetching categories:', error.message);
     throw new Error('Error fetching categories');
   }
 
@@ -61,8 +57,7 @@ export const createCategory = async (
       }
 
       // Obtener URL pública
-      const { data: publicUrlData } = supabase
-        .storage
+      const { data: publicUrlData } = supabase.storage
         .from('product-images')
         .getPublicUrl(data.path);
 
@@ -85,7 +80,6 @@ export const createCategory = async (
       .single();
 
     if (error) {
-      console.log('Error al crear categoría:', error.message);
       throw new Error('Error al crear categoría');
     }
 
@@ -127,9 +121,7 @@ export const updateCategory = async (
       if (oldCategory?.image) {
         try {
           const oldImagePath = extractFilePath(oldCategory.image);
-          await supabase.storage
-            .from('product-images')
-            .remove([oldImagePath]);
+          await supabase.storage.from('product-images').remove([oldImagePath]);
         } catch (deleteError) {
           console.error('Error deleting old image:', deleteError);
           // No lanzar error aquí, continuar con la actualización
@@ -153,8 +145,7 @@ export const updateCategory = async (
         throw new Error(`Error subiendo imagen: ${uploadError.message}`);
       }
 
-      const { data: publicUrlData } = supabase
-        .storage
+      const { data: publicUrlData } = supabase.storage
         .from('product-images')
         .getPublicUrl(data.path);
 
@@ -164,9 +155,7 @@ export const updateCategory = async (
       if (oldCategory?.image) {
         try {
           const oldImagePath = extractFilePath(oldCategory.image);
-          await supabase.storage
-            .from('product-images')
-            .remove([oldImagePath]);
+          await supabase.storage.from('product-images').remove([oldImagePath]);
         } catch (deleteError) {
           console.error('Error deleting image:', deleteError);
         }
@@ -183,7 +172,6 @@ export const updateCategory = async (
       .single();
 
     if (error) {
-      console.log('Error al actualizar categoría:', error.message);
       throw new Error('Error al actualizar categoría');
     }
 
@@ -206,7 +194,6 @@ export const deleteCategory = async (id: string, imageUrl?: string | null) => {
       .eq('category_id', id);
 
     if (countError) {
-      console.log('Error checking products:', countError.message);
       throw new Error('Error al verificar productos');
     }
 
@@ -220,13 +207,13 @@ export const deleteCategory = async (id: string, imageUrl?: string | null) => {
     if (imageUrl) {
       try {
         // Extraer el path relativo de la URL
-        const urlParts = imageUrl.split('/storage/v1/object/public/product-images/');
+        const urlParts = imageUrl.split(
+          '/storage/v1/object/public/product-images/'
+        );
         if (urlParts.length === 2) {
           const filePath = urlParts[1];
-          
-          await supabase.storage
-            .from('product-images')
-            .remove([filePath]);
+
+          await supabase.storage.from('product-images').remove([filePath]);
         }
       } catch (storageError) {
         console.error('Error deleting image from storage:', storageError);
@@ -235,13 +222,9 @@ export const deleteCategory = async (id: string, imageUrl?: string | null) => {
     }
 
     // 3. Eliminar la categoría de la BD
-    const { error } = await supabase
-      .from('categories')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('categories').delete().eq('id', id);
 
     if (error) {
-      console.log('Error deleting category:', error.message);
       throw new Error('Error al eliminar la categoría');
     }
 
@@ -252,14 +235,15 @@ export const deleteCategory = async (id: string, imageUrl?: string | null) => {
   }
 };
 
-export const countProductsByCategory = async (categoryId: string): Promise<number> => {
+export const countProductsByCategory = async (
+  categoryId: string
+): Promise<number> => {
   const { count, error } = await supabase
     .from('products')
     .select('id', { count: 'exact', head: true })
     .eq('category_id', categoryId);
 
   if (error) {
-    console.log('Error counting products:', error.message);
     throw new Error('Error al contar productos');
   }
 
@@ -267,11 +251,11 @@ export const countProductsByCategory = async (categoryId: string): Promise<numbe
 };
 
 // Generar slug automaticamente
-export const generateCategorySlug = (name: string) : string => {
+export const generateCategorySlug = (name: string): string => {
   return name
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-') // Reemplaza espacios por guiones
     .replace(/[^\w-]/g, '') // Elimina caracteres no alfanuméricos excepto guiones
     .replace(/-+/g, '-'); // Reemplaza múltiples guiones por uno solo
-}
+};
