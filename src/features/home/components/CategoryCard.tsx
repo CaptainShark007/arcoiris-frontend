@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography, /* Card ,*/ CardActionArea } from "@mui/material";
 import { Category } from "@shared/types";
+import { useNavigate } from "react-router";
 
 
 interface CategoryCardProps {
@@ -8,8 +9,16 @@ interface CategoryCardProps {
 }
 
 export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
+
+  const navigate = useNavigate();
+
+  const handleCategoryClick = () => {
+    navigate(`/tienda?categoryId=${category.id}`);
+  }
+
   return (
-    <Box // Card
+    <Box
+      onClick={handleCategoryClick}
       sx={{
         borderRadius: 3,
         overflow: "hidden",
