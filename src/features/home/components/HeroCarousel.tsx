@@ -28,11 +28,28 @@ export const HeroCarousel = ({ slides, mobileSlides }: HeroCarouselProps) => {
     displaySlides[0],
   ];
 
-  const getImageSource = (slide: CarouselSlide) => {
+  /* const getImageSource = (slide: CarouselSlide) => {
     if (isMobile && slide.mobileImage) {
-      return slide.mobileImage;
+      return slide.mobileImage ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerMobile.png";
     }
-    return slide.image;
+    return slide.image ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerDesktop.png";
+  }; */
+
+  const getImageSource = (slide: CarouselSlide) => {
+    
+    const defaultMobile = "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerMobile.png";
+    const defaultDesktop = "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerDesktop.png";
+
+    // 1. Si es móvil
+    if (isMobile) {
+      // Retorna la imagen móvil si existe, sino, el fallback móvil
+     return slide.mobileImage ? slide.mobileImage : defaultMobile;
+    }
+
+    // 2. Si es escritorio
+    // Retorna la imagen desktop si existe, sino, el fallback desktop
+    return slide.image ? slide.image : defaultDesktop;
+  
   };
 
   return (

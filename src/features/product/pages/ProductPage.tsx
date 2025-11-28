@@ -203,7 +203,7 @@ const ProductPage = () => {
       id: selectedVariant.id,
       name: product.name,
       price: selectedVariant.price,
-      image: product.images?.[0] ?? "",
+      image: product.images?.[0] ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png",
       quantity,
       variant: {
         color: selectedVariant.color_name,
@@ -239,7 +239,7 @@ const ProductPage = () => {
       >
         {/* Columna de imágenes */}
         <Box sx={{ display: 'flex', justifyContent: 'center', position: { xs: 'relative', md: 'sticky' }, top: { md: 20 } }}>
-          <GridImages images={product.images} />
+          <GridImages images={product.images ?? ["https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png"]} />
         </Box>
 
         {/* Columna de detalles */}
