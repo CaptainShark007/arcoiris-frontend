@@ -41,7 +41,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
   const slides = createSlides();
 
   return (
-    <Box sx={{ position: "relative", width: "100%", overflow: "hidden" }}>
+    <Box sx={{ position: "relative", width: "100%", overflow: "hidden", py: 2 }}>
       <Box
         sx={{
           display: "flex",
@@ -57,7 +57,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
               justifyContent: "center", // Siempre centrado
               alignItems: "center",
               flex: "0 0 100%",
-              gap: { xs: 2, sm: 2 },
+              gap: { xs: 2, sm: 1 },
               px: { xs: 2, sm: 1 },
             }}
           >

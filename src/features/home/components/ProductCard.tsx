@@ -79,6 +79,17 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           opacity: isOutOfStock ? 0.55 : 1,
           pointerEvents: isOutOfStock ? 'none' : 'auto',
           textDecoration: 'none',
+          //bgcolor: 'red'
+          boxShadow: 'none',
+          bgcolor: 'background.default',
+          border: 1,
+          borderColor: 'divider',
+          '&:hover': {
+            //border: '1px solid divider',
+            borderColor: 'primary.main',
+            transform: 'scale(1.02)',
+            transition: 'transform 0.2s ease-in-out',
+          },
         }}
       >
         {/* Badge AGOTADO */}
