@@ -19,7 +19,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import SearchIcon from '@mui/icons-material/Search';
 import { useState, type MouseEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../assets/images/logo_comercio_v2.png';
 import { NotificationPopup } from './NotificationPopup';
 import { useCustomer, useUsers } from '@shared/hooks';
@@ -31,6 +31,7 @@ import { HeaderSearch } from './HeaderSearch';
 import { useCategories } from '@features/shop/hooks/products/useCategories';
 
 export const Navbar = () => {
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartSidebarOpen, setCartSidebarOpen] = useState(false);
@@ -53,6 +54,11 @@ export const Navbar = () => {
   const handleClose = () => setAnchorEl(null);
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const handleCategoryClick = (categoryId: string) => {
+    navigate(`/tienda?categoryId=${categoryId}`);
+    handleClose();
+  }
 
   const handleSnackbarClick = () => {
     setOpenSnackbar(true);
@@ -137,9 +143,7 @@ export const Navbar = () => {
                 categories?.map((cat) => (
                   <MenuItem
                     key={cat.id}
-                    component={Link}
-                    to={`/categorias/${cat.slug}`}
-                    onClick={handleClose}
+                    onClick={() => handleCategoryClick(cat.id)}
                   >
                     {cat.name}
                   </MenuItem>

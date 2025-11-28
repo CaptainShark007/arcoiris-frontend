@@ -27,6 +27,10 @@ export interface Product {
 	images: string[];
 	created_at: string;
 	variants: VariantProduct[];
+	price?: number;
+  maxPrice?: number;
+  hasMultiplePrices?: boolean;
+  image?: string;
 }
 
 export interface PreparedProducts {

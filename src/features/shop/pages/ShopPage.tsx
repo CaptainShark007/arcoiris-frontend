@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProductListPage } from '../components';
-//import { useProducts } from '../hooks';
 import { useFilteredProducts } from '../hooks/products/useFilteredProducts';
+import { useSearchParams } from 'react-router';
 
 const ShopPage = () => {
-  //const { products = [], isLoading } = useProducts();
+  
+  const [ searchParams ] = useSearchParams();
   const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(8); // nuevo
+  const [itemsPerPage, setItemsPerPage] = useState(8); 
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const categoryId = searchParams.get('categoryId');
+    if (categoryId) {
+      setSelectedCategories([categoryId]);
+      setPage(1);
+    }
+  }, [searchParams]);
 
   const {
     data: products = [],
@@ -17,13 +26,10 @@ const ShopPage = () => {
   } = useFilteredProducts({
     page,
     brands: selectedBrands,
-    categoriesIds: selectedCategories, // nuevo
-    itemsPerPage // nuevo
+    categoriesIds: selectedCategories,
+    itemsPerPage 
   });
 
-  {
-    /* <ProductListPage products={products} isLoading={isLoading} /> */
-  }
   return (
     <ProductListPage
       products={products}

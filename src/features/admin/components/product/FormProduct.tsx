@@ -93,6 +93,7 @@ export const FormProduct = ({ titleForm }: Props) => {
             color_name: v.colorName,
             finish: v.finish || null,
           })) ?? [],
+        is_active: true,
       });
     } else {
       createProduct({
@@ -112,6 +113,7 @@ export const FormProduct = ({ titleForm }: Props) => {
             color_name: v.colorName,
             finish: v.finish || null,
           })) ?? [],
+        is_active: true,
       });
     }
   };
