@@ -73,7 +73,8 @@ export const TableProduct = () => {
 
   const { categories, isLoading: isCategoriesLoading } = useCategories();
   //const { mutate: deleteProduct, isPending } = useDeleteProduct();
-  const { mutate: updateProductCategory, isPending: isUpdatingCategory } = useUpdateProductCategory();
+  const { mutate: updateProductCategory, isPending: isUpdatingCategory } =
+    useUpdateProductCategory();
   const { mutate: toggleProduct, isPending: isToggling } = useToggleProduct();
 
   const handleMenuOpen = (
@@ -331,9 +332,11 @@ export const TableProduct = () => {
               </Button> */}
               {productIsActive ? (
                 <Button
-                  onClick={() => toggleProduct({ productId: product.id, isActive: false })}
+                  onClick={() =>
+                    toggleProduct({ productId: product.id, isActive: false })
+                  }
                   disabled={isToggling}
-                  size="small"
+                  size='small'
                   sx={{
                     border: 1,
                     borderColor: '#0007d7ff',
@@ -350,9 +353,11 @@ export const TableProduct = () => {
                 </Button>
               ) : (
                 <Button
-                  onClick={() => toggleProduct({ productId: product.id, isActive: true })}
+                  onClick={() =>
+                    toggleProduct({ productId: product.id, isActive: true })
+                  }
                   disabled={isToggling}
-                  size="small"
+                  size='small'
                   sx={{
                     border: 1,
                     borderColor: '#0007d7ff',
@@ -436,7 +441,13 @@ export const TableProduct = () => {
             const productIsActive = product.is_active ?? true;
 
             return (
-              <TableRow key={index} sx={{ borderBottom: '1px solid #F9FAFB', backgroundColor: productIsActive ? 'inherit' : '#fef2f2' }}>
+              <TableRow
+                key={index}
+                sx={{
+                  borderBottom: '1px solid #F9FAFB',
+                  backgroundColor: productIsActive ? 'inherit' : '#fef2f2',
+                }}
+              >
                 <TableCell sx={{ p: { md: 1, lg: 1.5 }, width: '70px' }}>
                   <Box
                     component='img'
@@ -573,7 +584,12 @@ export const TableProduct = () => {
                     </MenuItem> */}
                     {productIsActive ? (
                       <MenuItem
-                        onClick={() => toggleProduct({ productId: product.id, isActive: false })}
+                        onClick={() =>
+                          toggleProduct({
+                            productId: product.id,
+                            isActive: false,
+                          })
+                        }
                         disabled={isToggling}
                         sx={{
                           display: 'flex',
@@ -587,7 +603,12 @@ export const TableProduct = () => {
                       </MenuItem>
                     ) : (
                       <MenuItem
-                        onClick={() => toggleProduct({ productId: product.id, isActive: true })}
+                        onClick={() =>
+                          toggleProduct({
+                            productId: product.id,
+                            isActive: true,
+                          })
+                        }
                         disabled={isToggling}
                         sx={{
                           display: 'flex',
@@ -614,37 +635,36 @@ export const TableProduct = () => {
   if (!products || isLoading || !totalProducts) return <Loader />; // || isPending
 
   return (
-    <Card
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        flex: 1,
-        p: { xs: 1.5, sm: 2, md: 2.5 },
-        bgcolor: '#F9FAFB', // F9FAFB
-        mb: 4,
-        boxShadow: 'none',
-        border: '1px solid #E5E7EB',
-        borderRadius: 1,
-        width: '100%',
-        overflow: 'hidden',
-      }}
-    >
-      <Typography
-        variant='h6'
+    <>
+      <Card
         sx={{
-          fontWeight: 'bold',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          p: { xs: 1.5, sm: 2, md: 2.5 },
+          bgcolor: '#F9FAFB', // F9FAFB
           mb: 2,
-          fontSize: { xs: '1rem', sm: '1.25rem' },
+          boxShadow: 'none',
+          border: '1px solid #E5E7EB',
+          borderRadius: 1,
+          width: '100%',
+          overflow: 'hidden',
         }}
       >
-        Gestión de Productos
-      </Typography>
+        <Typography
+          variant='h6'
+          sx={{
+            fontWeight: 'bold',
+            mb: 2,
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+          }}
+        >
+          Gestión de Productos
+        </Typography>
 
-      {isMobile ? renderMobileView() : renderDesktopView()}
+        {isMobile ? renderMobileView() : renderDesktopView()}
 
-      <Pagination page={page} setPage={setPage} totalItems={totalProducts} />
-
-      {/* {productToDelete && (
+        {/* {productToDelete && (
         <DeleteProductModal
           open={deleteModalOpen}
           productName={productToDelete.name}
@@ -658,6 +678,10 @@ export const TableProduct = () => {
           isLoading={isPending}
         />
       )} */}
-    </Card>
+      </Card>
+      <Box sx={{ px: { xs: 1, sm: 2 } }}>
+        <Pagination page={page} setPage={setPage} totalItems={totalProducts} />
+      </Box>
+    </>
   );
 };

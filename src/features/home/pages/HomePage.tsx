@@ -54,7 +54,6 @@ const HomePage = () => {
           ) : (
             <ProductCarousel 
               products={recentProducts || []}
-              showOriginalPrice={false}
             />
           )}
         </Box>
@@ -80,7 +79,6 @@ const HomePage = () => {
           ) : (
             <ProductCarousel 
               products={popularProducts || []}
-              showOriginalPrice={false}
             />
           )}
         </Box>

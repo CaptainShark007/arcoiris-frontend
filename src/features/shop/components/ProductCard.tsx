@@ -94,9 +94,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         sx={{
           textAlign: 'center',
           p: 2,
-          borderRadius: 2,
+          borderRadius: 1,
           bgcolor: 'background.paper',
-          boxShadow: 1,
+          boxShadow: 'none',
           transition: '0.3s ease',
           height: '100%',
           display: 'flex',
@@ -105,9 +105,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           position: 'relative',
           opacity: isOutOfStock ? 0.55 : 1,
           pointerEvents: isOutOfStock ? 'none' : 'auto',
+          border: 1,
+          borderColor: 'divider',
           '&:hover': {
-            boxShadow: 4,
-            transform: 'translateY(-3px)',
+            //boxShadow: 4,
+            //transform: 'translateY(-3px)',
+            borderColor: 'primary.main',
+            transform: 'scale(1.02)',
+            transition: 'transform 0.2s ease-in-out',
           },
           textDecoration: 'none',
         }}

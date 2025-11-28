@@ -1,7 +1,7 @@
 import { DatosOrden } from '@shared/types';
 import { supabase } from '../supabase/client'
 
-const ADMIN_EMAIL = 'eliasdiegogomez37@gmail.com';
+const ADMIN_EMAIL = 'tienda.arcoiris.team@gmail.com';
 
 export async function enviarEmailOrden(datosOrden: DatosOrden) {
   try {

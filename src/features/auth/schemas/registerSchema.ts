@@ -13,7 +13,7 @@ export const registerSchema = yup.object({
   phoneNumber: yup
     .string()
     .matches(/^[0-9]+$/, 'El número de celular debe contener solo dígitos')
-    .optional(),
+    .required('El número de celular es requerido'),
   rememberMe: yup.boolean().default(false),
 });
 

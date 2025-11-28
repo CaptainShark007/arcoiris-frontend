@@ -6,8 +6,8 @@ import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
 // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
-//import { enviarEmailOrden } from '@/services/emailService';
-//import { useCustomer, useUsers } from '@shared/hooks';
+import { enviarEmailOrden } from '@/services/emailService';
+import { useCustomer, useUsers } from '@shared/hooks';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -26,9 +26,9 @@ export const PaymentStep = ({
 }: PaymentStepProps) => {
 
   // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
-  //const { session, isLoading } = useUsers();
-  //const userId = session?.user?.id;
-  //const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
+  const { session, isLoading } = useUsers();
+  const userId = session?.user?.id;
+  const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
 
   const [selected, setSelected] = useState<'acordar'>('acordar');
 
@@ -46,7 +46,7 @@ export const PaymentStep = ({
     // ============================================================
     // ENVÍO DE EMAIL
     // ============================================================
-    /* try {
+    try {
       await enviarEmailOrden({
         id: response.orderId,
         email: customer?.email || '',
@@ -72,7 +72,7 @@ export const PaymentStep = ({
       toast.error('Orden creada pero hubo un error al enviar el email de confirmación', {
         position: 'bottom-right',
       });
-    } */
+    } 
     // ============================================================
 
     // Navegar al siguiente paso
@@ -96,12 +96,12 @@ export const PaymentStep = ({
 
     // Validar que los datos del cliente se hayan cargado
     // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
-    /* if (isLoadingCustomer) {
+    if (isLoadingCustomer) {
       toast.error('Por favor espera mientras se cargan tus datos', {
         position: 'bottom-right',
       });
       return;
-    } */
+    }
 
     // Validar que la información de envío esté completa
     if (!shippingInfo) {
@@ -124,7 +124,7 @@ export const PaymentStep = ({
     // ============================================================
     
     // Mostrar toast de procesamiento
-    /* toast.loading('Procesando tu orden...', {
+    toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'bottom-right',
       duration: Infinity,
@@ -154,13 +154,13 @@ export const PaymentStep = ({
     // Cerrar toast después de que la mutación termine
     setTimeout(() => {
       toast.dismiss('order-processing');
-    }, 100); */
+    }, 100);
 
     // ============================================================
     // OPCIÓN 2: SIMULACIÓN (Para pruebas sin ejecutar SP)
     // Comenta esta sección cuando uses OPCIÓN 1
     // ============================================================
-    toast.loading('Procesando tu orden...', {
+    /*toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'bottom-right',
       duration: 1500,
@@ -176,9 +176,9 @@ export const PaymentStep = ({
       });
 
       onNext();
-    }, 1500);
+    }, 1500);*/
 
-  }, [shippingInfo, orderSummary, createOrder, setOrderId, clearCart, onNext]); // , isLoadingCustomer
+  }, [shippingInfo, orderSummary, createOrder, setOrderId, clearCart, onNext, isLoadingCustomer]); // , isLoadingCustomer
 
   // Actualizar ref con la función de confirmar
   useEffect(() => {
@@ -305,7 +305,7 @@ export const PaymentStep = ({
           variant="outlined" 
           onClick={onBack} 
           fullWidth
-          disabled={isPending} // || isLoading || isLoadingCustomer
+          disabled={isPending || isLoading || isLoadingCustomer}
         >
           Volver
         </Button>
@@ -318,7 +318,7 @@ export const PaymentStep = ({
             position: 'relative',
           }}
         >
-          {isPending ? 'Procesando...' : 'Confirmar orden'} {/* isLoading || isLoadingCustomer ? 'Cargando datos...'  */}
+          {isPending ? 'Procesando...' : isLoading || isLoadingCustomer ? 'Cargando datos...' : 'Confirmar orden'}
         </Button>
       </Box>
     </Box>
