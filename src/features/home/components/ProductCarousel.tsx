@@ -1,122 +1,225 @@
-import React, { useState } from "react";
-import { Box, IconButton, useTheme, useMediaQuery } from "@mui/material";
-import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { ProductCard } from "./ProductCard";
-import { Product } from "@shared/types";
+import React, { useState, useCallback, useRef } from 'react';
+import { Box, IconButton, useTheme, useMediaQuery } from '@mui/material';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { Product } from '@shared/types';
+import { ProductCard } from './ProductCard'; // Asegúrate de que la ruta sea correcta
 
 interface ProductCarouselProps {
   products: Product[];
-  showOriginalPrice?: boolean;
 }
 
-export const ProductCarousel: React.FC<ProductCarouselProps> = ({ 
-  products,
-  //showOriginalPrice = false 
-}) => {
+export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) => {
   const theme = useTheme();
-  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const isSm = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const isMd = useMediaQuery(theme.breakpoints.between("md", "lg"));
 
-  let itemsPerSlide = 4;
-  if (isXs) itemsPerSlide = 1;
-  else if (isSm) itemsPerSlide = 2;
-  else if (isMd) itemsPerSlide = 3;
+  // 1. Configuración Responsive
+  const isXs = useMediaQuery(theme.breakpoints.only('xs'));
+  const isSm = useMediaQuery(theme.breakpoints.only('sm'));
+  const isMd = useMediaQuery(theme.breakpoints.only('md'));
 
-  const totalSlides = Math.ceil(products.length / itemsPerSlide);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  // Definimos cuántas tarjetas se ven según el tamaño de pantalla.
+  // Ajuste: Para productos, en XS mostramos 1, en SM 2, MD 3, y LG+ 4.
+  let visibleItems = 4;
+  if (isXs) visibleItems = 1;      // Móvil: 1 producto completo
+  else if (isSm) visibleItems = 2; // Tablet pequeña: 2 productos
+  else if (isMd) visibleItems = 3; // Tablet normal: 3 productos
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % totalSlides);
-  const prevSlide = () =>
-    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+  // 2. Lógica del Carrusel Infinito
+  const CLONES_COUNT = 5;
+  const originalLength = products.length;
+  // Solo clonamos si hay suficientes productos para hacer scroll
+  const shouldClone = originalLength > visibleItems;
 
-  const createSlides = () => {
-    const slides = [];
-    for (let i = 0; i < totalSlides; i++) {
-      slides.push(products.slice(i * itemsPerSlide, (i + 1) * itemsPerSlide));
+  const extendedProducts = shouldClone
+    ? Array(CLONES_COUNT).fill(products).flat()
+    : products;
+
+  const START_INDEX = shouldClone
+    ? Math.floor(extendedProducts.length / 2) - (originalLength % 2 === 0 ? 0 : 1)
+    : 0;
+
+  const [currentIndex, setCurrentIndex] = useState(START_INDEX);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const isAnimating = useRef(false);
+
+  // --- Estado para Swipe (Táctil) ---
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  // 3. Manejo de Navegación
+  const handleNext = useCallback(() => {
+    if (isAnimating.current || !shouldClone) return;
+    setIsTransitioning(true);
+    isAnimating.current = true;
+    setCurrentIndex((prev) => prev + 1);
+  }, [shouldClone]);
+
+  const handlePrev = useCallback(() => {
+    if (isAnimating.current || !shouldClone) return;
+    setIsTransitioning(true);
+    isAnimating.current = true;
+    setCurrentIndex((prev) => prev - 1);
+  }, [shouldClone]);
+
+  // 4. Teleportación (Reset silencioso)
+  const handleTransitionEnd = () => {
+    isAnimating.current = false;
+    if (!shouldClone) return;
+
+    const totalLength = extendedProducts.length;
+    const singleSetLength = originalLength;
+
+    if (currentIndex >= totalLength - visibleItems - 1) {
+      setIsTransitioning(false);
+      setCurrentIndex(currentIndex - singleSetLength);
+    } else if (currentIndex <= visibleItems + 1) {
+      setIsTransitioning(false);
+      setCurrentIndex(currentIndex + singleSetLength);
     }
-    return slides;
   };
 
-  const slides = createSlides();
+  // 5. Manejadores Táctiles
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) handleNext();
+    else if (isRightSwipe) handlePrev();
+  };
+
+  // Cálculos de renderizado
+  const itemWidthPercent = 100 / visibleItems;
+  const activeDotIndex = currentIndex % originalLength;
 
   return (
-    <Box sx={{ position: "relative", width: "100%", overflow: "hidden", py: 2 }}>
+    <Box sx={{ position: 'relative', width: '100%' }}>
+      
+      {/* Botón Anterior (Oculto en móvil) */}
+      {shouldClone && (
+        <IconButton
+          onClick={handlePrev}
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            position: 'absolute',
+            left: { md: -20, lg: -8 }, // Un poco más afuera en pantallas grandes
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            boxShadow: theme.shadows[3],
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              boxShadow: theme.shadows[6],
+              transform: 'translateY(-50%) scale(1.1)',
+            },
+          }}
+        >
+          <ChevronLeftIcon color="primary" />
+        </IconButton>
+      )}
+
+      {/* Viewport */}
       <Box
-        sx={{
-          display: "flex",
-          transition: "transform 0.5s ease-in-out",
-          transform: `translateX(-${currentSlide * 100}%)`,
-        }}
+        sx={{ overflow: 'hidden', width: '100%', mx: 'auto', py: 2 }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
-        {slides.map((slide, index) => (
-          <Box
-            key={index}
-            sx={{
-              display: "flex",
-              justifyContent: "center", // Siempre centrado
-              alignItems: "center",
-              flex: "0 0 100%",
-              gap: { xs: 2, sm: 1 },
-              px: { xs: 2, sm: 1 },
-            }}
-          >
-            {slide.map((product) => (
-              <Box 
-                key={product.id} 
-                sx={{ 
-                  flex: isXs ? "0 0 auto" : `0 0 ${100 / itemsPerSlide}%`,
-                  width: { xs: "100%", sm: "auto" },
-                  maxWidth: { xs: 280, sm: 300 },
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-              >
-                <ProductCard 
-                  product={product} 
-                  //showOriginalPrice={showOriginalPrice}
-                />
+        <Box
+          onTransitionEnd={handleTransitionEnd}
+          sx={{
+            display: 'flex',
+            transform: `translateX(-${currentIndex * itemWidthPercent}%)`,
+            transition: isTransitioning ? 'transform 0.5s ease-in-out' : 'none',
+            width: '100%',
+            bgcolor: 'blue'
+          }}
+        >
+          {extendedProducts.map((product, index) => (
+            <Box
+              key={`${product.id}-${index}`}
+              sx={{
+                flex: `0 0 ${itemWidthPercent}%`,
+                maxWidth: `${itemWidthPercent}%`,
+                px: { xs: 1, sm: 1.5 }, // Padding horizontal para separar las cards
+                boxSizing: 'border-box',
+                userSelect: 'none',
+                // Aseguramos que las cards tengan la misma altura
+                display: 'flex', 
+                justifyContent: 'center'
+              }}
+            >
+              {/* Contenedor wrapper para evitar conflictos de eventos con la imagen */}
+              <Box sx={{ width: '100%', '& img': { pointerEvents: 'none' } }}>
+                 <ProductCard product={product} />
               </Box>
-            ))}
-          </Box>
-        ))}
+            </Box>
+          ))}
+        </Box>
       </Box>
 
-      <IconButton
-        onClick={prevSlide}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: { xs: -4, sm: 8 },
-          transform: "translateY(-50%)",
-          bgcolor: "rgba(255,255,255,0.9)",
-          boxShadow: 2,
-          "&:hover": { bgcolor: "white" },
-          zIndex: 2,
-          width: { xs: 32, sm: 40 },
-          height: { xs: 32, sm: 40 },
-        }}
-      >
-        <ArrowBackIos sx={{ ml: 0.5, fontSize: { xs: 16, sm: 20 } }} />
-      </IconButton>
+      {/* Botón Siguiente (Oculto en móvil) */}
+      {shouldClone && (
+        <IconButton
+          onClick={handleNext}
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            position: 'absolute',
+            right: { md: -20, lg: -8 },
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            boxShadow: theme.shadows[3],
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              boxShadow: theme.shadows[6],
+              transform: 'translateY(-50%) scale(1.1)',
+            },
+          }}
+        >
+          <ChevronRightIcon color="primary" />
+        </IconButton>
+      )}
 
-      <IconButton
-        onClick={nextSlide}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          right: { xs: -4, sm: 8 },
-          transform: "translateY(-50%)",
-          bgcolor: "rgba(255,255,255,0.9)",
-          boxShadow: 2,
-          "&:hover": { bgcolor: "white" },
-          zIndex: 2,
-          width: { xs: 32, sm: 40 },
-          height: { xs: 32, sm: 40 },
-        }}
-      >
-        <ArrowForwardIos sx={{ fontSize: { xs: 16, sm: 20 } }} />
-      </IconButton>
+      {/* Indicadores (Dots) */}
+      {shouldClone && (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            mt: 3,
+            gap: 1,
+          }}
+        >
+          {products.map((_, index) => (
+            <Box
+              key={index}
+              sx={{
+                width: index === activeDotIndex ? 24 : 8,
+                height: 8,
+                borderRadius: 4,
+                bgcolor: index === activeDotIndex ? theme.palette.primary.main : theme.palette.action.disabled,
+                transition: 'all 0.3s ease',
+              }}
+            />
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };
