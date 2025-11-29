@@ -3,12 +3,16 @@ import { CartList, CartSearch } from '@shared/components';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { useUsers } from '@shared/hooks';
 
 interface CartStepProps {
   onNext: () => void;
 }
 
 export const CartStep = ({ onNext }: CartStepProps) => {
+  const navigate = useNavigate();
+  const { session, isLoading } = useUsers();
   const [searchQuery, setSearchQuery] = useState('');
   const items = useCartStore((state) => state.items);
   const { totalQuantity, totalPrice } = useCartStore();
@@ -34,6 +38,15 @@ export const CartStep = ({ onNext }: CartStepProps) => {
       setOrderSummary(orderSummary);
     }
   }, [items, totalQuantity, totalPrice, setOrderSummary]);
+
+  const handleContinuarConEntrega = () => {
+    if (!session) {
+      sessionStorage.setItem('redirectAfterLogin', '/verificar');
+      navigate('/acceder');
+    } else {
+      onNext?.();
+    }
+  }
 
   return (
     <Box>
@@ -88,8 +101,8 @@ export const CartStep = ({ onNext }: CartStepProps) => {
       {/* Botón móvil */}
       <Button
         variant='contained'
-        onClick={onNext}
-        disabled={items.length === 0}
+        onClick={handleContinuarConEntrega}
+        disabled={items.length === 0 || isLoading}
         fullWidth
         sx={{
           display: { xs: 'block', md: 'none' },

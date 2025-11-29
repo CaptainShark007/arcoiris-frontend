@@ -1,4 +1,4 @@
-import { memo } from 'react';
+/* import { memo } from 'react';
 import { Card, CardContent, CardMedia, Typography, Box } from '@mui/material';
 import toast from 'react-hot-toast';
 import { LoadingButton } from './LoadingButton';
@@ -44,7 +44,6 @@ export const ProductCard = memo(({
     <Card
       sx={{ maxWidth: 280, textAlign: 'center', position: 'relative', m: 1 }}
     >
-      {/* Imagen */}
       <CardMedia
         component='img'
         image={product.image}
@@ -53,7 +52,6 @@ export const ProductCard = memo(({
         sx={{ height: 200, objectFit: 'cover' }}
       />
 
-      {/* Badges */}
       <Box
         sx={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 1 }}
       >
@@ -85,7 +83,6 @@ export const ProductCard = memo(({
         )}
       </Box>
 
-      {/* Información */}
       <CardContent>
         <Typography variant='h6' sx={{ mb: 1 }}>
           {product.name}
@@ -135,3 +132,4 @@ export const ProductCard = memo(({
 });
 
 ProductCard.displayName = 'ProductCard';
+ */

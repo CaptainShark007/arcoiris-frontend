@@ -108,7 +108,7 @@ export const CategoryFormModal = ({
           imagePreview: previewUrl,
         });
 
-        toast.success('Imagen procesada correctamente');
+        //toast.success('Imagen procesada correctamente');
       } catch (error) {
         console.error('Error compressing image:', error);
         toast.error('Error al procesar la imagen');

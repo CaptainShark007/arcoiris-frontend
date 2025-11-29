@@ -72,7 +72,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       });
 
       toast.success('Producto agregado al carrito', {
-        position: 'bottom-right',
+        position: 'top-right',
       });
       return;
     }

@@ -110,7 +110,7 @@ export const PaymentStep = ({
     // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
     if (isLoadingCustomer) {
       toast.error('Por favor espera mientras se cargan tus datos', {
-        position: 'bottom-right',
+        position: 'top-right',
       });
       return;
     }
@@ -120,7 +120,7 @@ export const PaymentStep = ({
       toast.error(
         'Por favor, completa la información de envío antes de continuar.',
         {
-          position: 'bottom-right',
+          position: 'top-right',
         }
       );
       return;
@@ -129,7 +129,7 @@ export const PaymentStep = ({
     // Validar que haya items en el carrito
     if (!orderSummary?.items || orderSummary.items.length === 0) {
       toast.error('Tu carrito está vacío.', {
-        position: 'bottom-right',
+        position: 'top-right',
       });
       return;
     }
@@ -141,7 +141,7 @@ export const PaymentStep = ({
     // Mostrar toast de procesamiento
     toast.loading('Procesando tu orden...', {
       id: 'order-processing',
-      position: 'bottom-right',
+      position: 'top-right',
       duration: Infinity,
     });
 

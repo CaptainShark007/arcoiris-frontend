@@ -214,7 +214,7 @@ const ProductPage = () => {
       },
     });
 
-    toast.success('Producto agregado al carrito', { position: 'bottom-right' });
+    toast.success('Producto agregado al carrito', { position: 'top-right' });
     setQuantity(1);
   };
 
