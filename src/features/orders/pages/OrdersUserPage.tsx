@@ -109,7 +109,7 @@ const OrdersUserPage = () => {
               {/* Botón de editar */}
               <Button
                 component={Link}
-                to="/cuenta/editar-perfil"
+                to="/cuenta/editar"
                 variant="outlined"
                 startIcon={<EditIcon />}
                 sx={{ 

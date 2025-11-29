@@ -19,3 +19,4 @@ export const DashboardPartnersPage = lazy(() => import('../features/admin/pages/
 export const DashboardBannerPage = lazy(() => import('../features/admin/pages/DashboardBannerPage'));
 export const ForgotPasswordPage = lazy(() => import('../features/auth/pages/ForgotPasswordPage'));
 export const ResetPasswordPage = lazy(() => import('../features/auth/pages/ResetPasswordPage'));
+export const FormEditUserPage = lazy(() => import('../features/orders/pages/FormEditCustomerPage'));

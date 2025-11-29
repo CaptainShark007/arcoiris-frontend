@@ -22,6 +22,7 @@ import {
   DashboardBannerPage,
   ForgotPasswordPage,
   ResetPasswordPage,
+  FormEditUserPage,
 } from './lazy';
 import { DashboardLayout } from '@layout/DashboardLayout';
 
@@ -45,6 +46,7 @@ export default function Router() {
           <Route index element={<Navigate to='pedidos' replace />} />
           <Route path='pedidos' element={<OrdersUserPage />} />
           <Route path='pedidos/:id' element={<OrderUserPage />} />
+          <Route path='editar' element={<FormEditUserPage />} />
         </Route>
 
         {/* Página de checkout */}
