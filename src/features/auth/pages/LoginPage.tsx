@@ -120,6 +120,19 @@ const LoginPage = () => {
         </Button>
 
         <Typography variant="body2" textAlign="center">
+          <Link
+            to="/recuperar-contrasena"
+            style={{
+              color: "#1976d2",
+              textDecoration: "none",
+              fontWeight: 500,
+            }}
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </Typography>
+
+        <Typography variant="body2" textAlign="center">
           ¿No tienes una cuenta?{" "}
           <Link
             to="/registrarse"
