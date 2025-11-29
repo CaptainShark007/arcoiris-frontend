@@ -220,14 +220,14 @@ export const VariantSelectModal = ({
       toast.success(
         `${quantity} ${quantity === 1 ? "producto" : "productos"} agregado al carrito`,
         {
-          position: "bottom-right",
+          position: "top-right",
         }
       );
       onClose();
     } catch (err) {
       console.error("Error adding to cart:", err);
       toast.error("Error al agregar el producto al carrito", {
-        position: "bottom-right",
+        position: "top-right"
       });
     } finally {
       setIsSubmitting(false);
