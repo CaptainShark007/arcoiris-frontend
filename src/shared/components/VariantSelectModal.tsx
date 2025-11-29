@@ -181,20 +181,20 @@ export const VariantSelectModal = ({
 
   const handleConfirm = async () => {
     if (!selectedVariant) {
-      toast.error("Selecciona una combinación válida", { position: "bottom-right" });
+      toast.error("Selecciona una combinación válida", { position: "top-right" });
       return;
     }
 
     if (selectedVariant.stock <= 0) {
       toast.error("No hay stock disponible para esta variante", {
-        position: "bottom-right",
+        position: "top-right",
       });
       return;
     }
 
     if (quantity > selectedVariant.stock) {
       toast.error(`Solo hay ${selectedVariant.stock} unidades disponibles`, {
-        position: "bottom-right",
+        position: "top-right",
       });
       return;
     }

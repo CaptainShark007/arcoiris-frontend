@@ -66,7 +66,7 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
         },
       });
       toast.success('Producto agregado al carrito', {
-        position: 'bottom-right',
+        position: 'top-right',
       });
       return;
     }
