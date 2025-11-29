@@ -300,10 +300,10 @@ export const Navbar = () => {
           <ListItem>
             <ListItemButton
               component={Link}
-              to='/productos'
+              to='/tienda'
               onClick={() => setDrawerOpen(false)}
             >
-              <ListItemText primary='Productos' />
+              <ListItemText primary='Tienda Virtual' />
             </ListItemButton>
           </ListItem>
           <ListItem>

@@ -253,7 +253,14 @@ export const VariantSelectModal = ({
 
   if (variants.length === 0 && !loading) {
     return (
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <Dialog 
+        open={open} 
+        onClose={onClose} 
+        maxWidth="sm" 
+        fullWidth
+        disableScrollLock={false} // Asegura el bloqueo del body
+        scroll="paper" // Mantiene el scroll interno
+      >
         <DialogTitle sx={{ fontWeight: 600 }}>Producto no disponible</DialogTitle>
         <DialogContent sx={{ py: 2, px: { xs: 1.5, md: 2 } }}>
           <Alert severity="warning">
@@ -270,7 +277,19 @@ export const VariantSelectModal = ({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="md" 
+      fullWidth
+      scroll="paper"
+      disableScrollLock={false}
+      PaperProps={{
+        sx: {
+          overscrollBehavior: 'contain',
+        }
+      }}
+    >
       <DialogTitle sx={{ fontWeight: 600, pb: 1.5, fontSize: { xs: "1.1rem", md: "1.25rem" } }}>
         Configurar producto
       </DialogTitle>
@@ -329,24 +348,6 @@ export const VariantSelectModal = ({
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   Marca: {product.brand}
                 </Typography>
-
-                {/* {product.features && product.features.length > 0 && (
-                  <Box sx={{ mt: 1 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Características:
-                    </Typography>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}>
-                      {product.features.slice(0, 3).map((feature, index) => (
-                        <Chip
-                          key={index}
-                          label={feature}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-                )} */}
               </Box>
             </Box>
 
