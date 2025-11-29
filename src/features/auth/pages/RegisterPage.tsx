@@ -11,7 +11,6 @@ import { useFormWithSchema, useUsers } from "@shared/hooks";
 import { RegisterFormData, registerSchema } from "../schemas/registerSchema";
 import { Loader } from "@shared/components";
 
-
 const RegisterPage = () => {
   const {
     register,
@@ -35,20 +34,21 @@ const RegisterPage = () => {
     mutate({ email, password, fullName, phoneNumber });
   });
 
-  if (isLoading) return <Loader />
+  if (isLoading) return <Loader />;
 
-  if (session) return <Navigate to="/" />
+  if (session) return <Navigate to="/" />;
 
   return (
     <Box
       sx={{
-        //minHeight: "100vh",
-        marginBottom: 4,
-        paddingTop: 4,
+        pt: { xs: 4, md: 8 }, 
+        pb: 4,
+        px: { xs: 2, sm: 0 }, 
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
         bgcolor: "background.default",
+        minHeight: "100vh",
       }}
     >
       <Box
@@ -62,7 +62,12 @@ const RegisterPage = () => {
           gap: 2,
         }}
       >
-        <Typography variant="h5" fontWeight={600} textAlign="center">
+        <Typography 
+            variant="h5" 
+            fontWeight={600} 
+            textAlign="center"
+            sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+        >
           Crear cuenta
         </Typography>
 
@@ -70,6 +75,7 @@ const RegisterPage = () => {
           variant="body2"
           color="text.secondary"
           textAlign="center"
+          sx={{ mb: 1 }}
         >
           ¡Bienvenido! Completa el siguiente formulario para registrarte.
         </Typography>
@@ -80,6 +86,7 @@ const RegisterPage = () => {
           {...register("fullName")}
           error={!!errors.fullName}
           helperText={errors.fullName?.message}
+          sx={{ '& .MuiInputBase-root': { minHeight: { xs: 48, sm: 'auto' } } }}
         />
 
         <TextField
@@ -88,6 +95,7 @@ const RegisterPage = () => {
           {...register("phoneNumber")}
           error={!!errors.phoneNumber}
           helperText={errors.phoneNumber?.message}
+          sx={{ '& .MuiInputBase-root': { minHeight: { xs: 48, sm: 'auto' } } }}
         />
 
         <TextField
@@ -97,6 +105,7 @@ const RegisterPage = () => {
           {...register("email")}
           error={!!errors.email}
           helperText={errors.email?.message}
+          sx={{ '& .MuiInputBase-root': { minHeight: { xs: 48, sm: 'auto' } } }}
         />
 
         <TextField
@@ -106,6 +115,7 @@ const RegisterPage = () => {
           {...register("password")}
           error={!!errors.password}
           helperText={errors.password?.message}
+          sx={{ '& .MuiInputBase-root': { minHeight: { xs: 48, sm: 'auto' } } }}
         />
 
         <Button
@@ -113,7 +123,11 @@ const RegisterPage = () => {
           color="primary"
           type="submit"
           disabled={!isValid || isPending}
-          sx={{ mt: 1, py: 1.2 }}
+          sx={{ 
+            mt: 1, 
+            py: { xs: 1.5, sm: 1.2 },
+            fontSize: { xs: '1rem', sm: '0.875rem' }
+          }}
         >
           {isPending ? (
             <CircularProgress size={24} color="inherit" />

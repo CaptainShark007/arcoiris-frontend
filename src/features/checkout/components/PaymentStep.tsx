@@ -1,4 +1,12 @@
-import { Box, Typography, Button, Radio, Stack, Card, CardActionArea } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Button,
+  Radio,
+  Stack,
+  Card,
+  CardActionArea,
+} from '@mui/material';
 import { RadioButtonChecked } from '@mui/icons-material';
 import { useState, useEffect, MutableRefObject, useCallback } from 'react';
 import { useCreateOrder } from '@features/orders';
@@ -17,14 +25,13 @@ interface PaymentStepProps {
   isProcessingRef?: MutableRefObject<boolean>;
 }
 
-export const PaymentStep = ({ 
-  onNext, 
-  onBack, 
+export const PaymentStep = ({
+  onNext,
+  onBack,
   onGoToStep,
   onConfirmOrderRef,
-  isProcessingRef
+  isProcessingRef,
 }: PaymentStepProps) => {
-
   // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
   const { session, isLoading } = useUsers();
   const userId = session?.user?.id;
@@ -32,52 +39,58 @@ export const PaymentStep = ({
 
   const [selected, setSelected] = useState<'acordar'>('acordar');
 
-  const { shippingInfo, shippingMethod, setOrderId, orderSummary } = useCheckoutStore();
+  const { shippingInfo, shippingMethod, setOrderId, orderSummary } =
+    useCheckoutStore();
   const { clearCart } = useCartStore();
 
   // Callbacks para manejar el éxito y error de la orden
-  const handleOrderSuccess = useCallback(async (response: any) => {
-    // Guardar el ID de la orden
-    setOrderId(response.orderId);
+  const handleOrderSuccess = useCallback(
+    async (response: any) => {
+      // Guardar el ID de la orden
+      setOrderId(response.orderId);
 
-    // Limpiar el carrito
-    clearCart();
+      // Limpiar el carrito
+      clearCart();
 
-    // ============================================================
-    // ENVÍO DE EMAIL
-    // ============================================================
-    try {
-      await enviarEmailOrden({
-        id: response.orderId,
-        email: customer?.email || '',
-        nombreCliente: customer?.full_name || 'Cliente',
-        total: orderSummary?.totalPrice ?? 0,
-        items: (orderSummary?.items ?? []).map(item => ({
-          nombre: item.name,
-          cantidad: item.quantity,
-          precio: item.price,
-        })),
-        addressLine1: shippingInfo?.addressLine1 || '',
-        addressLine2: shippingInfo?.addressLine2 || '',
-        city: shippingInfo?.city || '',
-        state: shippingInfo?.state || '',
-        postalCode: shippingInfo?.postalCode || '',
-        country: shippingInfo?.country || '',
-        shippingMethod: shippingMethod || 'acordar',
-        customerPhone: customer?.phone || '',
-      });
-      console.log('Email enviado exitosamente');
-    } catch (emailError) {
-      console.error('Error al enviar email:', emailError);
-      toast.error('Orden creada pero hubo un error al enviar el email de confirmación', {
-        position: 'bottom-right',
-      });
-    } 
-    // ============================================================
+      // ============================================================
+      // ENVÍO DE EMAIL
+      // ============================================================
+      try {
+        await enviarEmailOrden({
+          id: response.orderId,
+          email: customer?.email || '',
+          nombreCliente: customer?.full_name || 'Cliente',
+          total: orderSummary?.totalPrice ?? 0,
+          items: (orderSummary?.items ?? []).map((item) => ({
+            nombre: item.name,
+            cantidad: item.quantity,
+            precio: item.price,
+          })),
+          addressLine1: shippingInfo?.addressLine1 || '',
+          addressLine2: shippingInfo?.addressLine2 || '',
+          city: shippingInfo?.city || '',
+          state: shippingInfo?.state || '',
+          postalCode: shippingInfo?.postalCode || '',
+          country: shippingInfo?.country || '',
+          shippingMethod: shippingMethod || 'acordar',
+          customerPhone: customer?.phone || '',
+        });
+      } catch (emailError) {
+        console.error('Error al enviar email:', emailError);
+        toast.error(
+          'Orden creada pero hubo un error al enviar el email de confirmación',
+          {
+            position: 'bottom-right',
+          }
+        );
+      }
+      // ============================================================
 
-    // Navegar al siguiente paso
-    onNext();
-  }, [onNext, setOrderId, clearCart, shippingMethod, orderSummary]);
+      // Navegar al siguiente paso
+      onNext();
+    },
+    [onNext, setOrderId, clearCart, shippingMethod, orderSummary]
+  );
 
   // Manejo de error en la creación de la orden
   const handleOrderError = useCallback(async (error: Error) => {
@@ -92,29 +105,31 @@ export const PaymentStep = ({
   });
 
   // Función para confirmar la orden
-  const handleConfirm = useCallback( async () => {
-
+  const handleConfirm = useCallback(async () => {
     // Validar que los datos del cliente se hayan cargado
     // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
     if (isLoadingCustomer) {
       toast.error('Por favor espera mientras se cargan tus datos', {
-        position: 'bottom-right',
+        position: 'top-right',
       });
       return;
     }
 
     // Validar que la información de envío esté completa
     if (!shippingInfo) {
-      toast.error('Por favor, completa la información de envío antes de continuar.', {
-        position: 'bottom-right',
-      });
+      toast.error(
+        'Por favor, completa la información de envío antes de continuar.',
+        {
+          position: 'top-right',
+        }
+      );
       return;
     }
 
     // Validar que haya items en el carrito
     if (!orderSummary?.items || orderSummary.items.length === 0) {
       toast.error('Tu carrito está vacío.', {
-        position: 'bottom-right',
+        position: 'top-right',
       });
       return;
     }
@@ -122,11 +137,11 @@ export const PaymentStep = ({
     // ============================================================
     // OPCIÓN 1: FUNCIONAMIENTO REAL CON SP (Descomenta este bloque)
     // ============================================================
-    
+
     // Mostrar toast de procesamiento
     toast.loading('Procesando tu orden...', {
       id: 'order-processing',
-      position: 'bottom-right',
+      position: 'top-right',
       duration: Infinity,
     });
 
@@ -177,8 +192,15 @@ export const PaymentStep = ({
 
       onNext();
     }, 1500);*/
-
-  }, [shippingInfo, orderSummary, createOrder, setOrderId, clearCart, onNext, isLoadingCustomer]); // , isLoadingCustomer
+  }, [
+    shippingInfo,
+    orderSummary,
+    createOrder,
+    setOrderId,
+    clearCart,
+    onNext,
+    isLoadingCustomer,
+  ]); // , isLoadingCustomer
 
   // Actualizar ref con la función de confirmar
   useEffect(() => {
@@ -215,13 +237,18 @@ export const PaymentStep = ({
           bgcolor: 'info.light',
         }}
       >
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-          <Typography variant="h6" fontWeight="bold">
+        <Stack
+          direction='row'
+          justifyContent='space-between'
+          alignItems='center'
+          mb={1}
+        >
+          <Typography variant='h6' fontWeight='bold'>
             Entrega y facturación
           </Typography>
           <Button
-            variant="outlined"
-            size="small"
+            variant='outlined'
+            size='small'
             onClick={handleEditDelivery}
             disabled={isPending}
             sx={{
@@ -244,32 +271,35 @@ export const PaymentStep = ({
 
         {shippingMethod === 'retiro' ? (
           <Box>
-            <Typography variant='body1' color='text.primary' fontWeight="bold">
+            <Typography variant='body1' color='text.primary' fontWeight='bold'>
               Retiro en sucursal seleccionado.
             </Typography>
             <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
-              Comunícate con nosotros a través de WhatsApp para coordinar el retiro.
+              Comunícate con nosotros a través de WhatsApp para coordinar el
+              retiro.
             </Typography>
           </Box>
         ) : (
           <Box>
-            <Typography variant='body1' color='text.primary' fontWeight="bold">
+            <Typography variant='body1' color='text.primary' fontWeight='bold'>
               Datos de envío cargados:
             </Typography>
             <Typography variant='body2' color='text.secondary'>
-              {shippingInfo?.addressLine1}, {shippingInfo?.addressLine2}, {shippingInfo?.city}, {shippingInfo?.state}, {shippingInfo?.country}, {shippingInfo?.postalCode}
+              {shippingInfo?.addressLine1}, {shippingInfo?.addressLine2},{' '}
+              {shippingInfo?.city}, {shippingInfo?.state},{' '}
+              {shippingInfo?.country}, {shippingInfo?.postalCode}
             </Typography>
           </Box>
         )}
       </Box>
 
       {/* Sección de método de pago */}
-      <Typography variant="h6" fontWeight="bold" gutterBottom>
+      <Typography variant='h6' fontWeight='bold' gutterBottom>
         Método de pago
       </Typography>
 
       <Card
-        variant="outlined"
+        variant='outlined'
         sx={{
           mb: 3,
           borderColor: selected === 'acordar' ? 'primary.main' : 'divider',
@@ -280,19 +310,20 @@ export const PaymentStep = ({
         }}
       >
         <CardActionArea onClick={() => setSelected('acordar')}>
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ p: 3 }}>
+          <Stack direction='row' alignItems='center' spacing={2} sx={{ p: 3 }}>
             <Radio
               checked={selected === 'acordar'}
-              color="primary"
+              color='primary'
               icon={<RadioButtonChecked sx={{ opacity: 0.4 }} />}
-              checkedIcon={<RadioButtonChecked color="primary" />}
+              checkedIcon={<RadioButtonChecked color='primary' />}
             />
             <Box>
-              <Typography variant="h6" fontWeight="bold">
+              <Typography variant='h6' fontWeight='bold'>
                 Acordar
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Coordinaremos el método de pago y la entrega directamente contigo.
+              <Typography variant='body2' color='text.secondary'>
+                Coordinaremos el método de pago y la entrega directamente
+                contigo.
               </Typography>
             </Box>
           </Stack>
@@ -301,16 +332,16 @@ export const PaymentStep = ({
 
       {/* Botones inferiores - solo en móvil */}
       <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 2, mt: 2 }}>
-        <Button 
-          variant="outlined" 
-          onClick={onBack} 
+        <Button
+          variant='outlined'
+          onClick={onBack}
           fullWidth
           disabled={isPending || isLoading || isLoadingCustomer}
         >
           Volver
         </Button>
         <Button
-          variant="contained"
+          variant='contained'
           onClick={handleConfirm}
           fullWidth
           disabled={isPending}
@@ -318,7 +349,11 @@ export const PaymentStep = ({
             position: 'relative',
           }}
         >
-          {isPending ? 'Procesando...' : isLoading || isLoadingCustomer ? 'Cargando datos...' : 'Confirmar orden'}
+          {isPending
+            ? 'Procesando...'
+            : isLoading || isLoadingCustomer
+              ? 'Cargando datos...'
+              : 'Confirmar orden'}
         </Button>
       </Box>
     </Box>

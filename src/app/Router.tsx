@@ -20,6 +20,9 @@ import {
   DashboardOrderPage,
   DashboardPartnersPage,
   DashboardBannerPage,
+  ForgotPasswordPage,
+  ResetPasswordPage,
+  FormEditUserPage,
 } from './lazy';
 import { DashboardLayout } from '@layout/DashboardLayout';
 
@@ -35,12 +38,15 @@ export default function Router() {
         <Route path='acceder' element={<LoginPage />} />
         <Route path='registrarse' element={<RegisterPage />} />
         <Route path='carrito' element={<CartPage />} />
+        <Route path='recuperar-contrasena' element={<ForgotPasswordPage />} />
+        <Route path='restablecer-contrasena' element={<ResetPasswordPage />} />
 
         {/* Rutas protegidas del cliente */}
         <Route path='cuenta' element={<ClientLayout />}>
           <Route index element={<Navigate to='pedidos' replace />} />
           <Route path='pedidos' element={<OrdersUserPage />} />
           <Route path='pedidos/:id' element={<OrderUserPage />} />
+          <Route path='editar' element={<FormEditUserPage />} />
         </Route>
 
         {/* Página de checkout */}

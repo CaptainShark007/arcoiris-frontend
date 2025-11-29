@@ -72,9 +72,6 @@ export const FormProduct = ({ titleForm }: Props) => {
   }, [product, isLoading, setValue]);
 
   const onSubmit = (data: ProductFormValues) => {
-    console.log('Datos a enviar:', data);
-    console.log('Errores del formulario:', errors);
-
     if (slug) {
       updateProduct({
         name: data.name,

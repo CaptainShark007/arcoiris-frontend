@@ -165,3 +165,53 @@ export const getUserRole = async (userId: string) => {
   return data?.role;
 
 }
+
+// metodo para enviar email de recuperacion de contraseña
+export const requestPasswordReset = async (email: string) => {
+
+  try {
+    
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/restablecer-contrasena`,
+    });
+
+    if (error) {
+      if (error.message.includes("User not found")) {
+        throw new Error("No existe una cuenta con este email");
+      }
+      throw new Error(error.message || "Error al solicitar el restablecimiento de contraseña");
+    }
+
+    return data;
+
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error al solicitar el restablecimiento de contraseña";
+    throw new Error(message);
+  }
+
+}
+
+// metodo para restablecer la contraseña
+export const updatePassword = async (newPassword: string) => {
+
+  try {
+    
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      if (error.message.includes("Password")) {
+        throw new Error("La contraseña debe tener al menos 6 caracteres");
+      }
+      throw new Error(error.message || "Error al restablecer la contraseña");
+    }
+
+    return data;
+
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error al restablecer la contraseña";
+    throw new Error(message);
+  }
+
+}

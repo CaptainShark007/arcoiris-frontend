@@ -1,10 +1,10 @@
 import { supabase } from '@/supabase/client';
 import { CreateOrderResponse, OrderInput } from '@shared/types';
 
-export const createOrder = async (order: OrderInput): Promise<CreateOrderResponse> => {
+export const createOrder = async (
+  order: OrderInput
+): Promise<CreateOrderResponse> => {
   try {
-    console.log('Iniciando creación de orden con stored procedure:', order);
-
     // 1. Obtener el usuario autenticado
     const { data: userData, error: errorUser } = await supabase.auth.getUser();
 
@@ -25,10 +25,9 @@ export const createOrder = async (order: OrderInput): Promise<CreateOrderRespons
     }
 
     const userId = userData.user.id;
-    console.log('Usuario autenticado:', userId);
 
     // 2. Preparar los datos para el stored procedure
-    const cartItemsJson = order.cartItems.map(item => ({
+    const cartItemsJson = order.cartItems.map((item) => ({
       variantId: item.variantId,
       quantity: item.quantity,
       price: item.price,
@@ -36,7 +35,7 @@ export const createOrder = async (order: OrderInput): Promise<CreateOrderRespons
 
     // 3. Llamar al stored procedure
     const { data, error } = await (supabase.rpc as any)(
-      'create_order_transaction', 
+      'create_order_transaction',
       {
         p_user_id: userId,
         p_user_email: userData.user.email || '',
@@ -72,7 +71,6 @@ export const createOrder = async (order: OrderInput): Promise<CreateOrderRespons
       };
     }
 
-    console.log('Orden creada exitosamente:', data);
     return {
       success: true,
       orderId: data.orderId,
@@ -80,7 +78,6 @@ export const createOrder = async (order: OrderInput): Promise<CreateOrderRespons
       addressId: data.addressId,
       message: 'Orden creada exitosamente',
     };
-
   } catch (error) {
     console.error('Error en createOrder:', error);
     return {
@@ -97,7 +94,6 @@ export const getOrdersByCustomerId = async () => {
   const { data, error } = await supabase.auth.getUser();
 
   if (error) {
-    console.log(error);
     throw new Error('Error al obtener el usuario autenticado');
   }
 
@@ -108,7 +104,6 @@ export const getOrdersByCustomerId = async () => {
     .single();
 
   if (customerError) {
-    console.log(customerError);
     throw new Error('Error al obtener el cliente');
   }
 
@@ -121,7 +116,6 @@ export const getOrdersByCustomerId = async () => {
     .order('created_at', { ascending: false });
 
   if (ordersError) {
-    console.log(ordersError);
     throw new Error('Error al obtener las órdenes');
   }
 
@@ -134,7 +128,6 @@ export const getOrderById = async (orderId: number) => {
   const { data, error: errorUsers } = await supabase.auth.getUser();
 
   if (errorUsers) {
-    console.log(errorUsers);
     throw new Error('Error al obtener el usuario autenticado');
   }
 
@@ -145,7 +138,6 @@ export const getOrderById = async (orderId: number) => {
     .single();
 
   if (customerError) {
-    console.log(customerError);
     throw new Error('Error al obtener el cliente');
   }
 
@@ -160,7 +152,6 @@ export const getOrderById = async (orderId: number) => {
     .single();
 
   if (error) {
-    console.log(error);
     throw new Error('Error al obtener la orden');
   }
 
@@ -184,11 +175,11 @@ export const getOrderById = async (orderId: number) => {
     orderItems: order.order_items.map((item: any) => ({
       quantity: item.quantity,
       price: item.price,
-      color_name: item.product_snapshot?.color, 
+      color_name: item.product_snapshot?.color,
       storage: item.product_snapshot?.storage,
       productName: item.product_snapshot?.name,
       productImage: item.product_snapshot?.image,
-      finish: item.product_snapshot?.finish || null, 
+      finish: item.product_snapshot?.finish || null,
     })),
   };
 };
@@ -198,48 +189,45 @@ export const getOrderById = async (orderId: number) => {
 // *********************************************************************************************
 // Metodo usado en el panel de administrador para obtener todas las ordenes
 export const getAllOrders = async (page: number = 1, pageSize: number = 10) => {
-
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-	const { data, error, count } = await supabase
-		.from('orders')
-		.select(
-			'id, total_amount, status, created_at, customers(full_name, email, phone)', { count: 'exact' }
-		)
-		.order('created_at', { ascending: false })
+  const { data, error, count } = await supabase
+    .from('orders')
+    .select(
+      'id, total_amount, status, created_at, customers(full_name, email, phone)',
+      { count: 'exact' }
+    )
+    .order('created_at', { ascending: false })
     .range(from, to);
 
-	if (error) {
-		console.log(error);
-		throw new Error(error.message);
-	}
+  if (error) {
+    throw new Error(error.message);
+  }
 
-	return {
+  return {
     data,
     count: count || 0,
-  }
-  
+  };
 };
 
-// Metodo para actualizar el estado de una orden 
+// Metodo para actualizar el estado de una orden
 // usado en el panel de administrador
 export const updateOrderStatus = async ({
-	id,
-	status,
+  id,
+  status,
 }: {
-	id: number;
-	status: string;
+  id: number;
+  status: string;
 }) => {
-	const { error } = await supabase
-		.from('orders')
-		.update({ status })
-		.eq('id', id);
+  const { error } = await supabase
+    .from('orders')
+    .update({ status })
+    .eq('id', id);
 
-	if (error) {
-		console.log(error);
-		throw new Error(error.message);
-	}
+  if (error) {
+    throw new Error(error.message);
+  }
 };
 
 // Metodo para obtener los detalles de una orden por su ID (admin)
@@ -254,7 +242,6 @@ export const getOrderByIdAdmin = async (id: number) => {
     .single();
 
   if (error) {
-    console.log(error);
     throw new Error(error.message);
   }
 
@@ -281,7 +268,7 @@ export const getOrderByIdAdmin = async (id: number) => {
       storage: item.product_snapshot?.storage,
       productName: item.product_snapshot?.name,
       productImage: item.product_snapshot?.image,
-      finish: item.product_snapshot?.finish || null, 
+      finish: item.product_snapshot?.finish || null,
     })),
   };
 };
