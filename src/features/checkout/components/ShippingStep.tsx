@@ -86,7 +86,7 @@ export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingS
 
     // No seleccionó ninguna opción
     toast.error('Por favor, selecciona un método de envío.', {
-      position: 'bottom-right',
+      position: 'top-right',
     });
     return false;
   };

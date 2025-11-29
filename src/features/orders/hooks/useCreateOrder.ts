@@ -26,7 +26,7 @@ export const useCreateOrder = (options?: UseCreateOrderOptions) => {
 
       // Toast de éxito
       toast.success(`Orden #${response.orderId} creada exitosamente!`, {
-        position: 'bottom-right',
+        position: 'top-right',
         duration: 4000,
       });
 
@@ -40,7 +40,7 @@ export const useCreateOrder = (options?: UseCreateOrderOptions) => {
 
       // Toast de error
       toast.error(error.message || 'Hubo un error al crear la orden', {
-        position: 'bottom-right',
+        position: 'top-right',
         duration: 4000,
       });
 

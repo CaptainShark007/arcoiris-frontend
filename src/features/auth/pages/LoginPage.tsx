@@ -24,42 +24,31 @@ const LoginPage = () => {
     mutate({ email, password });
   };
 
-  // Maneja la redirección después del login
   useEffect(() => {
-    // Solo proceder si la sesión se cargó completamente y hay sesión activa
     if (!isLoading && session && !hasRedirected) {
       setHasRedirected(true);
-      
-      // Verificar si hay una ruta de redirección guardada
       const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-
       if (redirectPath) {
-        // Limpiar la ruta de redirección almacenada
         sessionStorage.removeItem("redirectAfterLogin");
-        // Redirigir a la ruta guardada
         navigate(redirectPath);
       } else {
-        // Redirigir a la página principal si no hay ruta guardada
         navigate("/");
       }
     }
   }, [session, isLoading, navigate, hasRedirected]);
 
   if (isLoading) return <Loader />;
-
-  // Si ya está logeado y ya fue redirigido, no mostrar nada
   if (session && hasRedirected) return null;
-
-  // Si está logeado pero no fue redirigido (caso inicial), no mostrar login
   if (session && !hasRedirected) return null;
 
   return (
     <Box
       sx={{
-        marginBottom: 4,
-        paddingTop: 4,
+        pt: { xs: 4, md: 8 }, 
+        pb: 4,
+        px: { xs: 2, sm: 0 }, 
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
         bgcolor: "background.default",
       }}
@@ -75,7 +64,12 @@ const LoginPage = () => {
           gap: 2,
         }}
       >
-        <Typography variant="h5" fontWeight={600} textAlign="center">
+        <Typography 
+            variant="h5" 
+            fontWeight={600} 
+            textAlign="center"
+            sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} 
+        >
           Iniciar sesión
         </Typography>
 
@@ -94,6 +88,7 @@ const LoginPage = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isPending}
+          sx={{ '& .MuiInputBase-root': { minHeight: { xs: 48, sm: 'auto' } } }}
         />
 
         <TextField
@@ -103,6 +98,7 @@ const LoginPage = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isPending}
+          sx={{ '& .MuiInputBase-root': { minHeight: { xs: 48, sm: 'auto' } } }}
         />
 
         <Button
@@ -110,7 +106,11 @@ const LoginPage = () => {
           color="primary"
           type="submit"
           disabled={!email || !password || isPending}
-          sx={{ mt: 1, py: 1.2 }}
+          sx={{ 
+            mt: 1,
+            py: { xs: 1.5, sm: 1.2 }, 
+            fontSize: { xs: '1rem', sm: '0.875rem' }
+          }}
         >
           {isPending ? (
             <CircularProgress size={24} color="inherit" />
@@ -118,6 +118,19 @@ const LoginPage = () => {
             "Iniciar sesión"
           )}
         </Button>
+
+        <Typography variant="body2" textAlign="center">
+          <Link
+            to="/recuperar-contrasena"
+            style={{
+              color: "#1976d2",
+              textDecoration: "none",
+              fontWeight: 500,
+            }}
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </Typography>
 
         <Typography variant="body2" textAlign="center">
           ¿No tienes una cuenta?{" "}

@@ -3,7 +3,7 @@ import { Box, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Product } from '@shared/types';
-import { ProductCard } from './ProductCard'; // Asegúrate de que la ruta sea correcta
+import { ProductCard } from './ProductCard'; 
 
 interface ProductCarouselProps {
   products: Product[];
@@ -12,22 +12,23 @@ interface ProductCarouselProps {
 export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) => {
   const theme = useTheme();
 
+  // --- NUEVO ESTADO: Bloqueo de interacción ---
+  // Esto servirá para detener el carrusel si un hijo (modal) está abierto
+  const [isLocked, setIsLocked] = useState(false);
+
   // 1. Configuración Responsive
   const isXs = useMediaQuery(theme.breakpoints.only('xs'));
   const isSm = useMediaQuery(theme.breakpoints.only('sm'));
   const isMd = useMediaQuery(theme.breakpoints.only('md'));
 
-  // Definimos cuántas tarjetas se ven según el tamaño de pantalla.
-  // Ajuste: Para productos, en XS mostramos 1, en SM 2, MD 3, y LG+ 4.
   let visibleItems = 4;
-  if (isXs) visibleItems = 1;      // Móvil: 1 producto completo
-  else if (isSm) visibleItems = 2; // Tablet pequeña: 2 productos
-  else if (isMd) visibleItems = 3; // Tablet normal: 3 productos
+  if (isXs) visibleItems = 1;      
+  else if (isSm) visibleItems = 2; 
+  else if (isMd) visibleItems = 3; 
 
   // 2. Lógica del Carrusel Infinito
   const CLONES_COUNT = 5;
   const originalLength = products.length;
-  // Solo clonamos si hay suficientes productos para hacer scroll
   const shouldClone = originalLength > visibleItems;
 
   const extendedProducts = shouldClone
@@ -49,18 +50,20 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
 
   // 3. Manejo de Navegación
   const handleNext = useCallback(() => {
-    if (isAnimating.current || !shouldClone) return;
+    // Agregamos !isLocked a la condición
+    if (isAnimating.current || !shouldClone || isLocked) return;
     setIsTransitioning(true);
     isAnimating.current = true;
     setCurrentIndex((prev) => prev + 1);
-  }, [shouldClone]);
+  }, [shouldClone, isLocked]);
 
   const handlePrev = useCallback(() => {
-    if (isAnimating.current || !shouldClone) return;
+    // Agregamos !isLocked a la condición
+    if (isAnimating.current || !shouldClone || isLocked) return;
     setIsTransitioning(true);
     isAnimating.current = true;
     setCurrentIndex((prev) => prev - 1);
-  }, [shouldClone]);
+  }, [shouldClone, isLocked]);
 
   // 4. Teleportación (Reset silencioso)
   const handleTransitionEnd = () => {
@@ -81,16 +84,20 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
 
   // 5. Manejadores Táctiles
   const onTouchStart = (e: React.TouchEvent) => {
+    // Si está bloqueado (modal abierto), no iniciamos el gesto
+    if (isLocked) return;
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
+    // Si está bloqueado, ignoramos el movimiento
+    if (isLocked) return;
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (isLocked || !touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
@@ -99,27 +106,29 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
     else if (isRightSwipe) handlePrev();
   };
 
-  // Cálculos de renderizado
   const itemWidthPercent = 100 / visibleItems;
   const activeDotIndex = currentIndex % originalLength;
 
   return (
     <Box sx={{ position: 'relative', width: '100%' }}>
       
-      {/* Botón Anterior (Oculto en móvil) */}
+      {/* Botones de navegación (ahora respetan isLocked) */}
       {shouldClone && (
         <IconButton
           onClick={handlePrev}
+          disabled={isLocked} // Deshabilitar visualmente si es necesario
           sx={{
             display: { xs: 'none', md: 'flex' },
             position: 'absolute',
-            left: { md: -20, lg: -8 }, // Un poco más afuera en pantallas grandes
+            left: { md: -20, lg: -8 },
             top: '50%',
             transform: 'translateY(-50%)',
             zIndex: 2,
             backgroundColor: 'rgba(255, 255, 255, 0.7)',
             boxShadow: theme.shadows[3],
             transition: 'all 0.3s ease',
+            opacity: isLocked ? 0 : 1, // Ocultar si hay modal
+            pointerEvents: isLocked ? 'none' : 'auto',
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               boxShadow: theme.shadows[6],
@@ -145,7 +154,6 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
             transform: `translateX(-${currentIndex * itemWidthPercent}%)`,
             transition: isTransitioning ? 'transform 0.5s ease-in-out' : 'none',
             width: '100%',
-            bgcolor: 'blue'
           }}
         >
           {extendedProducts.map((product, index) => (
@@ -154,27 +162,30 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
               sx={{
                 flex: `0 0 ${itemWidthPercent}%`,
                 maxWidth: `${itemWidthPercent}%`,
-                px: { xs: 1, sm: 1.5 }, // Padding horizontal para separar las cards
+                px: { xs: 1, sm: 1.5 },
                 boxSizing: 'border-box',
                 userSelect: 'none',
-                // Aseguramos que las cards tengan la misma altura
                 display: 'flex', 
                 justifyContent: 'center'
               }}
             >
-              {/* Contenedor wrapper para evitar conflictos de eventos con la imagen */}
               <Box sx={{ width: '100%', '& img': { pointerEvents: 'none' } }}>
-                 <ProductCard product={product} />
+                 {/* Pasamos la función de bloqueo a la tarjeta */}
+                 <ProductCard 
+                    product={product} 
+                    onModalStateChange={setIsLocked} 
+                 />
               </Box>
             </Box>
           ))}
         </Box>
       </Box>
 
-      {/* Botón Siguiente (Oculto en móvil) */}
+      {/* Botón Siguiente */}
       {shouldClone && (
         <IconButton
           onClick={handleNext}
+          disabled={isLocked}
           sx={{
             display: { xs: 'none', md: 'flex' },
             position: 'absolute',
@@ -185,6 +196,8 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
             backgroundColor: 'rgba(255, 255, 255, 0.7)',
             boxShadow: theme.shadows[3],
             transition: 'all 0.3s ease',
+            opacity: isLocked ? 0 : 1,
+            pointerEvents: isLocked ? 'none' : 'auto',
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               boxShadow: theme.shadows[6],
@@ -196,7 +209,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
         </IconButton>
       )}
 
-      {/* Indicadores (Dots) */}
+      {/* Indicadores */}
       {shouldClone && (
         <Box
           sx={{
@@ -204,6 +217,8 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
             justifyContent: 'center',
             mt: 3,
             gap: 1,
+            opacity: isLocked ? 0.3 : 1, // Feedback visual
+            transition: 'opacity 0.3s'
           }}
         >
           {products.map((_, index) => (
