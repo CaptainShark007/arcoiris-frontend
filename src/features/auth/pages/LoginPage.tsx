@@ -44,13 +44,11 @@ const LoginPage = () => {
   return (
     <Box
       sx={{
-        // Responsive: Menos espacio arriba en móviles (xs), más en escritorio (md)
         pt: { xs: 4, md: 8 }, 
         pb: 4,
-        // Responsive: Padding lateral para que no toque los bordes del celular
         px: { xs: 2, sm: 0 }, 
         display: "flex",
-        alignItems: "flex-start", // Alineado arriba, no centrado forzosamente en toda la pantalla
+        alignItems: "flex-start",
         justifyContent: "center",
         bgcolor: "background.default",
       }}
@@ -60,7 +58,7 @@ const LoginPage = () => {
         onSubmit={onLogin}
         sx={{
           width: "100%",
-          maxWidth: 380, // Mantiene tu ancho máximo original
+          maxWidth: 380,
           display: "flex",
           flexDirection: "column",
           gap: 2,
@@ -70,7 +68,6 @@ const LoginPage = () => {
             variant="h5" 
             fontWeight={600} 
             textAlign="center"
-            // Texto un poco más pequeño en móviles para que no se rompa en dos líneas si es muy largo
             sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} 
         >
           Iniciar sesión
@@ -91,7 +88,6 @@ const LoginPage = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isPending}
-          // Input un poco más alto en móvil para facilitar el touch
           sx={{ '& .MuiInputBase-root': { minHeight: { xs: 48, sm: 'auto' } } }}
         />
 
@@ -111,8 +107,7 @@ const LoginPage = () => {
           type="submit"
           disabled={!email || !password || isPending}
           sx={{ 
-            mt: 1, 
-            // Botón más alto en móviles (48px es el estándar de accesibilidad táctil)
+            mt: 1,
             py: { xs: 1.5, sm: 1.2 }, 
             fontSize: { xs: '1rem', sm: '0.875rem' }
           }}
