@@ -49,7 +49,7 @@ export const AddressData = () => {
           title="Información de Contacto"
           description={
             <>
-              <strong>WhatsApp:</strong> 3624105888
+              <strong>WhatsApp:</strong> 3624049548
             </>
           }
         />
