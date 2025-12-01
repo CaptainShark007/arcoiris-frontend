@@ -11,8 +11,8 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { ProductFilters, ProductGrid } from '../components';
-import { Pagination } from '@shared/components/Pagination';
 import { Product } from '@shared/types';
+import CustomPagination from '@shared/components/CustomPagination';
 
 interface ProductListPageProps {
   products: (Product & { price?: number; maxPrice?: number })[];
@@ -34,6 +34,8 @@ export const ProductListPage = ({
   totalProducts,
   page,
   setPage,
+  itemsPerPage,
+  setItemsPerPage,
   selectedBrands,
   setSelectedBrands,
   selectedCategories,
@@ -63,6 +65,20 @@ export const ProductListPage = ({
   const handleClearSearch = () => {
     setSearchQuery('');
   };
+
+  // Pagination
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    // Scroll al inicio de la página al cambiar de página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleRowsPerPageChange = (newRows: number) => {
+    setItemsPerPage(newRows);
+    setPage(0);
+  }
+
+  const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
   return (
     <Box
@@ -95,7 +111,7 @@ export const ProductListPage = ({
           <TextField
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar producto..."
+            placeholder="Buscar..."
             variant="outlined"
             size="small"
             sx={{ width: { xs: '100%', sm: '80%' } }}
@@ -138,10 +154,19 @@ export const ProductListPage = ({
             <ProductGrid products={sortedProducts} />
 
             <Box mt={2}>
-              <Pagination
+              {/* <Pagination
                 totalItems={totalProducts}
                 page={page}
                 setPage={setPage}
+              /> */}
+              <CustomPagination 
+                page={page}
+                totalPages={totalPages}
+                totalItems={totalProducts}
+                rowsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                rowsPerPageOptions={[4, 8, 12, 24]}
               />
             </Box>
           </>
