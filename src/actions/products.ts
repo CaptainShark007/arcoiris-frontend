@@ -1,6 +1,6 @@
 import { compressImage, extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
-import { CreateProductRPCResult, ProductInput } from '@shared/types';
+import { CreateProductRPCResult, ProductInput, ProductSearch } from '@shared/types';
 
 // Nuevo metodo para listar productos con variantes paginados y con filtros varios - video
 export const getFilteredProducts = async ({
@@ -8,11 +8,15 @@ export const getFilteredProducts = async ({
   brands = [],
   categoriesIds = [],
   itemsPerPage = 8,
+  searchTerm = '',
+  sortOrder = 'created_at-desc',
 }: {
   page: number;
   brands?: string[];
   categoriesIds?: string[];
   itemsPerPage?: number;
+  searchTerm?: string;
+  sortOrder?: string;
 }) => {
   const from = (page - 1) * itemsPerPage;
   const to = from + itemsPerPage - 1;
@@ -22,11 +26,17 @@ export const getFilteredProducts = async ({
   let query = supabase
     .from('products')
     .select('*, variants (*), categories(id, name, slug)', { count: 'exact' })
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .range(from, to);
+    .eq('is_active', true) // solo productos activos
+    .eq('variants.is_active', true); // solo variantes activas (y productos que tengan al menos una variante activa)
+    //.order('created_at', { ascending: false })
+    //.range(from, to);
 
-  // validacion para los filtros
+  // logica de busqueda
+  if (searchTerm) {
+    query = query.ilike('name', `%${searchTerm}%`);
+  }
+
+  // filtros
   if (brands.length > 0) {
     query = query.in('brand', brands);
   }
@@ -35,6 +45,20 @@ export const getFilteredProducts = async ({
     query = query.in('category_id', categoriesIds);
   }
 
+  // logica de ordenamiento
+  const [sortColumn, sortDirection] = sortOrder.split('-');
+
+  // Valida que sea una columna real de la tabla products
+  if (sortColumn === 'name' || sortColumn === 'created_at') {
+    query = query.order(sortColumn, { ascending: sortDirection === 'asc' });
+  } else {
+    // Por defecto: lo mas nuevo primero
+    query = query.order('created_at', { ascending: false });
+  }
+
+  // paginacion
+  query = query.range(from, to);
+
   // resolver la promesa
   const { data, error, count } = await query;
 
@@ -42,6 +66,7 @@ export const getFilteredProducts = async ({
     throw new Error('Error fetching filtered products');
   }
 
+  // Mapear productos con precio mínimo y máximo
   const products = data?.map((p) => {
     // Obtener precios de las variantes
     const prices =
@@ -63,19 +88,41 @@ export const getFilteredProducts = async ({
   return { data: products, count };
 };
 
+// metodo para buscar productos por nombre (usado en el HeaderSearch)
+// usado en el navbar
+export const searchProductsAction = async (query: string): Promise<ProductSearch[]> => {
+
+  if (!query || query.length < 2) return [];
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('id, name, slug, images, variants(price, color_name, storage, finish)')
+    .eq('is_active', true)
+    .eq('variants.is_active', true)
+    .ilike('name', `%${query}%`)
+    .limit(10);
+
+  if (error) throw error;
+  
+  return data || [];
+};
+
 // metodo para obtener todas las marcas unicas de la tabla products
 export const getBrands = async (): Promise<string[]> => {
   const { data, error } = await supabase
     .from('products')
-    .select('brand')
-    .eq('is_active', true);
+    .select('brand, variants!inner(is_active)') // inner join para asegurar variantes activas
+    .eq('is_active', true)
+    .eq('variants.is_active', true);
 
   if (error) {
+    console.error(error);
     throw new Error('Error fetching brands');
   }
 
-  // obtener marcas unicas
-  const uniqueBrands = Array.from(new Set(data?.map((p) => p.brand)));
+  // obtener marcas unicas 
+  // @ts-ignore: data puede traer variants, pero solo nos importa brand
+  const uniqueBrands = Array.from(new Set(data?.map((p: any) => p.brand)));
 
   return uniqueBrands;
 };
@@ -86,6 +133,7 @@ export const getRecentProducts = async () => {
     .from('products')
     .select('*, variants (*)')
     .eq('is_active', true)
+    .eq('variants.is_active', true)
     .order('created_at', { ascending: false })
     .limit(8);
 
@@ -117,6 +165,7 @@ export const getRandomProducts = async () => {
     .from('products')
     .select('*, variants (*)')
     .eq('is_active', true)
+    .eq('variants.is_active', true)
     .limit(20);
 
   if (error) {
@@ -153,6 +202,7 @@ export const getProductBySlug = async (slug: string) => {
     .select('*, variants (*)')
     .eq('slug', slug)
     .eq('is_active', true)
+    .eq('variants.is_active', true)
     .single(); // seleccionar un solo registro
 
   if (error) {
@@ -166,11 +216,29 @@ export const getProductBySlug = async (slug: string) => {
 // *************************************** ADMINISTRADOR ********************************************
 // **************************************************************************************************
 
+// metodo para buscar el producto por su slug solo para el admin
+export const getProductBySlugAdmin = async (slug: string) => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants (*)')
+    .eq('slug', slug)
+    .eq('variants.is_active', true)
+    .single(); // seleccionar un solo registro
+
+  if (error) {
+    throw new Error('Error fetching product by slug');
+  }
+
+  return data;
+};
+
 // metodo para obtener las variantes de un producto
+// ver donde se usa
 export const getProductVariants = async (productId: string) => {
   const { data, error } = await supabase
     .from('variants')
     .select('id, color, color_name, stock, price, storage, finish')
+    .eq('is_active', true)
     .eq('product_id', productId);
 
   if (error) {
@@ -181,10 +249,11 @@ export const getProductVariants = async (productId: string) => {
 };
 
 // metodo para obtener todos los productos con sus variantes paginados
-export const getProducts = async (page: number) => {
-  const itemsPerPage = 10;
-  const from = (page - 1) * itemsPerPage;
-  const to = from + itemsPerPage - 1;
+// usado en el panel de administrador - tabla de productos
+export const getProducts = async (page: number, limit: number = 10) => {
+  //const itemsPerPage = 10;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
   const {
     data: products,
@@ -193,6 +262,7 @@ export const getProducts = async (page: number) => {
   } = await supabase
     .from('products')
     .select('*, variants(*)', { count: 'exact' })
+    .eq('variants.is_active', true) // solo variantes activas
     .order('created_at', { ascending: false })
     .range(from, to);
 

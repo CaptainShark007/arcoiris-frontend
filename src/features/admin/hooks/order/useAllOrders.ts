@@ -1,25 +1,22 @@
 import { getAllOrders } from '@/actions';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
 
+interface Props {
+	page?: number;
+	limit?: number;
+}
 
-export const useAllOrders = () => {
-
-	const [page, setPage] = useState(1);
-	const pageSize = 10;
+export const useAllOrders = ({ page = 1, limit = 10 }: Props) => {
 
 	const { data, isLoading } = useQuery({
-		queryKey: ['orders', 'admin', page],
-		queryFn: () => getAllOrders(page, pageSize),
+		queryKey: ['orders', 'admin', page, limit],
+		queryFn: () => getAllOrders(page, limit),
 	});
 
 	return {
 		orders: data?.data || [],
 		totalItems: data?.count || 0,
 		isLoading,
-		page,
-		setPage,
-		pageSize,
 	};
 	
 };

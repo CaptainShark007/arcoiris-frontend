@@ -15,6 +15,7 @@ export interface VariantProduct {
 	color: string | null;
 	color_name: string | null;
   finish: string | null;
+  is_active: boolean;
 }
 
 export interface Product {
@@ -65,6 +66,7 @@ export interface Variant {
   storage?: string;
   color_name?: string;
   finish?: string | null;
+  is_active: boolean;
 }
 
 export interface CarouselSlide {
@@ -112,3 +114,23 @@ export type CreateProductRPCResult = {
   success: boolean;
   message: string;
 };
+
+// type para el HeaderSearch
+export interface ProductSearch {
+  id: string;
+  name: string;
+  slug: string;
+  images: string[];
+  variants: Array<{ 
+		price: number
+		color_name: string | null
+		storage: string | null
+		finish:  string | null
+	}>;
+}
+
+export interface HeaderSearchProps {
+  anchorEl: HTMLElement | null;
+  open: boolean;
+  onClose: () => void;
+}

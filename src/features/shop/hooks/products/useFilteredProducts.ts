@@ -6,17 +6,38 @@ export const useFilteredProducts = ({
   page,
   brands,
   categoriesIds,
-  itemsPerPage = 8, // nuevo
+  itemsPerPage = 8,
+  searchTerm,
+  sortOrder,
 }: {
   page: number;
   brands?: string[];
-  categoriesIds?: string[]; // nuevo
-  itemsPerPage?: number; // nuevo
+  categoriesIds?: string[];
+  itemsPerPage?: number;
+  searchTerm?: string;
+  sortOrder?: string;
 }) => {
   const { data, isLoading } = useQuery({
-    queryKey: ['filteredProducts', page, brands, categoriesIds, itemsPerPage], // itemsPerPage nuevo
-    queryFn: () => getFilteredProducts({ page, brands, categoriesIds, itemsPerPage }), // itemsPerPage nuevo
+    queryKey: [
+      'filteredProducts',
+      page,
+      brands,
+      categoriesIds,
+      itemsPerPage,
+      searchTerm,
+      sortOrder,
+    ], // itemsPerPage nuevo
+    queryFn: () =>
+      getFilteredProducts({
+        page,
+        brands,
+        categoriesIds,
+        itemsPerPage,
+        searchTerm,
+        sortOrder,
+      }), // itemsPerPage nuevo
     retry: false, // no reintentar en caso de error
+    staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
   return {
@@ -25,51 +46,3 @@ export const useFilteredProducts = ({
     totalProducts: data?.count ?? 0,
   };
 };
-
-/*
-ejemplo de uso del nuevo hook
-
-import { useFilteredProducts } from "@/hooks";
-
-const [page, setPage] = useState(1);
-const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-
-const {
-  data: products = [],
-  isLoading,
-  totalProducts
-} = useFilteredProducts({
-  page,
-  brands: selectedBrands
-});
-
-// colocar en un lugar adecuado
-// mucho mejor si se un componente de loading como el circulo giratorio
-if (isLoading || !products) return <div>Loading...</div>;
-
-ejemplo de actualizar el estado de las marcas seleccionadas
-
-interface Props {
-  selectedBrands: string[];
-  setSelectedBrands: (brands: string[]) => void;
-}
-
-export const ContainerFilter = ({
-  selectedBrands,
-  setSelectedBrands
-}: Props) => {
-
-  const handleBrandChange = (brand: string) => {
-    if (selectedBrands.includes(brand)) {
-      setSelectedBrands(selectedBrands.filter(b => b !== brand));
-    } else {
-      setSelectedBrands([...selectedBrands, brand]);
-    }
-  }
-
-  // ...
-  
-}
-
-
-*/

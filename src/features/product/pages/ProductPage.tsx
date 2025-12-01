@@ -36,6 +36,20 @@ const ProductPage = () => {
   const { product, isLoading, isError } = useProduct(slug || '');
   const addItem = useCartStore((state) => state.addItem);
 
+  // Esto maneja el error de carga de imagen
+  const [imageError, setImageError] = useState(false);
+
+  const getProductImage = () => {
+    if (imageError || !product?.images[0]) {
+      return "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png";
+    }
+    return product.images[0];
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({
     color: null,
     storage: null,
@@ -203,7 +217,7 @@ const ProductPage = () => {
       id: selectedVariant.id,
       name: product.name,
       price: selectedVariant.price,
-      image: product.images?.[0] ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png",
+      image: getProductImage(),
       quantity,
       variant: {
         color: selectedVariant.color_name,
@@ -239,7 +253,7 @@ const ProductPage = () => {
       >
         {/* Columna de imágenes */}
         <Box sx={{ display: 'flex', justifyContent: 'center', position: { xs: 'relative', md: 'sticky' }, top: { md: 20 } }}>
-          <GridImages images={product.images ?? ["https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png"]} />
+          <GridImages images={product.images} onImageError={handleImageError} />
         </Box>
 
         {/* Columna de detalles */}
