@@ -188,9 +188,9 @@ export const getOrderById = async (orderId: number) => {
 //                                    ADMINISTRADOR
 // *********************************************************************************************
 // Metodo usado en el panel de administrador para obtener todas las ordenes
-export const getAllOrders = async (page: number = 1, pageSize: number = 10) => {
-  const from = (page - 1) * pageSize;
-  const to = from + pageSize - 1;
+export const getAllOrders = async (page: number = 1, limit: number = 10) => {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
   const { data, error, count } = await supabase
     .from('orders')
