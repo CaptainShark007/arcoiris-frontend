@@ -34,6 +34,20 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   const isOutOfStock = !loading && variants.every((v) => Number(v.stock) <= 0);
 
+  // Esto maneja el error de carga de imagen
+  const [imageError, setImageError] = useState(false);
+
+  const getProductImage = () => {
+    if (imageError || !product.images[0]) {
+      return "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png";
+    }
+    return product.images[0];
+  }
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   const handleSnackbarClick = () => {
     setOpenSnackbar(true);
   };
@@ -60,7 +74,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         id: variant.id,
         name: product.name,
         price: variant.price,
-        image: product.images[0],
+        image: getProductImage(),
         quantity: 1,
         variant: {
           color: variant.color_name,
@@ -123,8 +137,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <CardMedia
           component='img'
           height='160'
-          image={product.images[0]}
+          image={getProductImage()}
           alt={product.name}
+          onError={handleImageError}
           sx={{
             objectFit: 'contain',
             borderRadius: 1,

@@ -175,7 +175,7 @@ export const PaymentStep = ({
     // OPCIÓN 2: SIMULACIÓN (Para pruebas sin ejecutar SP)
     // Comenta esta sección cuando uses OPCIÓN 1
     // ============================================================
-    /*toast.loading('Procesando tu orden...', {
+    /* toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'bottom-right',
       duration: 1500,
@@ -191,7 +191,7 @@ export const PaymentStep = ({
       });
 
       onNext();
-    }, 1500);*/
+    }, 1500); */
   }, [
     shippingInfo,
     orderSummary,
@@ -200,7 +200,7 @@ export const PaymentStep = ({
     clearCart,
     onNext,
     isLoadingCustomer,
-  ]); // , isLoadingCustomer
+  ]);
 
   // Actualizar ref con la función de confirmar
   useEffect(() => {
@@ -336,7 +336,8 @@ export const PaymentStep = ({
           variant='outlined'
           onClick={onBack}
           fullWidth
-          disabled={isPending || isLoading || isLoadingCustomer}
+          //disabled={isPending || isLoading || isLoadingCustomer}
+          //disabled={isPending}
         >
           Volver
         </Button>
@@ -349,13 +350,11 @@ export const PaymentStep = ({
             position: 'relative',
           }}
         >
-          {isPending
-            ? 'Procesando...'
-            : isLoading || isLoadingCustomer
-              ? 'Cargando datos...'
-              : 'Confirmar orden'}
+          {isPending ? 'Procesando...' : isLoading || isLoadingCustomer ? 'Cargando datos...' : 'Confirmar orden'}
         </Button>
       </Box>
     </Box>
   );
 };
+
+/* {isPending ? 'Procesando...' : 'Confirmar orden'} */

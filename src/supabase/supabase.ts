@@ -304,6 +304,7 @@ export type Database = {
           color_name: string | null
           finish: string | null
           id: string
+          is_active: boolean
           price: number
           product_id: string
           stock: number
@@ -314,6 +315,7 @@ export type Database = {
           color_name?: string | null
           finish?: string | null
           id?: string
+          is_active?: boolean
           price: number
           product_id: string
           stock: number
@@ -324,6 +326,7 @@ export type Database = {
           color_name?: string | null
           finish?: string | null
           id?: string
+          is_active?: boolean
           price?: number
           product_id?: string
           stock?: number
