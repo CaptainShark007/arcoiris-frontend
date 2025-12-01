@@ -68,16 +68,18 @@ export const getFilteredProducts = async ({
 export const getBrands = async (): Promise<string[]> => {
   const { data, error } = await supabase
     .from('products')
-    .select('brand')
+    .select('brand, variants!inner(is_active)') // inner join para asegurar variantes activas
     .eq('is_active', true)
     .eq('variants.is_active', true);
 
   if (error) {
+    console.error(error);
     throw new Error('Error fetching brands');
   }
 
-  // obtener marcas unicas
-  const uniqueBrands = Array.from(new Set(data?.map((p) => p.brand)));
+  // obtener marcas unicas 
+  // @ts-ignore: data puede traer variants, pero solo nos importa brand
+  const uniqueBrands = Array.from(new Set(data?.map((p: any) => p.brand)));
 
   return uniqueBrands;
 };
