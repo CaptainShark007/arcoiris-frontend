@@ -12,9 +12,9 @@ import { UploaderImages } from './UploaderImages';
 import { Editor } from './Editor';
 import { Box, Button, IconButton, Typography } from '@mui/material';
 import { Loader } from '@shared/components';
-import { useProduct } from '@features/product/hooks/useProduct';
+//import { useProduct } from '@features/product/hooks/useProduct';
 import { JSONContent } from '@tiptap/react';
-import { useCreateProduct, useUpdateProduct } from '@features/admin/hooks';
+import { useCreateProduct, useGetProductBySlugAdmin, useUpdateProduct } from '@features/admin/hooks';
 import {
   ProductFormValues,
   productSchema,
@@ -37,7 +37,8 @@ export const FormProduct = ({ titleForm }: Props) => {
   });
 
   const { slug } = useParams<{ slug: string }>();
-  const { product, isLoading } = useProduct(slug);
+  //const { product, isLoading } = useProduct(slug);
+  const { product, isLoading } = useGetProductBySlugAdmin(slug);
 
   const { mutate: createProduct, isPending } = useCreateProduct();
   const { mutate: updateProduct, isPending: isUpdatePending } =

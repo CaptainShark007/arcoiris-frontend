@@ -171,7 +171,24 @@ export const getProductBySlug = async (slug: string) => {
 // *************************************** ADMINISTRADOR ********************************************
 // **************************************************************************************************
 
+// metodo para buscar el producto por su slug solo para el admin
+export const getProductBySlugAdmin = async (slug: string) => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants (*)')
+    .eq('slug', slug)
+    .eq('variants.is_active', true)
+    .single(); // seleccionar un solo registro
+
+  if (error) {
+    throw new Error('Error fetching product by slug');
+  }
+
+  return data;
+};
+
 // metodo para obtener las variantes de un producto
+// ver donde se usa
 export const getProductVariants = async (productId: string) => {
   const { data, error } = await supabase
     .from('variants')
@@ -187,6 +204,7 @@ export const getProductVariants = async (productId: string) => {
 };
 
 // metodo para obtener todos los productos con sus variantes paginados
+// usado en el panel de administrador - tabla de productos
 export const getProducts = async (page: number) => {
   const itemsPerPage = 10;
   const from = (page - 1) * itemsPerPage;
