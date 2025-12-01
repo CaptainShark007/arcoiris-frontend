@@ -8,11 +8,15 @@ export const getFilteredProducts = async ({
   brands = [],
   categoriesIds = [],
   itemsPerPage = 8,
+  searchTerm = '',
+  sortOrder = 'created_at-desc',
 }: {
   page: number;
   brands?: string[];
   categoriesIds?: string[];
   itemsPerPage?: number;
+  searchTerm?: string;
+  sortOrder?: string;
 }) => {
   const from = (page - 1) * itemsPerPage;
   const to = from + itemsPerPage - 1;
@@ -23,11 +27,16 @@ export const getFilteredProducts = async ({
     .from('products')
     .select('*, variants (*), categories(id, name, slug)', { count: 'exact' })
     .eq('is_active', true) // solo productos activos
-    .eq('variants.is_active', true) // solo variantes activas (y productos que tengan al menos una variante activa)
-    .order('created_at', { ascending: false })
-    .range(from, to);
+    .eq('variants.is_active', true); // solo variantes activas (y productos que tengan al menos una variante activa)
+    //.order('created_at', { ascending: false })
+    //.range(from, to);
 
-  // validacion para los filtros
+  // logica de busqueda
+  if (searchTerm) {
+    query = query.ilike('name', `%${searchTerm}%`);
+  }
+
+  // filtros
   if (brands.length > 0) {
     query = query.in('brand', brands);
   }
@@ -36,6 +45,20 @@ export const getFilteredProducts = async ({
     query = query.in('category_id', categoriesIds);
   }
 
+  // logica de ordenamiento
+  const [sortColumn, sortDirection] = sortOrder.split('-');
+
+  // Valida que sea una columna real de la tabla products
+  if (sortColumn === 'name' || sortColumn === 'created_at') {
+    query = query.order(sortColumn, { ascending: sortDirection === 'asc' });
+  } else {
+    // Por defecto: lo mas nuevo primero
+    query = query.order('created_at', { ascending: false });
+  }
+
+  // paginacion
+  query = query.range(from, to);
+
   // resolver la promesa
   const { data, error, count } = await query;
 
@@ -43,6 +66,7 @@ export const getFilteredProducts = async ({
     throw new Error('Error fetching filtered products');
   }
 
+  // Mapear productos con precio mínimo y máximo
   const products = data?.map((p) => {
     // Obtener precios de las variantes
     const prices =

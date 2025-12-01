@@ -6,17 +6,38 @@ export const useFilteredProducts = ({
   page,
   brands,
   categoriesIds,
-  itemsPerPage = 8, // nuevo
+  itemsPerPage = 8,
+  searchTerm,
+  sortOrder,
 }: {
   page: number;
   brands?: string[];
-  categoriesIds?: string[]; // nuevo
-  itemsPerPage?: number; // nuevo
+  categoriesIds?: string[];
+  itemsPerPage?: number;
+  searchTerm?: string;
+  sortOrder?: string;
 }) => {
   const { data, isLoading } = useQuery({
-    queryKey: ['filteredProducts', page, brands, categoriesIds, itemsPerPage], // itemsPerPage nuevo
-    queryFn: () => getFilteredProducts({ page, brands, categoriesIds, itemsPerPage }), // itemsPerPage nuevo
+    queryKey: [
+      'filteredProducts',
+      page,
+      brands,
+      categoriesIds,
+      itemsPerPage,
+      searchTerm,
+      sortOrder,
+    ], // itemsPerPage nuevo
+    queryFn: () =>
+      getFilteredProducts({
+        page,
+        brands,
+        categoriesIds,
+        itemsPerPage,
+        searchTerm,
+        sortOrder,
+      }), // itemsPerPage nuevo
     retry: false, // no reintentar en caso de error
+    staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
   return {

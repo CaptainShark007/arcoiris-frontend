@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ProductListPage } from '../components';
-import { useFilteredProducts } from '../hooks/products/useFilteredProducts';
 import { useSearchParams } from 'react-router';
+import { useDebounce, useFilteredProducts } from '../hooks';
 
 const ShopPage = () => {
   
@@ -13,19 +13,23 @@ const ShopPage = () => {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // Resetear la página 0 si cambias los filtros de la URL
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState('created_at-desc');
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Resetear si cambion los filtros
+  useEffect(() => {
+    setPage(0);
+  }, [selectedBrands, selectedCategories, debouncedSearchTerm, sortOrder]);
+
   useEffect(() => {
     const categoryId = searchParams.get('categoryId');
     if (categoryId) {
       setSelectedCategories([categoryId]);
-      setPage(0);
+      //setPage(0);
     }
   }, [searchParams]);
-
-  // Resetear la página 0 si cambian los filtros seleccionados
-  useEffect(() => {
-    setPage(0);
-  }, [selectedBrands, selectedCategories]);
 
   const {
     data: products = [],
@@ -35,7 +39,9 @@ const ShopPage = () => {
     page: page + 1,
     brands: selectedBrands,
     categoriesIds: selectedCategories,
-    itemsPerPage 
+    itemsPerPage,
+    searchTerm: debouncedSearchTerm, // pasa el valor con retraso
+    sortOrder,
   });
 
   return (
@@ -47,10 +53,16 @@ const ShopPage = () => {
       itemsPerPage={itemsPerPage}
       setItemsPerPage={setItemsPerPage}
       totalProducts={totalProducts}
+      // props de filtros
       selectedBrands={selectedBrands}
       setSelectedBrands={setSelectedBrands}
       selectedCategories={selectedCategories}
       setSelectedCategories={setSelectedCategories}
+      // props de busqueda y orden
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+      sortOrder={sortOrder}
+      setSortOrder={setSortOrder}
     />
   );
 };

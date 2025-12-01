@@ -1,4 +1,4 @@
-import { getProducts } from "@/actions";
+/* import { getProducts } from "@/actions";
 import { useQuery } from "@tanstack/react-query";
 
 // custom hook para obtener todos los productos - deprecated
@@ -12,4 +12,4 @@ export const useProducts = () => {
 
   return { products: data, isLoading };
 
-}
+} */

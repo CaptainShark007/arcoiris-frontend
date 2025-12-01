@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import {
   Box,
   Select,
@@ -7,6 +7,7 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  FormControl,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -18,14 +19,21 @@ interface ProductListPageProps {
   products: (Product & { price?: number; maxPrice?: number })[];
   isLoading: boolean;
   totalProducts: number;
+  // paginacion
   page: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
   itemsPerPage: number;
   setItemsPerPage: React.Dispatch<React.SetStateAction<number>>;
+  // filtros
   selectedBrands: string[];
   setSelectedBrands: React.Dispatch<React.SetStateAction<string[]>>;
   selectedCategories: string[];
   setSelectedCategories: React.Dispatch<React.SetStateAction<string[]>>;
+  // busqueda y orden
+  searchTerm: string;
+  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+  sortOrder: string;
+  setSortOrder: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const ProductListPage = ({
@@ -40,30 +48,15 @@ export const ProductListPage = ({
   setSelectedBrands,
   selectedCategories,
   setSelectedCategories,
+  searchTerm,
+  setSearchTerm,
+  sortOrder,
+  setSortOrder,
 }: ProductListPageProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOrder, setSortOrder] = useState('precioAsc');
-
-  // Filtrar productos por búsqueda
-  const filteredBySearch = useMemo(() => {
-    return products.filter((product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [products, searchQuery]);
-
-  // Ordenar productos
-  const sortedProducts = useMemo(() => {
-    const sorted = [...filteredBySearch];
-    if (sortOrder === 'precioAsc') {
-      sorted.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
-    } else if (sortOrder === 'precioDesc') {
-      sorted.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-    }
-    return sorted;
-  }, [filteredBySearch, sortOrder]);
+  
 
   const handleClearSearch = () => {
-    setSearchQuery('');
+    setSearchTerm('');
   };
 
   // Pagination
@@ -109,8 +102,8 @@ export const ProductListPage = ({
           sx={{ borderRadius: 1, gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}
         >
           <TextField
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar..."
             variant="outlined"
             size="small"
@@ -121,7 +114,7 @@ export const ProductListPage = ({
                   <SearchIcon />
                 </InputAdornment>
               ),
-              endAdornment: searchQuery && (
+              endAdornment: searchTerm && (
                 <InputAdornment position="end">
                   <IconButton
                     onClick={handleClearSearch}
@@ -134,15 +127,18 @@ export const ProductListPage = ({
               ),
             }}
           />
-          <Select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            size="small"
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
-          >
-            <MenuItem value="precioAsc">Precio - Bajo a alto</MenuItem>
-            <MenuItem value="precioDesc">Precio - Alto a bajo</MenuItem>
-          </Select>
+          <FormControl size="small" sx={{ width: { xs: '100%', sm: 'auto' }, minWidth: 200 }}>
+            <Select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                displayEmpty
+            >
+                <MenuItem value="created_at-desc">Más nuevos</MenuItem>
+                <MenuItem value="created_at-asc">Más antiguos</MenuItem>
+                <MenuItem value="name-asc">Nombre (A-Z)</MenuItem>
+                <MenuItem value="name-desc">Nombre (Z-A)</MenuItem>
+            </Select>
+          </FormControl>
         </Box>
 
         {isLoading ? (
@@ -151,7 +147,7 @@ export const ProductListPage = ({
           </Box>
         ) : (
           <>
-            <ProductGrid products={sortedProducts} />
+            <ProductGrid products={products} />
 
             <Box mt={2}>
               {/* <Pagination
