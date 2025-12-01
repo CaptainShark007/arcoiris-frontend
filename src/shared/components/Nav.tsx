@@ -197,12 +197,19 @@ export const Navbar = () => {
                 <ShoppingCartIcon />
               </Badge>
             </IconButton>
-            <IconButton
+            {/* <IconButton
               color='inherit'
               sx={{ display: { xs: 'flex', sm: 'none' } }}
               onClick={handleSnackbarClick}
             >
               <FavoriteBorderIcon />
+            </IconButton> */}
+            <IconButton
+              color='inherit'
+              sx={{ display: { xs: 'flex', sm: 'none' } }}
+              onClick={handleSearchOpen}
+            >
+              <SearchIcon />
             </IconButton>
 
             {/* Botón de perfil/login */}

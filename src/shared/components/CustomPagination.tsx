@@ -75,16 +75,27 @@ export default function CustomPagination({
     <Box
       sx={{
         display: 'flex',
+        // Responsive: Columna en móvil (xs), Fila en tablet/desktop (md)
+        flexDirection: { xs: 'column', md: 'row' }, 
         alignItems: 'center',
         justifyContent: 'space-between',
         p: 2,
         borderTop: 1,
         borderColor: 'divider',
-        flexWrap: 'wrap',
         gap: 2,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      {/* SECCIÓN IZQUIERDA: Información y Selector de Filas */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          // Responsive: Apilar info en pantallas muy pequeñas, fila en el resto
+          flexDirection: { xs: 'column', sm: 'row' }, 
+          alignItems: 'center', 
+          gap: 2,
+          textAlign: 'center'
+        }}
+      >
         <Typography variant='body2' color='text.secondary'>
           Mostrando {startItem}-{endItem} de {totalItems} resultados
         </Typography>
@@ -109,25 +120,32 @@ export default function CustomPagination({
         </Box>
       </Box>
 
+      {/* SECCIÓN DERECHA: Botones de Navegación */}
       {totalPages > 1 && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          
+          {/* Botón: Ir al inicio */}
           <IconButton
             onClick={() => onPageChange(0)}
             disabled={page === 0}
             size='small'
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 1 }}
           >
             <FirstPage />
           </IconButton>
 
+          {/* Botón: Anterior */}
           <IconButton
             onClick={() => onPageChange(page - 1)}
             disabled={page === 0}
             size='small'
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 1 }}
           >
             <KeyboardArrowLeft />
           </IconButton>
 
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
+          {/* LISTA DE NÚMEROS: Oculta en móvil (xs), Visible en tablet (sm) en adelante */}
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
             {getVisiblePages().map((pageNumber, index) => (
               <React.Fragment key={index}>
                 {pageNumber === '...' ? (
@@ -140,12 +158,15 @@ export default function CustomPagination({
                 ) : (
                   <Button
                     size='small'
-                    variant={pageNumber === page + 1 ? 'contained' : 'text'}
+                    variant={pageNumber === page + 1 ? 'contained' : 'outlined'} // Cambié 'text' por 'outlined' para mejor visibilidad
+                    color={pageNumber === page + 1 ? 'primary' : 'inherit'}
                     onClick={() => onPageChange((pageNumber as number) - 1)}
                     sx={{
                       minWidth: 32,
                       height: 32,
-                      borderRadius: 1,
+                      p: 0,
+                      borderColor: pageNumber === page + 1 ? 'primary.main' : 'divider',
+                      color: pageNumber === page + 1 ? 'white' : 'text.primary'
                     }}
                   >
                     {pageNumber}
@@ -154,19 +175,31 @@ export default function CustomPagination({
               </React.Fragment>
             ))}
           </Box>
+          
+          {/* TEXTO SOLO MÓVIL: Para saber en qué pagina estás si no se ven los números */}
+          <Typography 
+            variant="body2" 
+            sx={{ display: { xs: 'block', sm: 'none' }, fontWeight: 'bold' }}
+          >
+            {page + 1} / {totalPages}
+          </Typography>
 
+          {/* Botón: Siguiente */}
           <IconButton
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages - 1}
             size='small'
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 1 }}
           >
             <KeyboardArrowRight />
           </IconButton>
 
+          {/* Botón: Ir al final */}
           <IconButton
             onClick={() => onPageChange(totalPages - 1)}
             disabled={page >= totalPages - 1}
             size='small'
+            sx={{ border: 1, borderColor: 'divider', borderRadius: 1 }}
           >
             <LastPage />
           </IconButton>

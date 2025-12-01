@@ -1,11 +1,9 @@
-import React from 'react';
 import { useState } from 'react';
 import {
   Autocomplete,
   Box,
   Button,
   Card,
-  Menu,
   MenuItem,
   Select,
   Table,
@@ -18,21 +16,22 @@ import {
   useMediaQuery,
   useTheme,
   TableContainer,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
-import { Loader, Pagination } from '@shared/components'; // DeleteProductModal
+import { Loader } from '@shared/components';
 import { useCategories } from '@features/shop/hooks/products/useCategories';
 import {
   useProducts,
   useToggleProduct,
   useUpdateProductCategory,
-} from '@features/admin/hooks'; // useDeleteProduct
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+} from '@features/admin/hooks';
+import CustomPagination from '@shared/components/CustomPagination';
+import EditIcon from '@mui/icons-material/Edit';
+import { OptimisticSwitch } from './OptimisticSwitch';
 
 const tableHeaders = {
   desktop: [
@@ -52,43 +51,41 @@ export const TableProduct = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  /* const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<{
-    id: string;
-    name: string;
-    variantsCount: number;
-    imagesCount: number;
-  } | null>(null); */
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [selectedVariants, setSelectedVariants] = useState<{
     [key: string]: number;
   }>({});
-  const [page, setPage] = useState(1);
+
+  // Paginación
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { products, isLoading, totalProducts } = useProducts({
-    page,
+    page: page + 1,
+    limit: rowsPerPage,
   });
 
+  // Categorias
   const { categories, isLoading: isCategoriesLoading } = useCategories();
   //const { mutate: deleteProduct, isPending } = useDeleteProduct();
   const { mutate: updateProductCategory, isPending: isUpdatingCategory } =
     useUpdateProductCategory();
-  const { mutate: toggleProduct, isPending: isToggling } = useToggleProduct();
+  const { mutate: toggleProduct } = useToggleProduct();
 
-  const handleMenuOpen = (
-    event: React.MouseEvent<HTMLElement>,
-    index: number
-  ) => {
-    setAnchorEl(event.currentTarget);
-    setOpenMenuIndex(index);
-  };
+  // Esto es para manejar errores de carga de imágenes
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setOpenMenuIndex(null);
-  };
+  // Maneja el error de carga de imagen
+  const handleImageError = (productId: string) => {
+    setImageErrors((prev) => ({ ...prev, [productId]: true }));
+  }
+
+  // Obtiene la URL de la imagen del producto, o una imagen por defecto si hubo un error
+  const getProductImage = (productId: string, images: any[]) => {
+    if (imageErrors[productId] || !images?.[0]) {
+      return 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+    }
+    return images[0];
+  }
 
   const handleVariantChange = (productId: string, variantIndex: number) => {
     setSelectedVariants({
@@ -96,25 +93,6 @@ export const TableProduct = () => {
       [productId]: variantIndex,
     });
   };
-
-  /* const handleDeleteProduct = (product: any) => {
-    setProductToDelete({
-      id: product.id,
-      name: product.name,
-      variantsCount: product.variants.length,
-      imagesCount: product.images.length,
-    });
-    setDeleteModalOpen(true);
-    handleMenuClose();
-  }; */
-
-  /* const handleConfirmDelete = () => {
-    if (productToDelete) {
-      deleteProduct(productToDelete.id);
-      setDeleteModalOpen(false);
-      setProductToDelete(null);
-    }
-  }; */
 
   const handleCategoryChange = (product: any, newCategory: any) => {
     if (newCategory) {
@@ -124,6 +102,17 @@ export const TableProduct = () => {
       });
     }
   };
+
+  // Pagination
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  }
+
+  // Pagination
+  const handleChangeRowsPerPage = (newRows: number) => {
+    setRowsPerPage(newRows);
+    setPage(0); // Reinicia a la primera página cuando cambia la cantidad de filas
+  }
 
   const renderMobileView = () => (
     <Box
@@ -141,7 +130,6 @@ export const TableProduct = () => {
         const selectedCategory = categories.find(
           (cat) => cat.id === product.category_id
         );
-        const productIsActive = product.is_active ?? true;
 
         return (
           <Card
@@ -150,7 +138,6 @@ export const TableProduct = () => {
               p: 2,
               border: '1px solid #E5E7EB',
               boxShadow: 'none',
-              bgcolor: productIsActive ? 'inherit' : '#fef2f2',
               transition: 'all 200ms ease',
             }}
           >
@@ -160,12 +147,10 @@ export const TableProduct = () => {
             >
               <Box
                 component='img'
-                src={
-                  product.images[0] ||
-                  'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
-                }
+                src={getProductImage(product.id, product.images)}
                 alt='Imagen Product'
                 loading='lazy'
+                onError={() => handleImageError(product.id)}
                 sx={{
                   width: 60,
                   height: 60,
@@ -301,6 +286,14 @@ export const TableProduct = () => {
 
             {/* Acciones */}
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">Estado:</Typography>
+                {/* Usamos el componente nuevo aquí también */}
+                <OptimisticSwitch 
+                  product={product} 
+                  onToggle={toggleProduct} 
+                />
+              </Box>
               <Button
                 component={RouterLink}
                 to={`/panel/productos/editar/${product.slug}`}
@@ -317,62 +310,6 @@ export const TableProduct = () => {
               >
                 Editar
               </Button>
-              {/* <Button
-                onClick={() => handleDeleteProduct(product)}
-                size="small"
-                color="error"
-                sx={{
-                  fontSize: '0.75rem',
-                  textTransform: 'none',
-                  py: 0.75,
-                  px: 1.5,
-                }}
-              >
-                Eliminar
-              </Button> */}
-              {productIsActive ? (
-                <Button
-                  onClick={() =>
-                    toggleProduct({ productId: product.id, isActive: false })
-                  }
-                  disabled={isToggling}
-                  size='small'
-                  sx={{
-                    border: 1,
-                    borderColor: '#0007d7ff',
-                    color: '#0007d7ff',
-                    fontSize: '0.75rem',
-                    textTransform: 'none',
-                    py: 0.75,
-                    px: 1.5,
-                    '&:hover': { backgroundColor: '#f0f4ff' },
-                  }}
-                >
-                  Desactivar
-                  <VisibilityOffIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
-                </Button>
-              ) : (
-                <Button
-                  onClick={() =>
-                    toggleProduct({ productId: product.id, isActive: true })
-                  }
-                  disabled={isToggling}
-                  size='small'
-                  sx={{
-                    border: 1,
-                    borderColor: '#0007d7ff',
-                    color: '#0007d7ff',
-                    fontSize: '0.75rem',
-                    textTransform: 'none',
-                    py: 0.75,
-                    px: 1.5,
-                    '&:hover': { backgroundColor: '#f0fdf4' },
-                  }}
-                >
-                  Activar
-                  <VisibilityIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
-                </Button>
-              )}
             </Box>
           </Card>
         );
@@ -438,25 +375,23 @@ export const TableProduct = () => {
               { id: 'clear', name: 'Sin categoría' },
               ...categories,
             ];
-            const productIsActive = product.is_active ?? true;
+            //const productIsActive = product.is_active ?? true;
 
             return (
               <TableRow
                 key={index}
                 sx={{
                   borderBottom: '1px solid #F9FAFB',
-                  backgroundColor: productIsActive ? 'inherit' : '#fef2f2',
+                  //backgroundColor: productIsActive ? 'inherit' : '#ff2727ff',
                 }}
               >
                 <TableCell sx={{ p: { md: 1, lg: 1.5 }, width: '70px' }}>
                   <Box
                     component='img'
-                    src={
-                      product.images[0] ||
-                      'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
-                    }
+                    src={getProductImage(product.id, product.images)}
                     alt='Imagen Product'
                     loading='lazy'
+                    onError={() => handleImageError(product.id)}
                     sx={{
                       width: { md: 50, lg: 64 },
                       height: { md: 50, lg: 64 },
@@ -539,90 +474,32 @@ export const TableProduct = () => {
                 <CellTableProduct content={formatDate(product.created_at)} />
                 <TableCell
                   sx={{
-                    position: 'relative',
                     p: { md: 0.5, lg: 1 },
-                    width: '50px',
+                    width: '120px',
                   }}
                 >
-                  <Button
-                    onClick={(e) => handleMenuOpen(e, index)}
-                    sx={{ color: '#1e293b', minWidth: 'auto', p: 0.5 }}
-                  >
-                    <MoreHorizIcon
-                      sx={{ fontSize: { md: '1.2rem', lg: '1.5rem' } }}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <OptimisticSwitch 
+                      product={product} 
+                      onToggle={toggleProduct}
                     />
-                  </Button>
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={openMenuIndex === index}
-                    onClose={handleMenuClose}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  >
-                    <MenuItem
-                      component={RouterLink}
-                      to={`/panel/productos/editar/${product.slug}`}
-                      sx={{
-                        display: 'flex',
-                        gap: 0.5,
-                        fontSize: '0.8rem',
-                        fontWeight: 500,
-                      }}
-                    >
-                      Editar
-                      <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
-                    </MenuItem>
-                    {/* <MenuItem
-                      onClick={() => handleDeleteProduct(product)}
-                      sx={{
-                        fontSize: '0.8rem',
-                        fontWeight: 500,
-                        color: '#dc2626',
-                      }}
-                    >
-                      Eliminar
-                    </MenuItem> */}
-                    {productIsActive ? (
-                      <MenuItem
-                        onClick={() =>
-                          toggleProduct({
-                            productId: product.id,
-                            isActive: false,
-                          })
-                        }
-                        disabled={isToggling}
-                        sx={{
-                          display: 'flex',
-                          gap: 0.5,
-                          fontSize: '0.8rem',
-                          fontWeight: 500,
+                    {/* BOTÓN EDITAR */}
+                    <Tooltip title="Editar detalles">
+                      <IconButton
+                        component={RouterLink}
+                        to={`/panel/productos/editar/${product.slug}`}
+                        size="small"
+                        sx={{ 
+                          color: '#0007d7ff',
+                          bgcolor: '#f0f4ff',
+                          '&:hover': { bgcolor: '#dbeafe' }
                         }}
                       >
-                        Desactivar
-                        <VisibilityOffIcon sx={{ fontSize: '0.875rem' }} />
-                      </MenuItem>
-                    ) : (
-                      <MenuItem
-                        onClick={() =>
-                          toggleProduct({
-                            productId: product.id,
-                            isActive: true,
-                          })
-                        }
-                        disabled={isToggling}
-                        sx={{
-                          display: 'flex',
-                          gap: 0.5,
-                          fontSize: '0.8rem',
-                          fontWeight: 500,
-                          //color: '#10b981',
-                        }}
-                      >
-                        Activar
-                        <VisibilityIcon sx={{ fontSize: '0.875rem' }} />
-                      </MenuItem>
-                    )}
-                  </Menu>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+
+                  </Box>
                 </TableCell>
               </TableRow>
             );
@@ -632,7 +509,11 @@ export const TableProduct = () => {
     </TableContainer>
   );
 
-  if (!products || isLoading || !totalProducts) return <Loader />; // || isPending
+  if (!products || isLoading || !totalProducts) return <Loader />;
+
+  // Pagination
+  // Calcula el total de páginas para la paginación
+  const totalPage = Math.ceil(totalProducts / rowsPerPage);
 
   return (
     <>
@@ -664,24 +545,19 @@ export const TableProduct = () => {
 
         {isMobile ? renderMobileView() : renderDesktopView()}
 
-        {/* {productToDelete && (
-        <DeleteProductModal
-          open={deleteModalOpen}
-          productName={productToDelete.name}
-          variantsCount={productToDelete.variantsCount}
-          imagesCount={productToDelete.imagesCount}
-          onConfirm={handleConfirmDelete}
-          onCancel={() => {
-            setDeleteModalOpen(false);
-            setProductToDelete(null);
-          }}
-          isLoading={isPending}
-        />
-      )} */}
       </Card>
       <Box sx={{ px: { xs: 1, sm: 2 } }}>
-        <Pagination page={page} setPage={setPage} totalItems={totalProducts} />
+        <CustomPagination 
+          page={page}
+          totalPages={totalPage}
+          totalItems={totalProducts}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
       </Box>
     </>
   );
 };
+

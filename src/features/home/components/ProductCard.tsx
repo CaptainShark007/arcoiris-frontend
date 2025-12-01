@@ -25,9 +25,23 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
   const addItem = useCartStore((state) => state.addItem);
   const { variants, loading } = useProductVariants(product.id);
 
+  // Esto maneja el error de carga de imagen
+  const [imageError, setImageError] = useState(false);
+  
+  const getProductImage = () => {
+    if (imageError || !product.images[0]) {
+      return "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png";
+    }
+    return product.images[0];
+  }
+  
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   const [openModal, setOpenModal] = useState(false);
 
-  // --- EFECTO NUEVO: Sincronizar estado del modal con el padre ---
+  // Sincroniza estado del modal con el padre 
   useEffect(() => {
     if (onModalStateChange) {
       onModalStateChange(openModal);
@@ -37,7 +51,6 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
       if (onModalStateChange) onModalStateChange(false);
     };
   }, [openModal, onModalStateChange]);
-  // -------------------------------------------------------------
 
   const isOutOfStock = !loading && variants.every((v) => Number(v.stock) <= 0);
 
@@ -55,7 +68,7 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
         id: variant.id,
         name: product.name,
         price: variant.price,
-        image: product.images[0] ?? 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png',
+        image: getProductImage(),
         quantity: 1,
         variant: {
           color: variant.color_name,
@@ -106,8 +119,9 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
 
         <CardMedia
           component='img'
-          image={product.images[0] ?? 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'}
+          image={getProductImage()}
           alt={product.name}
+          onError={handleImageError}
           sx={{ height: 200, objectFit: 'contain', p: 1 }}
         />
 

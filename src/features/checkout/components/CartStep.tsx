@@ -79,7 +79,7 @@ export const CartStep = ({ onNext }: CartStepProps) => {
       {/* LISTA CON SCROLL */}
       <Box
         sx={{
-          maxHeight: { xs: '65vh', sm: 300 }, // ⭐ Mucho más cómodo en mobile
+          maxHeight: { xs: '65vh', sm: 300 },
           overflowY: 'auto',
           borderRadius: 1,
           border: 1,

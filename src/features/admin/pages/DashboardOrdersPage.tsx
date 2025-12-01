@@ -1,12 +1,33 @@
 import { Box, Card, Typography } from '@mui/material';
-import { Loader, Pagination } from '@shared/components';
+import { Loader } from '@shared/components';
 import { useAllOrders } from '../hooks';
 import { TableOrdersAdmin } from '../components';
+import { useState } from 'react';
+import CustomPagination from '@shared/components/CustomPagination';
 
 const DashboardOrdersPage = () => {
-  const { orders, totalItems, isLoading, page, setPage } = useAllOrders();
+
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const { orders, totalItems, isLoading } = useAllOrders({
+    page: page + 1,
+    limit: rowsPerPage,
+  });
+
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  }
+
+  const handleChangeRowsPerPage = (newRows: number) => {
+    setRowsPerPage(newRows);
+    setPage(0); // Reinicia a la primera página cuando cambia la cantidad de filas
+  }
 
   if (isLoading || !orders) return <Loader />;
+
+  const totalPage = Math.ceil(totalItems / rowsPerPage);
 
   return (
     <Box sx={{ 
@@ -30,10 +51,19 @@ const DashboardOrdersPage = () => {
       </Card>
 
       <Box sx={{ px: { xs: 1, sm: 2 } }}>
-        <Pagination 
+        {/* <Pagination 
           totalItems={totalItems}
           page={page}
           setPage={setPage}
+        /> */}
+        <CustomPagination 
+          page={page}
+          totalPages={totalPage}
+          totalItems={totalItems}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50]}
         />
       </Box>
 
