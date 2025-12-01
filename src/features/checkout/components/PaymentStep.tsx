@@ -349,11 +349,7 @@ export const PaymentStep = ({
             position: 'relative',
           }}
         >
-          {isPending
-            ? 'Procesando...'
-            : isLoading || isLoadingCustomer
-              ? 'Cargando datos...'
-              : 'Confirmar orden'}
+          {isPending ? 'Procesando...' : isLoading || isLoadingCustomer ? 'Cargando datos...' : 'Confirmar orden'}
         </Button>
       </Box>
     </Box>
