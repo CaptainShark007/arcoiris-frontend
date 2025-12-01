@@ -207,10 +207,10 @@ export const getProductVariants = async (productId: string) => {
 
 // metodo para obtener todos los productos con sus variantes paginados
 // usado en el panel de administrador - tabla de productos
-export const getProducts = async (page: number) => {
-  const itemsPerPage = 10;
-  const from = (page - 1) * itemsPerPage;
-  const to = from + itemsPerPage - 1;
+export const getProducts = async (page: number, limit: number = 10) => {
+  //const itemsPerPage = 10;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
   const {
     data: products,

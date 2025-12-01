@@ -24,7 +24,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
-import { Loader, Pagination } from '@shared/components'; // DeleteProductModal
+import { Loader } from '@shared/components'; // DeleteProductModal
 import { useCategories } from '@features/shop/hooks/products/useCategories';
 import {
   useProducts,
@@ -33,6 +33,7 @@ import {
 } from '@features/admin/hooks'; // useDeleteProduct
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import CustomPagination from '@shared/components/CustomPagination';
 
 const tableHeaders = {
   desktop: [
@@ -65,12 +66,17 @@ export const TableProduct = () => {
   const [selectedVariants, setSelectedVariants] = useState<{
     [key: string]: number;
   }>({});
-  const [page, setPage] = useState(1);
+
+  // Paginación
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { products, isLoading, totalProducts } = useProducts({
-    page,
+    page: page + 1,
+    limit: rowsPerPage,
   });
 
+  // Categorias
   const { categories, isLoading: isCategoriesLoading } = useCategories();
   //const { mutate: deleteProduct, isPending } = useDeleteProduct();
   const { mutate: updateProductCategory, isPending: isUpdatingCategory } =
@@ -141,6 +147,17 @@ export const TableProduct = () => {
     }
   };
 
+  // Pagination
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  }
+
+  // Pagination
+  const handleChangeRowsPerPage = (newRows: number) => {
+    setRowsPerPage(newRows);
+    setPage(0); // Reinicia a la primera página cuando cambia la cantidad de filas
+  }
+
   const renderMobileView = () => (
     <Box
       sx={{
@@ -166,7 +183,7 @@ export const TableProduct = () => {
               p: 2,
               border: '1px solid #E5E7EB',
               boxShadow: 'none',
-              bgcolor: productIsActive ? 'inherit' : '#ff0000ff',
+              bgcolor: productIsActive ? 'inherit' : '#ff2727ff',
               transition: 'all 200ms ease',
             }}
           >
@@ -459,7 +476,7 @@ export const TableProduct = () => {
                 key={index}
                 sx={{
                   borderBottom: '1px solid #F9FAFB',
-                  backgroundColor: productIsActive ? 'inherit' : '#ff0000ff',
+                  backgroundColor: productIsActive ? 'inherit' : '#ff2727ff',
                 }}
               >
                 <TableCell sx={{ p: { md: 1, lg: 1.5 }, width: '70px' }}>
@@ -646,6 +663,10 @@ export const TableProduct = () => {
 
   if (!products || isLoading || !totalProducts) return <Loader />; // || isPending
 
+  // Pagination
+  // Calcula el total de páginas para la paginación
+  const totalPage = Math.ceil(totalProducts / rowsPerPage);
+
   return (
     <>
       <Card
@@ -692,7 +713,16 @@ export const TableProduct = () => {
       )} */}
       </Card>
       <Box sx={{ px: { xs: 1, sm: 2 } }}>
-        <Pagination page={page} setPage={setPage} totalItems={totalProducts} />
+        {/* <Pagination page={page} setPage={setPage} totalItems={totalProducts} /> */}
+        <CustomPagination 
+          page={page}
+          totalPages={totalPage}
+          totalItems={totalProducts}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+        />
       </Box>
     </>
   );
