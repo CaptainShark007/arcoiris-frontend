@@ -166,7 +166,7 @@ export const TableProduct = () => {
               p: 2,
               border: '1px solid #E5E7EB',
               boxShadow: 'none',
-              bgcolor: productIsActive ? 'inherit' : '#fef2f2',
+              bgcolor: productIsActive ? 'inherit' : '#ff0000ff',
               transition: 'all 200ms ease',
             }}
           >
@@ -459,7 +459,7 @@ export const TableProduct = () => {
                 key={index}
                 sx={{
                   borderBottom: '1px solid #F9FAFB',
-                  backgroundColor: productIsActive ? 'inherit' : '#fef2f2',
+                  backgroundColor: productIsActive ? 'inherit' : '#ff0000ff',
                 }}
               >
                 <TableCell sx={{ p: { md: 1, lg: 1.5 }, width: '70px' }}>
