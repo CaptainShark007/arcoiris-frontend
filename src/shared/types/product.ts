@@ -114,3 +114,23 @@ export type CreateProductRPCResult = {
   success: boolean;
   message: string;
 };
+
+// type para el HeaderSearch
+export interface ProductSearch {
+  id: string;
+  name: string;
+  slug: string;
+  images: string[];
+  variants: Array<{ 
+		price: number
+		color_name: string | null
+		storage: string | null
+		finish:  string | null
+	}>;
+}
+
+export interface HeaderSearchProps {
+  anchorEl: HTMLElement | null;
+  open: boolean;
+  onClose: () => void;
+}

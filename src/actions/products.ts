@@ -1,6 +1,6 @@
 import { compressImage, extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
-import { CreateProductRPCResult, ProductInput } from '@shared/types';
+import { CreateProductRPCResult, ProductInput, ProductSearch } from '@shared/types';
 
 // Nuevo metodo para listar productos con variantes paginados y con filtros varios - video
 export const getFilteredProducts = async ({
@@ -86,6 +86,25 @@ export const getFilteredProducts = async ({
   });
 
   return { data: products, count };
+};
+
+// metodo para buscar productos por nombre (usado en el HeaderSearch)
+// usado en el navbar
+export const searchProductsAction = async (query: string): Promise<ProductSearch[]> => {
+
+  if (!query || query.length < 2) return [];
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('id, name, slug, images, variants(price, color_name, storage, finish)')
+    .eq('is_active', true)
+    .eq('variants.is_active', true)
+    .ilike('name', `%${query}%`)
+    .limit(10);
+
+  if (error) throw error;
+  
+  return data || [];
 };
 
 // metodo para obtener todas las marcas unicas de la tabla products
