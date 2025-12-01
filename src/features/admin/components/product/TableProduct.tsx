@@ -77,6 +77,22 @@ export const TableProduct = () => {
     useUpdateProductCategory();
   const { mutate: toggleProduct, isPending: isToggling } = useToggleProduct();
 
+  // Esto es para manejar errores de carga de imágenes
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
+
+  // Maneja el error de carga de imagen
+  const handleImageError = (productId: string) => {
+    setImageErrors((prev) => ({ ...prev, [productId]: true }));
+  }
+
+  // Obtiene la URL de la imagen del producto, o una imagen por defecto si hubo un error
+  const getProductImage = (productId: string, images: any[]) => {
+    if (imageErrors[productId] || !images?.[0]) {
+      return 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+    }
+    return images[0];
+  }
+
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLElement>,
     index: number
@@ -160,12 +176,10 @@ export const TableProduct = () => {
             >
               <Box
                 component='img'
-                src={
-                  product.images[0] ||
-                  'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
-                }
+                src={getProductImage(product.id, product.images)}
                 alt='Imagen Product'
                 loading='lazy'
+                onError={() => handleImageError(product.id)}
                 sx={{
                   width: 60,
                   height: 60,
@@ -451,12 +465,10 @@ export const TableProduct = () => {
                 <TableCell sx={{ p: { md: 1, lg: 1.5 }, width: '70px' }}>
                   <Box
                     component='img'
-                    src={
-                      product.images[0] ||
-                      'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
-                    }
+                    src={getProductImage(product.id, product.images)}
                     alt='Imagen Product'
                     loading='lazy'
+                    onError={() => handleImageError(product.id)}
                     sx={{
                       width: { md: 50, lg: 64 },
                       height: { md: 50, lg: 64 },

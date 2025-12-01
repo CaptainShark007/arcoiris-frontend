@@ -57,6 +57,20 @@ export const VariantSelectModal = ({
   const [quantity, setQuantity] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  // Esto maneja el error de carga de imagen
+  const [imageError, setImageError] = useState(false);
+  
+  const getProductImage = () => {
+    if (imageError || !product.images[0]) {
+      return "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png";
+    }
+    return product.images[0];
+  }
+  
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   // Detectar qué atributos están presentes
   const attributesPresent = useMemo(() => {
     if (!open || variants.length === 0) {
@@ -206,7 +220,7 @@ export const VariantSelectModal = ({
         id: selectedVariant.id,
         name: product.name,
         price: selectedVariant.price,
-        image: product.images?.[0] ?? "",
+        image: getProductImage(), // product.images?.[0] ?? ""
         quantity,
         variant: {
           color: selectedVariant.color_name,
@@ -335,8 +349,9 @@ export const VariantSelectModal = ({
                 }}
               >
                 <img
-                  src={product.images?.[0] ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png"}
+                  src={getProductImage()}
                   alt={product.name}
+                  onError={handleImageError}
                   style={{ maxWidth: "100%", maxHeight: 240, objectFit: "contain" }}
                 />
               </Box>
