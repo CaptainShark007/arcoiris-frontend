@@ -15,6 +15,7 @@ export interface VariantProduct {
 	color: string | null;
 	color_name: string | null;
   finish: string | null;
+  is_active: boolean;
 }
 
 export interface Product {
@@ -65,6 +66,7 @@ export interface Variant {
   storage?: string;
   color_name?: string;
   finish?: string | null;
+  is_active: boolean;
 }
 
 export interface CarouselSlide {

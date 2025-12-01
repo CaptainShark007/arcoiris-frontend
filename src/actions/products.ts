@@ -22,7 +22,8 @@ export const getFilteredProducts = async ({
   let query = supabase
     .from('products')
     .select('*, variants (*), categories(id, name, slug)', { count: 'exact' })
-    .eq('is_active', true)
+    .eq('is_active', true) // solo productos activos
+    .eq('variants.is_active', true) // solo variantes activas (y productos que tengan al menos una variante activa)
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -68,7 +69,8 @@ export const getBrands = async (): Promise<string[]> => {
   const { data, error } = await supabase
     .from('products')
     .select('brand')
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .eq('variants.is_active', true);
 
   if (error) {
     throw new Error('Error fetching brands');
@@ -86,6 +88,7 @@ export const getRecentProducts = async () => {
     .from('products')
     .select('*, variants (*)')
     .eq('is_active', true)
+    .eq('variants.is_active', true)
     .order('created_at', { ascending: false })
     .limit(8);
 
@@ -117,6 +120,7 @@ export const getRandomProducts = async () => {
     .from('products')
     .select('*, variants (*)')
     .eq('is_active', true)
+    .eq('variants.is_active', true)
     .limit(20);
 
   if (error) {
@@ -153,6 +157,7 @@ export const getProductBySlug = async (slug: string) => {
     .select('*, variants (*)')
     .eq('slug', slug)
     .eq('is_active', true)
+    .eq('variants.is_active', true)
     .single(); // seleccionar un solo registro
 
   if (error) {
@@ -171,6 +176,7 @@ export const getProductVariants = async (productId: string) => {
   const { data, error } = await supabase
     .from('variants')
     .select('id, color, color_name, stock, price, storage, finish')
+    .eq('is_active', true)
     .eq('product_id', productId);
 
   if (error) {
@@ -193,6 +199,7 @@ export const getProducts = async (page: number) => {
   } = await supabase
     .from('products')
     .select('*, variants(*)', { count: 'exact' })
+    .eq('variants.is_active', true) // solo variantes activas
     .order('created_at', { ascending: false })
     .range(from, to);
 
