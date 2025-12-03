@@ -1,53 +1,44 @@
-/* import { getProducts } from '@/actions';
-import { useQuery } from '@tanstack/react-query';
-
-interface Props {
-	page?: number;
-	limit?: number;
-}
-
-export const useProducts = ({ page = 1, limit = 10 }: Props) => {
-	const { data, isLoading } = useQuery({
-		queryKey: ['products', page, limit],
-		queryFn: () => getProducts(page, limit),
-		staleTime: 1000 * 60 * 5, // su funcion es que los datos se consideren frescos por 5 minutos
-	});
-
-	return {
-		products: data?.products,
-		isLoading,
-		totalProducts: data?.count ?? 0,
-	};
-}; */
-// hooks/useProducts.ts
-import { getProducts } from '@/actions';
-import { useQuery, keepPreviousData } from '@tanstack/react-query'; // Importa keepPreviousData si usas v5, o configura en las opciones
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { getProducts, type ProductFilters } from '@/actions';
 
 interface Props {
   page?: number;
   limit?: number;
-  search?: string; // Nuevo prop opcional
+  search?: string;
+  status?: ProductFilters['status'];
+  categoryId?: string | null;
+  sortBy?: ProductFilters['sortBy'];
 }
 
-export const useProducts = ({ page = 1, limit = 10, search = '' }: Props) => {
-  const { data, isLoading, isFetching } = useQuery({
-    // CLAVE: Agregamos 'search' al array. 
-    // Cuando 'search' cambie, React Query disparará getProducts de nuevo.
-    queryKey: ['products', page, limit, search],
-    
-    queryFn: () => getProducts(page, limit, search),
-    
-    staleTime: 1000 * 60 * 5, 
-    
-    // RECOMENDADO: Esto mantiene los datos viejos en pantalla mientras cargan los nuevos
-    // Evita el parpadeo de "Loading..." cada vez que escribes una letra o cambias de página
+export const useProducts = ({
+  page = 1,
+  limit = 10,
+  search = '',
+  status = 'all',
+  categoryId = null,
+  sortBy = 'newest',
+}: Props) => {
+  
+  const { data, isLoading, isFetching, isError, error } = useQuery({
+    queryKey: ['products', page, limit, search, status, categoryId, sortBy],
+    queryFn: () =>
+      getProducts({
+        page,
+        limit,
+        search,
+        status,
+        categoryId,
+        sortBy,
+      }),
     placeholderData: keepPreviousData, 
   });
 
   return {
-    products: data?.products,
-    isLoading,
-    isFetching, // Útil si quieres mostrar un spinner pequeño mientras busca sin borrar la tabla
+    products: data?.products ?? [],
     totalProducts: data?.count ?? 0,
+    isLoading,
+    isFetching,
+    isError,
+    error,
   };
 };

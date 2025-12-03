@@ -250,60 +250,75 @@ export const getProductVariants = async (productId: string) => {
 
 // metodo para obtener todos los productos con sus variantes paginados
 // usado en el panel de administrador - tabla de productos
-/* export const getProducts = async (page: number, limit: number = 10) => {
-  //const itemsPerPage = 10;
+export interface ProductFilters {
+  page: number;
+  limit: number;
+  search?: string;
+  status?: 'all' | 'active' | 'inactive';
+  categoryId?: string | null;
+  sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc';
+}
+
+export const getProducts = async ({
+  page,
+  limit,
+  search,
+  status = 'all',
+  categoryId,
+  sortBy = 'newest',
+}: ProductFilters) => {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  const {
-    data: products,
-    error,
-    count,
-  } = await supabase
-    .from('products')
-    .select('*, variants(*)', { count: 'exact' })
-    .eq('variants.is_active', true) // solo variantes activas
-    .order('created_at', { ascending: false })
-    .range(from, to);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return { products, count };
-}; */
-export const getProducts = async (page: number, limit: number = 10, search?: string) => {
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
-  // 1. Iniciamos la consulta base
   let query = supabase
     .from('products')
-    .select('*, variants(*)', { count: 'exact' });
+    .select('*, variants(*)', { count: 'exact' })
+    .eq('variants.is_active', true);
 
-  // 2. Si hay búsqueda, aplicamos el filtro ANTES de la paginación
-  if (search && search.trim().length > 0) {
-    // ilike hace búsqueda insensible a mayúsculas/minúsculas
-    // '%termino%' busca que el texto esté en cualquier parte del nombre
+  if (search) {
     query = query.ilike('name', `%${search}%`);
   }
 
-  // 3. Aplicamos el resto de filtros y ordenamiento
-  // Nota: Asegúrate de que la lógica de variants.is_active sea la que deseas.
-  // A veces filtrar relaciones anidadas requiere modificadores !inner si quieres filtrar productos
-  // basándote en variantes, pero si solo quieres filtrar variants dentro del producto, está bien así.
-  const { data: products, error, count } = await query
-    .eq('variants.is_active', true) 
-    .order('created_at', { ascending: false })
-    .range(from, to);
+  if (status !== 'all') {
+    const isActive = status === 'active';
+    query = query.eq('is_active', isActive);
+  }
+
+  if (categoryId && categoryId !== 'all') {
+    if (categoryId === 'uncategorized') {
+      // Si el filtro es "Sin categoría", buscamos donde sea NULL
+      query = query.is('category_id', null);
+    } else {
+      // Si es un ID normal, buscamos la igualdad
+      query = query.eq('category_id', categoryId);
+    }
+  }
+
+  // 4. Ordenamiento
+  switch (sortBy) {
+    case 'oldest':
+      query = query.order('created_at', { ascending: true });
+      break;
+    case 'name_asc':
+      query = query.order('name', { ascending: true });
+      break;
+    case 'name_desc':
+      query = query.order('name', { ascending: false });
+      break;
+    case 'newest':
+    default:
+      query = query.order('created_at', { ascending: false });
+      break;
+  }
+  
+  const { data, error, count } = await query.range(from, to);
 
   if (error) {
-    console.error(error); // Es bueno loguear el error para depurar
     throw new Error(error.message);
   }
 
-  return { products, count };
-};
+  return { products: data, count };
+}
 
 // metodo para actualizar la categoria de un producto
 export const updateProductCategory = async (
