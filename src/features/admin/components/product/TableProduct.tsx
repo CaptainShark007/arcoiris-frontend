@@ -26,6 +26,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
@@ -128,6 +129,21 @@ export const TableProduct = () => {
   const handleStatusChange = (e: any) => { setStatusFilter(e.target.value); setPage(0); };
   const handleCategoryFilterChange = (e: any) => { setCategoryIdFilter(e.target.value); setPage(0); };
   const handleSortChange = (e: any) => { setSortFilter(e.target.value); setPage(0); };
+
+  const isDefaultState = 
+    searchTerm === '' && 
+    statusFilter === 'all' && 
+    categoryIdFilter === 'all' && 
+    sortFilter === 'newest';
+
+  const handleClearAll = () => {
+    setSearchTerm('');
+    setDebouncedSearch('');
+    setStatusFilter('all');
+    setCategoryIdFilter('all');
+    setSortFilter('newest');
+    setPage(0);
+  };
 
   const renderMobileView = () => {
     if (products?.length === 0) {
@@ -398,6 +414,28 @@ export const TableProduct = () => {
               <MenuItem value="name_desc">Nombre (Z-A)</MenuItem>
             </Select>
           </FormControl>
+
+          <Button
+            variant="outlined"
+            color="inherit"
+            size="small"
+            startIcon={<RestartAltIcon />}
+            onClick={handleClearAll}
+            disabled={isDefaultState}
+            sx={{ 
+              minWidth: { xs: '100%', lg: 'auto' },
+              height: 40,
+              borderColor: '#E5E7EB',
+              color: 'text.secondary',
+              '&:hover': {
+                borderColor: 'text.primary',
+                color: 'text.primary',
+                bgcolor: 'rgba(0,0,0,0.04)'
+              }
+            }}
+          >
+            Limpiar
+          </Button>
 
         </Stack>
 
