@@ -250,7 +250,7 @@ export const getProductVariants = async (productId: string) => {
 
 // metodo para obtener todos los productos con sus variantes paginados
 // usado en el panel de administrador - tabla de productos
-export const getProducts = async (page: number, limit: number = 10) => {
+/* export const getProducts = async (page: number, limit: number = 10) => {
   //const itemsPerPage = 10;
   const from = (page - 1) * limit;
   const to = from + limit - 1;
@@ -267,6 +267,38 @@ export const getProducts = async (page: number, limit: number = 10) => {
     .range(from, to);
 
   if (error) {
+    throw new Error(error.message);
+  }
+
+  return { products, count };
+}; */
+export const getProducts = async (page: number, limit: number = 10, search?: string) => {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  // 1. Iniciamos la consulta base
+  let query = supabase
+    .from('products')
+    .select('*, variants(*)', { count: 'exact' });
+
+  // 2. Si hay búsqueda, aplicamos el filtro ANTES de la paginación
+  if (search && search.trim().length > 0) {
+    // ilike hace búsqueda insensible a mayúsculas/minúsculas
+    // '%termino%' busca que el texto esté en cualquier parte del nombre
+    query = query.ilike('name', `%${search}%`);
+  }
+
+  // 3. Aplicamos el resto de filtros y ordenamiento
+  // Nota: Asegúrate de que la lógica de variants.is_active sea la que deseas.
+  // A veces filtrar relaciones anidadas requiere modificadores !inner si quieres filtrar productos
+  // basándote en variantes, pero si solo quieres filtrar variants dentro del producto, está bien así.
+  const { data: products, error, count } = await query
+    .eq('variants.is_active', true) 
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    console.error(error); // Es bueno loguear el error para depurar
     throw new Error(error.message);
   }
 
