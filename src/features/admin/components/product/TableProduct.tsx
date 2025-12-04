@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Autocomplete,
   Box,
@@ -18,7 +18,15 @@ import {
   TableContainer,
   Tooltip,
   IconButton,
+  InputAdornment,
+  Stack,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
@@ -30,8 +38,9 @@ import {
   useUpdateProductCategory,
 } from '@features/admin/hooks';
 import CustomPagination from '@shared/components/CustomPagination';
-import EditIcon from '@mui/icons-material/Edit';
 import { OptimisticSwitch } from './OptimisticSwitch';
+import { ProductStockStatus } from './ProductStockStatus';
+
 
 const tableHeaders = {
   desktop: [
@@ -51,468 +60,294 @@ export const TableProduct = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [selectedVariants, setSelectedVariants] = useState<{
-    [key: string]: number;
-  }>({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'low_stock'>('all');
+  const [categoryIdFilter, setCategoryIdFilter] = useState<string>('all');
+  const [sortFilter, setSortFilter] = useState<'newest' | 'oldest' | 'name_asc' | 'name_desc'>('newest');
 
-  // Paginación
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(0);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setDebouncedSearch('');
+  };
+
+  const [selectedVariants, setSelectedVariants] = useState<{ [key: string]: number }>({});
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { products, isLoading, totalProducts } = useProducts({
     page: page + 1,
     limit: rowsPerPage,
+    search: debouncedSearch,
+    status: statusFilter,
+    categoryId: categoryIdFilter === 'all' ? null : categoryIdFilter,
+    sortBy: sortFilter,
   });
 
-  // Categorias
   const { categories, isLoading: isCategoriesLoading } = useCategories();
-  //const { mutate: deleteProduct, isPending } = useDeleteProduct();
-  const { mutate: updateProductCategory, isPending: isUpdatingCategory } =
-    useUpdateProductCategory();
+  const { mutate: updateProductCategory, isPending: isUpdatingCategory } = useUpdateProductCategory();
   const { mutate: toggleProduct } = useToggleProduct();
-
-  // Esto es para manejar errores de carga de imágenes
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
 
-  // Maneja el error de carga de imagen
   const handleImageError = (productId: string) => {
     setImageErrors((prev) => ({ ...prev, [productId]: true }));
-  }
+  };
 
-  // Obtiene la URL de la imagen del producto, o una imagen por defecto si hubo un error
   const getProductImage = (productId: string, images: any[]) => {
     if (imageErrors[productId] || !images?.[0]) {
       return 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
     }
     return images[0];
-  }
+  };
 
   const handleVariantChange = (productId: string, variantIndex: number) => {
-    setSelectedVariants({
-      ...selectedVariants,
-      [productId]: variantIndex,
-    });
+    setSelectedVariants({ ...selectedVariants, [productId]: variantIndex });
   };
 
   const handleCategoryChange = (product: any, newCategory: any) => {
     if (newCategory) {
-      updateProductCategory({
-        productId: product.id,
-        categoryId: newCategory.id,
-      });
+      updateProductCategory({ productId: product.id, categoryId: newCategory.id });
     }
   };
 
-  // Pagination
-  const handleChangePage = (newPage: number) => {
-    setPage(newPage);
-  }
-
-  // Pagination
+  const handleChangePage = (newPage: number) => setPage(newPage);
   const handleChangeRowsPerPage = (newRows: number) => {
     setRowsPerPage(newRows);
-    setPage(0); // Reinicia a la primera página cuando cambia la cantidad de filas
-  }
+    setPage(0);
+  };
 
-  const renderMobileView = () => (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        bgcolor: '#F9FAFB',
-        mb: 2,
-      }}
-    >
-      {products?.map((product, index) => {
-        const selectedVariantIndex = selectedVariants[product.id] ?? 0;
-        const selectedVariant = product.variants[selectedVariantIndex];
-        const selectedCategory = categories.find(
-          (cat) => cat.id === product.category_id
-        );
+  const handleStatusChange = (e: any) => { setStatusFilter(e.target.value); setPage(0); };
+  const handleCategoryFilterChange = (e: any) => { setCategoryIdFilter(e.target.value); setPage(0); };
+  const handleSortChange = (e: any) => { setSortFilter(e.target.value); setPage(0); };
 
-        return (
-          <Card
-            key={index}
-            sx={{
-              p: 2,
-              border: '1px solid #E5E7EB',
-              boxShadow: 'none',
-              transition: 'all 200ms ease',
-            }}
-          >
-            {/* Imagen y nombre */}
-            <Box
-              sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', mb: 2 }}
-            >
-              <Box
-                component='img'
-                src={getProductImage(product.id, product.images)}
-                alt='Imagen Product'
-                loading='lazy'
-                onError={() => handleImageError(product.id)}
-                sx={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 1,
-                  objectFit: 'contain',
-                  flexShrink: 0,
-                }}
-              />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  variant='subtitle2'
-                  sx={{ fontWeight: 600, mb: 0.5, wordBreak: 'break-word' }}
-                >
-                  {product.name}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  sx={{ color: 'text.secondary', fontWeight: 500 }}
-                >
-                  {formatPrice(selectedVariant.price)}
-                </Typography>
-              </Box>
-            </Box>
+  const isDefaultState = 
+    searchTerm === '' && 
+    statusFilter === 'all' && 
+    categoryIdFilter === 'all' && 
+    sortFilter === 'newest';
 
-            {/* Detalles */}
-            <Box
-              sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}
-            >
-              {/* Variante */}
-              <Box>
-                <Typography
-                  variant='caption'
-                  sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}
-                >
-                  Variante
-                </Typography>
-                <Select
-                  value={selectedVariantIndex}
-                  onChange={(e) =>
-                    handleVariantChange(product.id, Number(e.target.value))
-                  }
-                  size='small'
-                  fullWidth
-                  sx={{ fontSize: '0.8rem' }}
-                >
-                  {product.variants.map((variant, variantIndex) => {
-                    const variantLabel = [
-                      variant.color_name,
-                      variant.storage,
-                      variant.finish,
-                    ]
-                      .filter(Boolean)
-                      .join(' • ');
-                    return (
-                      <MenuItem key={variant.id} value={variantIndex}>
-                        {variantLabel}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </Box>
+  const handleClearAll = () => {
+    setSearchTerm('');
+    setDebouncedSearch('');
+    setStatusFilter('all');
+    setCategoryIdFilter('all');
+    setSortFilter('newest');
+    setPage(0);
+  };
 
-              {/* Categoría */}
-              <Box>
-                <Typography
-                  variant='caption'
-                  sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}
-                >
-                  Categoría
-                </Typography>
-                <Autocomplete
-                  options={[
-                    { id: 'clear', name: 'Sin categoría' },
-                    ...categories,
-                  ]}
-                  getOptionLabel={(option) =>
-                    option.id === 'clear' ? 'Sin categoría' : option.name
-                  }
-                  value={selectedCategory || null}
-                  onChange={(_event, newValue) => {
-                    if (newValue?.id === 'clear') {
-                      updateProductCategory({
-                        productId: product.id,
-                        categoryId: null as any,
-                      });
-                    } else if (newValue) {
-                      handleCategoryChange(product, newValue);
-                    }
-                  }}
-                  loading={isCategoriesLoading || isUpdatingCategory}
-                  size='small'
-                  fullWidth
-                  noOptionsText='No hay categorías'
-                  sx={{ '& .MuiOutlinedInput-root': { fontSize: '0.8rem' } }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder='Asignar categoría'
-                      size='small'
-                    />
-                  )}
+  const renderMobileView = () => {
+    if (products?.length === 0) {
+      return (
+        <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+          <Typography>No se encontraron productos</Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, bgcolor: '#F9FAFB', mb: 2 }}>
+        {products?.map((product, index) => {
+          const selectedVariantIndex = selectedVariants[product.id] ?? 0;
+          const selectedVariant = product.variants[selectedVariantIndex];
+          const selectedCategory = categories.find((cat) => cat.id === product.category_id);
+
+          return (
+            <Card key={index} sx={{ p: 2, border: '1px solid #E5E7EB', boxShadow: 'none' }}>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', mb: 2 }}>
+                <Box
+                  component='img'
+                  src={getProductImage(product.id, product.images)}
+                  loading='lazy'
+                  onError={() => handleImageError(product.id)}
+                  sx={{ width: 60, height: 60, borderRadius: 1, objectFit: 'contain', flexShrink: 0 }}
                 />
-              </Box>
-
-              {/* Stock y Fecha */}
-              <Box
-                sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}
-              >
-                <Box>
-                  <Typography
-                    variant='caption'
-                    sx={{ fontWeight: 600, display: 'block' }}
-                  >
-                    Stock
-                  </Typography>
-                  <Typography variant='body2'>
-                    {selectedVariant.stock.toString()}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography
-                    variant='caption'
-                    sx={{ fontWeight: 600, display: 'block' }}
-                  >
-                    Fecha
-                  </Typography>
-                  <Typography variant='body2'>
-                    {formatDate(product.created_at)}
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 0.5 }}>{product.name}</Typography>
+                  <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                    {selectedVariant ? formatPrice(selectedVariant.price) : '-'}
                   </Typography>
                 </Box>
               </Box>
-            </Box>
 
-            {/* Acciones */}
-            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2" color="text.secondary">Estado:</Typography>
-                {/* Usamos el componente nuevo aquí también */}
-                <OptimisticSwitch 
-                  product={product} 
-                  onToggle={toggleProduct} 
-                />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+                <Box>
+                  <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>Variante</Typography>
+                  <Select
+                    value={selectedVariantIndex}
+                    onChange={(e) => handleVariantChange(product.id, Number(e.target.value))}
+                    size='small'
+                    fullWidth
+                    sx={{ fontSize: '0.8rem' }}
+                  >
+                    {product.variants.map((variant, variantIndex) => {
+                      const variantLabel = [variant.color_name, variant.storage, variant.finish].filter(Boolean).join(' • ');
+                      return <MenuItem key={variant.id} value={variantIndex}>{variantLabel}</MenuItem>;
+                    })}
+                  </Select>
+                </Box>
+                <Box>
+                    <Typography variant='caption' sx={{ fontWeight: 600, display: 'block' }}>Categoría</Typography>
+                     <Typography variant='body2'>{selectedCategory?.name || 'Sin categoría'}</Typography>
+                </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant='caption' sx={{ fontWeight: 600 }}>
+                        Stock:
+                      </Typography>
+                      <ProductStockStatus 
+                        currentStock={selectedVariant?.stock ?? 0}
+                        allVariants={product.variants}
+                        currentVariantId={selectedVariant?.id}
+                      />
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant='caption' sx={{ fontWeight: 600 }}>
+                          Fecha:
+                      </Typography>
+                      <Typography variant='body2'>
+                          {formatDate(product.created_at)}
+                      </Typography>
+                    </Box>
+                </Box>
               </Box>
-              <Button
-                component={RouterLink}
-                to={`/panel/productos/editar/${product.slug}`}
-                size='small'
-                variant='contained'
-                sx={{
-                  backgroundColor: '#0007d7ff',
-                  fontSize: '0.75rem',
-                  textTransform: 'none',
-                  py: 0.75,
-                  px: 1.5,
-                  '&:hover': { backgroundColor: '#0005a0ff' },
-                }}
-              >
-                Editar
-              </Button>
-            </Box>
-          </Card>
-        );
-      })}
-    </Box>
-  );
+
+              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+                 <Typography variant="body2" color="text.secondary">Estado:</Typography>
+                 <OptimisticSwitch product={product} onToggle={toggleProduct} />
+                <Button
+                  component={RouterLink}
+                  to={`/panel/productos/editar/${product.slug}`}
+                  size='small'
+                  variant='contained'
+                  sx={{ backgroundColor: '#0007d7ff', fontSize: '0.75rem', '&:hover': { backgroundColor: '#0005a0ff' } }}
+                >
+                  Editar
+                </Button>
+              </Box>
+            </Card>
+          );
+        })}
+      </Box>
+    );
+  };
 
   const renderDesktopView = () => (
-    <TableContainer
-      sx={{
-        borderRadius: 1,
-        overflow: 'auto',
-        mb: 2,
-        '&::-webkit-scrollbar': {
-          height: '8px',
-        },
-        '&::-webkit-scrollbar-track': {
-          background: '#f1f1f1',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          background: '#888',
-          borderRadius: '4px',
-        },
-      }}
-    >
+    <TableContainer sx={{ borderRadius: 1, overflow: 'auto', mb: 2, '&::-webkit-scrollbar': { height: '8px' } }}>
       <Table sx={{ minWidth: 900 }}>
-        <TableHead
-          sx={{
-            backgroundColor: '#F9FAFB',
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-          }}
-        >
+        <TableHead sx={{ bgcolor: '#F9FAFB', position: 'sticky', top: 0, zIndex: 10 }}>
           <TableRow>
             {tableHeaders.desktop.map((header, index) => (
-              <TableCell
-                key={index}
-                sx={{
-                  height: 48,
-                  px: { md: 1.5, lg: 2 },
-                  textAlign: 'left',
-                  fontWeight: 'bold',
-                  fontSize: { md: '0.8rem', lg: '0.875rem' },
-                  borderBottom: '2px solid #E5E7EB',
-                  whiteSpace: 'nowrap',
-                  backgroundColor: '#F9FAFB',
-                }}
-              >
+              <TableCell key={index} sx={{ fontWeight: 'bold', bgcolor: '#F9FAFB', whiteSpace: 'nowrap' }}>
                 {header}
               </TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
-          {products?.map((product, index) => {
-            const selectedVariantIndex = selectedVariants[product.id] ?? 0;
-            const selectedVariant = product.variants[selectedVariantIndex];
-            const selectedCategory = categories.find(
-              (cat) => cat.id === product.category_id
-            );
-            const categoryOptions = [
-              { id: 'clear', name: 'Sin categoría' },
-              ...categories,
-            ];
-            //const productIsActive = product.is_active ?? true;
+          {products?.length === 0 ? (
+             <TableRow>
+               <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                 <Typography variant="body2" color="text.secondary">No se encontraron productos.</Typography>
+               </TableCell>
+             </TableRow>
+          ) : (
+            products?.map((product, index) => {
+              const selectedVariantIndex = selectedVariants[product.id] ?? 0;
+              const selectedVariant = product.variants[selectedVariantIndex];
+              const selectedCategory = categories.find((cat) => cat.id === product.category_id);
+              const categoryOptions = [{ id: 'clear', name: 'Sin categoría' }, ...categories];
 
-            return (
-              <TableRow
-                key={index}
-                sx={{
-                  borderBottom: '1px solid #F9FAFB',
-                  //backgroundColor: productIsActive ? 'inherit' : '#ff2727ff',
-                }}
-              >
-                <TableCell sx={{ p: { md: 1, lg: 1.5 }, width: '70px' }}>
-                  <Box
-                    component='img'
-                    src={getProductImage(product.id, product.images)}
-                    alt='Imagen Product'
-                    loading='lazy'
-                    onError={() => handleImageError(product.id)}
-                    sx={{
-                      width: { md: 50, lg: 64 },
-                      height: { md: 50, lg: 64 },
-                      borderRadius: 1,
-                      objectFit: 'contain',
-                    }}
-                  />
-                </TableCell>
-                <CellTableProduct content={product.name} />
-                <TableCell
-                  sx={{ fontWeight: 500, minWidth: 140, px: { md: 1, lg: 2 } }}
-                >
-                  <Select
-                    value={selectedVariantIndex}
-                    onChange={(e) =>
-                      handleVariantChange(product.id, Number(e.target.value))
-                    }
-                    size='small'
-                    fullWidth
-                    sx={{ fontSize: { md: '0.8rem', lg: '0.875rem' } }}
-                  >
-                    {product.variants.map((variant, variantIndex) => {
-                      const variantLabel = [
-                        variant.color_name,
-                        variant.storage,
-                        variant.finish,
-                      ]
-                        .filter(Boolean)
-                        .join(' • ');
-                      return (
-                        <MenuItem key={variant.id} value={variantIndex}>
-                          {variantLabel}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </TableCell>
-                <CellTableProduct
-                  content={formatPrice(selectedVariant.price)}
-                  sx={{ fontWeight: 'bold' }}
-                />
-                <TableCell
-                  sx={{ fontWeight: 500, minWidth: 180, px: { md: 1, lg: 2 } }}
-                >
-                  <Autocomplete
-                    options={categoryOptions}
-                    getOptionLabel={(option) =>
-                      option.id === 'clear' ? 'Sin categoría' : option.name
-                    }
-                    value={selectedCategory || null}
-                    onChange={(_event, newValue) => {
-                      if (newValue?.id === 'clear') {
-                        updateProductCategory({
-                          productId: product.id,
-                          categoryId: null as any,
-                        });
-                      } else if (newValue) {
-                        handleCategoryChange(product, newValue);
-                      }
-                    }}
-                    loading={isCategoriesLoading || isUpdatingCategory}
-                    size='small'
-                    fullWidth
-                    noOptionsText='No hay categorías'
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        fontSize: { md: '0.8rem', lg: '0.875rem' },
-                      },
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        placeholder='Asignar categoría'
-                        size='small'
-                      />
-                    )}
-                  />
-                </TableCell>
-                <CellTableProduct content={selectedVariant.stock.toString()} />
-                <CellTableProduct content={formatDate(product.created_at)} />
-                <TableCell
-                  sx={{
-                    p: { md: 0.5, lg: 1 },
-                    width: '120px',
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <OptimisticSwitch 
-                      product={product} 
-                      onToggle={toggleProduct}
+              return (
+                <TableRow key={index} sx={{ borderBottom: '1px solid #F9FAFB' }}>
+                  <TableCell sx={{ p: 1, width: '70px' }}>
+                    <Box
+                      component='img'
+                      src={getProductImage(product.id, product.images)}
+                      loading='lazy'
+                      onError={() => handleImageError(product.id)}
+                      sx={{ width: 50, height: 50, borderRadius: 1, objectFit: 'contain' }}
                     />
-                    {/* BOTÓN EDITAR */}
-                    <Tooltip title="Editar detalles">
-                      <IconButton
-                        component={RouterLink}
-                        to={`/panel/productos/editar/${product.slug}`}
-                        size="small"
-                        sx={{ 
-                          color: '#0007d7ff',
-                          bgcolor: '#f0f4ff',
-                          '&:hover': { bgcolor: '#dbeafe' }
-                        }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-
-                  </Box>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+                  </TableCell>
+                  <CellTableProduct content={product.name} />
+                  <TableCell sx={{ minWidth: 140, px: 2 }}>
+                    <Select
+                      value={selectedVariantIndex}
+                      onChange={(e) => handleVariantChange(product.id, Number(e.target.value))}
+                      size='small'
+                      fullWidth
+                      sx={{ fontSize: '0.875rem' }}
+                    >
+                      {product.variants.map((variant, variantIndex) => {
+                        const variantLabel = [variant.color_name, variant.storage, variant.finish].filter(Boolean).join(' • ');
+                        return <MenuItem key={variant.id} value={variantIndex}>{variantLabel}</MenuItem>;
+                      })}
+                    </Select>
+                  </TableCell>
+                  <CellTableProduct content={selectedVariant ? formatPrice(selectedVariant.price) : '-'} sx={{ fontWeight: 'bold' }} />
+                  <TableCell sx={{ minWidth: 180, px: 2 }}>
+                    <Autocomplete
+                      options={categoryOptions}
+                      getOptionLabel={(opt) => opt.id === 'clear' ? 'Sin categoría' : opt.name}
+                      value={selectedCategory || null}
+                      onChange={(_, newVal) => {
+                        if (newVal?.id === 'clear') {
+                          updateProductCategory({ productId: product.id, categoryId: null as any });
+                        } else if (newVal) {
+                          handleCategoryChange(product, newVal);
+                        }
+                      }}
+                      loading={isCategoriesLoading || isUpdatingCategory}
+                      size='small'
+                      fullWidth
+                      renderInput={(params) => <TextField {...params} placeholder='Asignar' size='small' />}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ minWidth: 140 }}> 
+                    <ProductStockStatus 
+                      currentStock={selectedVariant?.stock ?? 0}
+                      allVariants={product.variants}
+                      currentVariantId={selectedVariant?.id}
+                    />
+                  </TableCell>
+                  <CellTableProduct content={formatDate(product.created_at)} />
+                  <TableCell sx={{ width: '120px' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <OptimisticSwitch product={product} onToggle={toggleProduct} />
+                      <Tooltip title="Editar detalles">
+                        <IconButton
+                          component={RouterLink}
+                          to={`/panel/productos/editar/${product.slug}`}
+                          size="small"
+                          sx={{ color: '#0007d7ff', bgcolor: '#f0f4ff', '&:hover': { bgcolor: '#dbeafe' } }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </TableContainer>
   );
 
-  if (!products || isLoading || !totalProducts) return <Loader />;
+  if (isLoading) return <Loader />;
 
-  // Pagination
-  // Calcula el total de páginas para la paginación
   const totalPage = Math.ceil(totalProducts / rowsPerPage);
 
   return (
@@ -523,41 +358,125 @@ export const TableProduct = () => {
           flexDirection: 'column',
           flex: 1,
           p: { xs: 1.5, sm: 2, md: 2.5 },
-          bgcolor: '#F9FAFB', // F9FAFB
+          bgcolor: '#F9FAFB',
           mb: 2,
           boxShadow: 'none',
           border: '1px solid #E5E7EB',
           borderRadius: 1,
           width: '100%',
-          overflow: 'hidden',
+          overflow: 'visible',
         }}
       >
-        <Typography
-          variant='h6'
-          sx={{
-            fontWeight: 'bold',
-            mb: 2,
-            fontSize: { xs: '1rem', sm: '1.25rem' },
-          }}
-        >
+        <Typography variant='h6' sx={{ fontWeight: 'bold', mb: 2 }}>
           Gestión de Productos
         </Typography>
+
+        <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} sx={{ mb: 3 }} alignItems="center">
+          
+          <TextField
+            placeholder='Buscar producto...'
+            value={searchTerm}
+            onChange={handleSearchChange}
+            size="small"
+            sx={{ flex: 1, width: { xs: '100%', lg: 'auto' }, '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position='start'>
+                    <SearchIcon color='action' fontSize="small" />
+                  </InputAdornment>
+                ),
+                endAdornment: searchTerm && (
+                  <InputAdornment position='end'>
+                    <IconButton size='small' onClick={handleClearSearch} edge='end'>
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+
+          <FormControl size="small" sx={{ minWidth: 140, width: { xs: '100%', lg: 'auto' } }}>
+            <InputLabel>Estado</InputLabel>
+            <Select value={statusFilter} label="Estado" onChange={handleStatusChange} sx={{ bgcolor: 'white' }}>
+              <MenuItem value="all">Todos</MenuItem>
+              <MenuItem value="active">Activos</MenuItem>
+              <MenuItem value="inactive">Inactivos</MenuItem>
+              <MenuItem value="low_stock" sx={{ color: 'orange', fontWeight: 'bold' }}>
+                Poco stock
+              </MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 160, width: { xs: '100%', lg: 'auto' } }}>
+            <InputLabel>Categoría</InputLabel>
+            <Select 
+              value={categoryIdFilter} 
+              label="Categoría" 
+              onChange={handleCategoryFilterChange} 
+              sx={{ bgcolor: 'white' }}
+            >
+              <MenuItem value="all">Todas</MenuItem>
+              <MenuItem value="uncategorized">Sin categoría</MenuItem> 
+              
+              {categories?.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 160, width: { xs: '100%', lg: 'auto' } }}>
+            <InputLabel>Ordenar por</InputLabel>
+            <Select value={sortFilter} label="Ordenar por" onChange={handleSortChange} sx={{ bgcolor: 'white' }}>
+              <MenuItem value="newest">Más recientes</MenuItem>
+              <MenuItem value="oldest">Más antiguos</MenuItem>
+              <MenuItem value="name_asc">Nombre (A-Z)</MenuItem>
+              <MenuItem value="name_desc">Nombre (Z-A)</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Button
+            variant="outlined"
+            color="inherit"
+            size="small"
+            startIcon={<RestartAltIcon />}
+            onClick={handleClearAll}
+            disabled={isDefaultState}
+            sx={{ 
+              minWidth: { xs: '100%', lg: 'auto' },
+              height: 40,
+              borderColor: '#E5E7EB',
+              color: 'text.secondary',
+              '&:hover': {
+                borderColor: 'text.primary',
+                color: 'text.primary',
+                bgcolor: 'rgba(0,0,0,0.04)'
+              }
+            }}
+          >
+            Limpiar
+          </Button>
+
+        </Stack>
 
         {isMobile ? renderMobileView() : renderDesktopView()}
 
       </Card>
-      <Box sx={{ px: { xs: 1, sm: 2 } }}>
-        <CustomPagination 
-          page={page}
-          totalPages={totalPage}
-          totalItems={totalProducts}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 10, 25, 50]}
-        />
-      </Box>
+      
+      {totalProducts > 0 && (
+        <Box sx={{ px: { xs: 1, sm: 2 } }}>
+          <CustomPagination 
+            page={page}
+            totalPages={totalPage}
+            totalItems={totalProducts}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+          />
+        </Box>
+      )}
     </>
   );
 };
-
