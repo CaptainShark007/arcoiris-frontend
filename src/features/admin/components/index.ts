@@ -10,6 +10,7 @@ export * from './product/FeaturesInput';
 export * from './product/VariantsInput';
 export * from './product/UploaderImages';
 export * from './product/Editor';
+export * from './product/ProductStockStatus';
 
 // Categories
 export * from './category/CategoriesModal';

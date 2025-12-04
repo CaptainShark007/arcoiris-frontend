@@ -250,28 +250,79 @@ export const getProductVariants = async (productId: string) => {
 
 // metodo para obtener todos los productos con sus variantes paginados
 // usado en el panel de administrador - tabla de productos
-export const getProducts = async (page: number, limit: number = 10) => {
-  //const itemsPerPage = 10;
+export interface ProductFilters {
+  page: number;
+  limit: number;
+  search?: string;
+  status?: 'all' | 'active' | 'inactive' | 'low_stock'; 
+  categoryId?: string | null;
+  sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc';
+}
+
+export const getProducts = async ({
+  page,
+  limit,
+  search,
+  status = 'all',
+  categoryId,
+  sortBy = 'newest',
+}: ProductFilters) => {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  const {
-    data: products,
-    error,
-    count,
-  } = await supabase
-    .from('products')
-    .select('*, variants(*)', { count: 'exact' })
-    .eq('variants.is_active', true) // solo variantes activas
-    .order('created_at', { ascending: false })
-    .range(from, to);
+  let query = supabase.from('products').select('*, variants(*)', { count: 'exact' });
+
+  if (status === 'low_stock') {
+    query = supabase
+      .from('products')
+      .select('*, variants!inner(*)', { count: 'exact' })
+      .eq('variants.is_active', true)
+      .lte('variants.stock', 5); 
+  } 
+  else if (status !== 'all') {
+    const isActive = status === 'active';
+    query = query.eq('is_active', isActive);
+    query = query.eq('variants.is_active', true); 
+  } else {
+    query = query.eq('variants.is_active', true);
+  }
+
+  if (search) {
+    query = query.ilike('name', `%${search}%`);
+  }
+
+  if (categoryId && categoryId !== 'all') {
+    if (categoryId === 'uncategorized') {
+      query = query.is('category_id', null);
+    } else {
+      query = query.eq('category_id', categoryId);
+    }
+  }
+
+  switch (sortBy) {
+    case 'oldest':
+      query = query.order('created_at', { ascending: true });
+      break;
+    case 'name_asc':
+      query = query.order('name', { ascending: true });
+      break;
+    case 'name_desc':
+      query = query.order('name', { ascending: false });
+      break;
+    case 'newest':
+    default:
+      query = query.order('created_at', { ascending: false });
+      break;
+  }
+   
+  const { data, error, count } = await query.range(from, to);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return { products, count };
-};
+  return { products: data, count };
+}
 
 // metodo para actualizar la categoria de un producto
 export const updateProductCategory = async (
