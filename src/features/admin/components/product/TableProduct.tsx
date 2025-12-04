@@ -62,7 +62,7 @@ export const TableProduct = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'low_stock'>('all');
   const [categoryIdFilter, setCategoryIdFilter] = useState<string>('all');
   const [sortFilter, setSortFilter] = useState<'newest' | 'oldest' | 'name_asc' | 'name_desc'>('newest');
 
@@ -403,6 +403,9 @@ export const TableProduct = () => {
               <MenuItem value="all">Todos</MenuItem>
               <MenuItem value="active">Activos</MenuItem>
               <MenuItem value="inactive">Inactivos</MenuItem>
+              <MenuItem value="low_stock" sx={{ color: 'orange', fontWeight: 'bold' }}>
+                Poco stock
+              </MenuItem>
             </Select>
           </FormControl>
 

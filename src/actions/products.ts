@@ -254,7 +254,7 @@ export interface ProductFilters {
   page: number;
   limit: number;
   search?: string;
-  status?: 'all' | 'active' | 'inactive';
+  status?: 'all' | 'active' | 'inactive' | 'low_stock'; 
   categoryId?: string | null;
   sortBy?: 'newest' | 'oldest' | 'name_asc' | 'name_desc';
 }
@@ -270,31 +270,35 @@ export const getProducts = async ({
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  let query = supabase
-    .from('products')
-    .select('*, variants(*)', { count: 'exact' })
-    .eq('variants.is_active', true);
+  let query = supabase.from('products').select('*, variants(*)', { count: 'exact' });
+
+  if (status === 'low_stock') {
+    query = supabase
+      .from('products')
+      .select('*, variants!inner(*)', { count: 'exact' })
+      .eq('variants.is_active', true)
+      .lte('variants.stock', 5); 
+  } 
+  else if (status !== 'all') {
+    const isActive = status === 'active';
+    query = query.eq('is_active', isActive);
+    query = query.eq('variants.is_active', true); 
+  } else {
+    query = query.eq('variants.is_active', true);
+  }
 
   if (search) {
     query = query.ilike('name', `%${search}%`);
   }
 
-  if (status !== 'all') {
-    const isActive = status === 'active';
-    query = query.eq('is_active', isActive);
-  }
-
   if (categoryId && categoryId !== 'all') {
     if (categoryId === 'uncategorized') {
-      // Si el filtro es "Sin categoría", buscamos donde sea NULL
       query = query.is('category_id', null);
     } else {
-      // Si es un ID normal, buscamos la igualdad
       query = query.eq('category_id', categoryId);
     }
   }
 
-  // 4. Ordenamiento
   switch (sortBy) {
     case 'oldest':
       query = query.order('created_at', { ascending: true });
@@ -310,7 +314,7 @@ export const getProducts = async ({
       query = query.order('created_at', { ascending: false });
       break;
   }
-  
+   
   const { data, error, count } = await query.range(from, to);
 
   if (error) {
