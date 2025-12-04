@@ -39,6 +39,8 @@ import {
 } from '@features/admin/hooks';
 import CustomPagination from '@shared/components/CustomPagination';
 import { OptimisticSwitch } from './OptimisticSwitch';
+import { ProductStockStatus } from './ProductStockStatus';
+
 
 const tableHeaders = {
   desktop: [
@@ -158,7 +160,7 @@ export const TableProduct = () => {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, bgcolor: '#F9FAFB', mb: 2 }}>
         {products?.map((product, index) => {
           const selectedVariantIndex = selectedVariants[product.id] ?? 0;
-          const selectedVariant = product.variants[selectedVariantIndex]; // Lógica simple original
+          const selectedVariant = product.variants[selectedVariantIndex];
           const selectedCategory = categories.find((cat) => cat.id === product.category_id);
 
           return (
@@ -199,16 +201,26 @@ export const TableProduct = () => {
                     <Typography variant='caption' sx={{ fontWeight: 600, display: 'block' }}>Categoría</Typography>
                      <Typography variant='body2'>{selectedCategory?.name || 'Sin categoría'}</Typography>
                 </Box>
-                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                    <Box>
-                        <Typography variant='caption' sx={{ fontWeight: 600 }}>Stock</Typography>
-                        <Typography variant='body2'>{selectedVariant?.stock ?? 0}</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant='caption' sx={{ fontWeight: 600 }}>
+                        Stock:
+                      </Typography>
+                      <ProductStockStatus 
+                        currentStock={selectedVariant?.stock ?? 0}
+                        allVariants={product.variants}
+                        currentVariantId={selectedVariant?.id}
+                      />
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant='caption' sx={{ fontWeight: 600 }}>
+                          Fecha:
+                      </Typography>
+                      <Typography variant='body2'>
+                          {formatDate(product.created_at)}
+                      </Typography>
                     </Box>
-                    <Box>
-                        <Typography variant='caption' sx={{ fontWeight: 600 }}>Fecha</Typography>
-                        <Typography variant='body2'>{formatDate(product.created_at)}</Typography>
-                    </Box>
-                 </Box>
+                </Box>
               </Box>
 
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
@@ -302,7 +314,13 @@ export const TableProduct = () => {
                       renderInput={(params) => <TextField {...params} placeholder='Asignar' size='small' />}
                     />
                   </TableCell>
-                  <CellTableProduct content={selectedVariant ? selectedVariant.stock.toString() : '0'} />
+                  <TableCell sx={{ minWidth: 140 }}> 
+                    <ProductStockStatus 
+                      currentStock={selectedVariant?.stock ?? 0}
+                      allVariants={product.variants}
+                      currentVariantId={selectedVariant?.id}
+                    />
+                  </TableCell>
                   <CellTableProduct content={formatDate(product.created_at)} />
                   <TableCell sx={{ width: '120px' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
