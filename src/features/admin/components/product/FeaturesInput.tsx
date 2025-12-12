@@ -40,7 +40,7 @@ export const FeaturesInput = ({ control, errors }: FeaturesProps) => {
           fontSize: { xs: '0.65rem', sm: '0.75rem' },
         }}
       >
-        Características:
+        Características (Opcional):
       </Typography>
 
       {fields.length > 0 && (
@@ -114,7 +114,7 @@ export const FeaturesInput = ({ control, errors }: FeaturesProps) => {
       <Box
         component="input"
         type="text"
-        placeholder="Fácil de aplicar y secado rápido"
+        placeholder="Ej: Fácil de aplicar y secado rápido"
         value={newFeature}
         onChange={(e) => setNewFeature(e.target.value)}
         onKeyDown={handleKeyDown}

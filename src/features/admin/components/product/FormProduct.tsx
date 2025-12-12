@@ -202,8 +202,8 @@ export const FormProduct = ({ titleForm }: Props) => {
           <SectionFormProduct titleSection='Detalles del Producto'>
             <InputForm
               type='text'
-              placeholder='Ejemplo: Esmalte Sintético'
-              label='nombre'
+              placeholder='Ej: Esmalte Sintético'
+              label='nombre*'
               name='name'
               register={register}
               errors={errors}
@@ -216,17 +216,17 @@ export const FormProduct = ({ titleForm }: Props) => {
           <SectionFormProduct>
             <InputForm
               type='text'
-              label='Slug'
+              label='Slug* (generado automáticamente)'
               name='slug'
-              placeholder='esmalte-sintetico'
+              placeholder='Ej: esmalte-sintetico'
               register={register}
               errors={errors}
             />
             <InputForm
               type='text'
-              label='Marca'
+              label='Marca*'
               name='brand'
-              placeholder='DaMa'
+              placeholder='Ej: DaMa'
               register={register}
               errors={errors}
               required

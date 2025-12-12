@@ -34,8 +34,8 @@ interface VariantsProps {
 }
 
 const headersVariants = [
-  'Stock',
-  'Precio',
+  'Stock*',
+  'Precio*',
   'Presentación',
   'Color',
   'Terminación',
@@ -167,7 +167,7 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
               <Typography
                 sx={{ fontSize: '0.75rem', fontWeight: 600, mb: 0.5 }}
               >
-                Stock
+                Stock*
               </Typography>
               <TextField
                 type='number'
@@ -185,7 +185,7 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
               <Typography
                 sx={{ fontSize: '0.75rem', fontWeight: 600, mb: 0.5 }}
               >
-                Precio
+                Precio*
               </Typography>
               <TextField
                 type='number'
@@ -208,7 +208,7 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
               </Typography>
               <TextField
                 type='text'
-                placeholder='1 Litro'
+                placeholder='Opcional (Ej: 1 Litro)'
                 size='small'
                 fullWidth
                 {...register(`variants.${index}.storage`)}
@@ -242,7 +242,7 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
                     <span>{colorNameValues[index]}</span>
                   </Box>
                 ) : (
-                  'Seleccionar color'
+                  'Añadir (Opcional)'
                 )}
               </Button>
               <Popover
@@ -263,14 +263,14 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
                     type='color'
                     {...register(`variants.${index}.color`)}
                     size='small'
-                    sx={{ width: '100px' }}
+                    sx={{ width: '170px' }}
                   />
                   <TextField
                     type='text'
-                    placeholder='Negro'
+                    placeholder='Opcional (Ej: Rojo)'
                     {...register(`variants.${index}.colorName`)}
                     size='small'
-                    sx={{ width: '100px' }}
+                    sx={{ width: '170px' }}
                   />
                 </Box>
               </Popover>
@@ -284,7 +284,7 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
               </Typography>
               <TextField
                 type='text'
-                placeholder='Brillante'
+                placeholder='Opcional (Ej: Brillante)'
                 size='small'
                 fullWidth
                 {...register(`variants.${index}.finish`)}
@@ -352,18 +352,25 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
     >
       {/* Feedback informativo */}
       <Alert
-        severity='info'
+        severity="info"
         sx={{
           mb: 1.5,
           py: 0,
           backgroundColor: '#eff6ff',
           color: '#1e3a8a',
+          '& .MuiAlert-message': { padding: '8px 0', width: '100%' },
         }}
       >
-        <Typography variant='caption' sx={{ fontSize: '0.75rem' }}>
-          <strong>Nota:</strong> La primera variante de la lista será la que
-          se muestre por defecto(en primera posición) en las tarjetas de producto.
-        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Typography variant="caption" sx={{ fontSize: '0.75rem', lineHeight: 1.4 }}>
+            <strong>Nota:</strong> La primera variante de la lista será la que se muestre por defecto(<strong>en primera posición</strong>) en las tarjetas de producto.
+          </Typography>
+          <Typography variant="caption" sx={{ fontSize: '0.75rem', lineHeight: 1.4 }}>
+            <strong>Consejo:</strong> Si tu producto no tiene variaciones (es único),
+            crea una sola fila para definir <strong>Precio</strong> y <strong>Stock</strong>. 
+            Puedes dejar <em>vacíos</em> los campos de Color, Presentación y Terminación.
+          </Typography>
+        </Box>
       </Alert>
       <Paper variant='outlined' sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: 600 }}>
@@ -387,6 +394,7 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
             {fields.map((field, index) => (
               <TableRow key={field.id}>
                 <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
+                  {/* Stock */}
                   <TextField
                     type='number'
                     placeholder='Stock'
@@ -398,6 +406,7 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
                   />
                 </TableCell>
                 <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
+                  {/* Precio */}
                   <TextField
                     type='number'
                     placeholder='Precio'
@@ -410,15 +419,17 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
                   />
                 </TableCell>
                 <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
+                  {/* Presentación */}
                   <TextField
                     type='text'
-                    placeholder='1 Litro'
+                    placeholder='Opcional (Ej: 1 Litro)'
                     size='small'
                     {...register(`variants.${index}.storage`)}
-                    sx={{ width: { xs: '70px', sm: '80px' } }}
+                    sx={{ width: { xs: '70px', sm: '190px' } }}
                   />
                 </TableCell>
                 <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
+                  {/* Color */}
                   <Button
                     onClick={(e) => handleColorOpen(e, index)}
                     variant='outlined'
@@ -435,7 +446,7 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
                         }}
                       />
                     ) : (
-                      'Añadir'
+                      'Añadir (Opcional)'
                     )}
                   </Button>
                   <Popover
@@ -456,25 +467,26 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
                         type='color'
                         {...register(`variants.${index}.color`)}
                         size='small'
-                        sx={{ width: '100px' }}
+                        sx={{ width: '190px' }}
                       />
                       <TextField
                         type='text'
-                        placeholder='Negro'
+                        placeholder='Opcional (Ej: Rojo)'
                         {...register(`variants.${index}.colorName`)}
                         size='small'
-                        sx={{ width: '100px' }}
+                        sx={{ width: '190px' }}
                       />
                     </Box>
                   </Popover>
                 </TableCell>
                 <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
+                  {/* Terminación */}
                   <TextField
                     type='text'
-                    placeholder='Brillante'
+                    placeholder='Opcional (Ej: Brillante)'
                     size='small'
                     {...register(`variants.${index}.finish`)}
-                    sx={{ width: { xs: '70px', sm: '90px' } }}
+                    sx={{ width: { xs: '70px', sm: '190px' } }}
                   />
                 </TableCell>
                 <TableCell align='center' sx={{ p: { xs: 0.5, sm: 1 } }}>
