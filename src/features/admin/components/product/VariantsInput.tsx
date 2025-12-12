@@ -25,7 +25,7 @@ import {
   Alert,
 } from '@mui/material';
 import { ProductFormValues } from '@features/admin/schema/productSchema';
-import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
+//import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 
 interface VariantsProps {
   control: Control<ProductFormValues>;
@@ -120,17 +120,15 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
         {/* Feedback informativo */}
         <Alert
           severity='info'
-          icon={false} // Opcional: quitar ícono para ahorrar espacio
           sx={{
             mb: 1.5,
             py: 0,
             backgroundColor: '#eff6ff',
             color: '#1e3a8a',
-            '& .MuiAlert-message': { padding: '8px 0' },
           }}
         >
           <Typography variant='caption' sx={{ fontSize: '0.75rem' }}>
-            <InfoOutlineIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} /> <strong>Nota:</strong> La primera variante de la lista será la
+            <strong>Nota:</strong> La primera variante de la lista será la
             que se muestre por defecto(en primera posición) en las tarjetas de producto.
           </Typography>
         </Alert>
@@ -355,17 +353,15 @@ export const VariantsInput = ({ control, errors, register }: VariantsProps) => {
       {/* Feedback informativo */}
       <Alert
         severity='info'
-        icon={false} // Opcional: quitar ícono para ahorrar espacio
         sx={{
           mb: 1.5,
           py: 0,
           backgroundColor: '#eff6ff',
           color: '#1e3a8a',
-          '& .MuiAlert-message': { padding: '8px 0' },
         }}
       >
         <Typography variant='caption' sx={{ fontSize: '0.75rem' }}>
-          <InfoOutlineIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} /> <strong>Nota:</strong> La primera variante de la lista será la que
+          <strong>Nota:</strong> La primera variante de la lista será la que
           se muestre por defecto(en primera posición) en las tarjetas de producto.
         </Typography>
       </Alert>
