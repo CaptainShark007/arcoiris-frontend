@@ -32,11 +32,18 @@ export const UploaderImages = ({ setValue, watch, errors }: UploaderProps) => {
 
   useEffect(() => {
     if (formImages && formImages.length > 0 && images.length === 0) {
-      const existingImages = formImages.map((url) => ({
-        previewUrl: url,
-      }));
+      const existingImages = formImages.map((img: File | string) => {
+        if (img instanceof File) {
+          return {
+            file: img,
+            previewUrl: URL.createObjectURL(img),
+          };
+        }
+        return {
+          previewUrl: img as string,
+        };
+      });
       setImages(existingImages);
-      setValue('images', formImages);
     }
   }, [formImages, images.length, setValue]);
 
@@ -166,6 +173,25 @@ export const UploaderImages = ({ setValue, watch, errors }: UploaderProps) => {
               overflow: 'hidden',
             }}
           >
+            {index === 0 && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  backgroundColor: '#0007d7ff', // Tu color primario
+                  color: 'white',
+                  fontSize: '0.65rem',
+                  fontWeight: 'bold',
+                  padding: '2px 8px',
+                  borderBottomRightRadius: '8px',
+                  zIndex: 1,
+                  pointerEvents: 'none', // Para que no moleste al click
+                }}
+              >
+                PRINCIPAL
+              </Box>
+            )}
             <Box
               component="img"
               src={image.previewUrl}

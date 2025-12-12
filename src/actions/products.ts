@@ -399,11 +399,13 @@ const validateProductInput = async (input: ProductInput): Promise<string[]> => {
   return errors;
 };
 
+// agregar logs para debugear donde falla
 export const createProduct = async (productInput: ProductInput) => {
   try {
     // 1. Validar entrada
     const validationErrors = await validateProductInput(productInput);
     if (validationErrors.length > 0) {
+      console.error('Validation errors:', validationErrors);
       throw new Error(validationErrors.join(' '));
     }
 
@@ -429,13 +431,15 @@ export const createProduct = async (productInput: ProductInput) => {
       }
     );
 
-    if (procedureResult.error) throw new Error(procedureResult.error.message);
+    if (procedureResult.error) {
+      console.error('RPC error:', procedureResult.error);
+      throw new Error(procedureResult.error.message);
+    }
 
     const result = (procedureResult.data as any)?.[0] as CreateProductRPCResult;
     if (!result?.success || !result?.product_id) {
-      throw new Error(
-        result?.message || 'Error desconocido al crear el producto.'
-      );
+      console.error('RPC result error:', result);
+      throw new Error(result?.message || 'Error desconocido al crear el producto.');
     }
 
     const productId = result.product_id;
@@ -453,7 +457,10 @@ export const createProduct = async (productInput: ProductInput) => {
             upsert: false,
           });
 
-        if (error) throw new Error(`Error subiendo imagen: ${error.message}`);
+        if (error) {
+          console.error('Image upload error:', error);
+          throw new Error(`Error subiendo imagen: ${error.message}`);
+        }
 
         const { data: publicUrlData } = supabase.storage
           .from('product-images')
@@ -470,7 +477,16 @@ export const createProduct = async (productInput: ProductInput) => {
 
     if (successfulImages.length === 0) {
       await supabase.from('products').delete().eq('id', productId);
-      throw new Error('No se pudieron subir las imagenes del producto.');
+      /* console.error('No se pudieron subir las imagenes del producto.');
+      throw new Error('No se pudieron subir las imagenes del producto.'); */
+      // MEJORA: Buscar el primer error real para mostrárselo al usuario
+      const firstError = uploadedImages.find(r => r.status === 'rejected') as PromiseRejectedResult;
+      const errorMessage = firstError?.reason?.message || 'No se pudieron subir las imagenes.';
+      
+      console.error('Fallo subida de imágenes:', firstError?.reason);
+      
+      // Lanzamos el error específico (ej: "The object exceeded the size limit")
+      throw new Error(`Error en imágenes: ${errorMessage}`);
     }
 
     // 4. Actualizar producto con imagenes
@@ -481,6 +497,7 @@ export const createProduct = async (productInput: ProductInput) => {
 
     if (updateError) {
       await supabase.from('products').delete().eq('id', productId);
+      console.error('Error updating product with images:', updateError);
       throw new Error(updateError.message);
     }
 
@@ -491,12 +508,28 @@ export const createProduct = async (productInput: ProductInput) => {
       .eq('id', productId)
       .single();
 
-    if (fetchError) throw new Error('Error al obtener el producto creado');
+    if (fetchError) {
+      console.error('Error fetching created product:', fetchError);
+      throw new Error('Error al obtener el producto creado');
+    }
 
     return product;
   } catch (error) {
-    console.error(error);
-    throw new Error('Error al crear el producto. Vuelve a intentarlo.');
+    console.error('Error detallado createProduct:', error);
+
+    // 1. Errores lanzados por nosotros (Validaciones, etc.)
+    if (error instanceof Error) {
+       throw error; 
+    }
+
+    // 2. Errores de Base de Datos (Supabase / Postgres)
+    // Usamos (error as any) para arreglar el error TS2339
+    if ((error as any)?.code === '23505') {
+       throw new Error('Ya existe un producto con ese slug (URL) o nombre.');
+    }
+
+    // 3. Fallback genérico
+    throw new Error('Error inesperado del servidor. Intente más tarde.');
   }
 };
 

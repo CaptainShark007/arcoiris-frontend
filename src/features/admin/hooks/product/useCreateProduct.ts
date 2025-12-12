@@ -21,6 +21,8 @@ export const useCreateProduct = () => {
       const message = error instanceof Error ? error.message : 'Error al crear el producto';
       toast.error(message, {
         position: 'top-right',
+        duration: 4000,
+        style: { maxWidth: '500px' },
       });
       console.error(error);
     },
