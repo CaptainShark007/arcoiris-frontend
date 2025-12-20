@@ -12,7 +12,7 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 //import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import logo from '../../assets/images/logo_comercio_v2.png';
+//import logo from '../../../public/logo_comercio_v2.png';
 //import { FormEvent } from 'react';
 
 export const Footer = () => {
@@ -324,7 +324,7 @@ export const Footer = () => {
           >
             {/* Logo */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <img src={logo} alt='Logo Arco Iris' style={{ height: 50 }} />
+              <img src='/logo_comercio_v2.png' alt='Logo Arco Iris' style={{ height: 50 }} />
             </Box>
 
             {/* Copyright */}
