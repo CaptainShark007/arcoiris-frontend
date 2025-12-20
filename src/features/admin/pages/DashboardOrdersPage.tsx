@@ -1,5 +1,5 @@
 import { Box, Card, Typography } from '@mui/material';
-import { Loader } from '@shared/components';
+import { Loader, SeoHead } from '@shared/components';
 import { useAllOrders } from '../hooks';
 import { TableOrdersAdmin } from '../components';
 import { useState } from 'react';
@@ -25,7 +25,14 @@ const DashboardOrdersPage = () => {
     setPage(0); // Reinicia a la primera página cuando cambia la cantidad de filas
   }
 
-  if (isLoading || !orders) return <Loader />;
+  if (isLoading || !orders) {
+    return (
+      <>
+        <SeoHead title="Cargando pedidos..." description="Cargando la lista de pedidos en el panel de administración" />
+        <Loader />
+      </>
+    );
+  }
 
   const totalPage = Math.ceil(totalItems / rowsPerPage);
 
@@ -36,6 +43,10 @@ const DashboardOrdersPage = () => {
       gap: 2.5,
       px: { xs: 1, sm: 0 },
     }}>
+      <SeoHead 
+        title="Panel de Pedidos" 
+        description="Gestión de pedidos en el panel de administración"
+      />
       <Typography variant="h5" sx={{ fontWeight: '800', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
         Pedidos
       </Typography>

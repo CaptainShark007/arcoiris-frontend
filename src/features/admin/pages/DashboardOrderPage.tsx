@@ -12,7 +12,7 @@ import {
   useTheme,
 } from '@mui/material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import { Loader } from '@shared/components';
+import { Loader, SeoHead } from '@shared/components';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatPrice, formatDateLong } from '@/helpers';
 import { useOrderAdmin } from '../hooks';
@@ -26,7 +26,14 @@ const DashboardOrderPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  if (isLoading || !order) return <Loader />;
+  if (isLoading || !order) {
+    return (
+      <>
+        <SeoHead title="Cargando pedido..." description="Cargando los detalles del pedido en el panel de administración" />
+        <Loader />
+      </>
+    );
+  }
 
   // Vista móvil para items del pedido
   const MobileOrderItems = () => (
@@ -167,6 +174,10 @@ const DashboardOrderPage = () => {
       gap: 3,
       px: { xs: 1, sm: 0 }, // ← Padding responsive
     }}>
+      <SeoHead 
+        title={`Pedido n${id}`} 
+        description={`Detalles del pedido n${id} en el panel de administración`}
+      />
       {/* Header */}
       <Box
         sx={{

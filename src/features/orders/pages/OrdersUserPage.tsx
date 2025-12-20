@@ -19,7 +19,7 @@ const OrdersUserPage = () => {
   if (sessionLoading || customerLoading || ordersLoading) {
     return (
       <>
-        <SeoHead title="Cargando pedidos..." description="Obteniendo tu historial" />
+        <SeoHead title="Cargando..." description="Obteniendo tu historial" />
         <Loader />
       </>
     );

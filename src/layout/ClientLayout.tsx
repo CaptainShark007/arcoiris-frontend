@@ -37,7 +37,7 @@ export const ClientLayout = () => {
 
   return (
     <Box display="flex" flexDirection="column" gap={3}>
-      <SeoHead title="Mi cuenta" description="Gestiona tu cuenta y pedidos" />
+      {/* <SeoHead title="Mi cuenta" description="Gestiona tu cuenta y pedidos" /> */}
       <AppBar
         position="static"
         elevation={0}
