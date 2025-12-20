@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useOrder } from '../hooks';
-import { Loader } from '@shared/components';
+import { Loader, SeoHead } from '@shared/components';
 import { formatDateLong, formatPrice, getStatus } from '@/helpers';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import {
@@ -31,7 +31,15 @@ const OrderUserPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  if (isLoading || !order) return <Loader />;
+  if (isLoading || !order) {
+    return (
+      <>
+        {/* MEJORA: Usa el ID en el título de carga */}
+        <SeoHead title={`Cargando pedido n${id}...`} description="Obteniendo detalles" />
+        <Loader />
+      </>
+    );
+  }
 
   // Vista móvil para productos
   const MobileProducts = () => (
@@ -187,6 +195,10 @@ const OrderUserPage = () => {
       maxWidth: '100%',
       overflow: 'hidden'
     }}>
+      <SeoHead 
+        title={`Pedido n${id}`} 
+        description={`Detalles y estado del pedido n${id} de ${order.customer.full_name}`} 
+      />
       {/* Header Section */}
       <Box
         sx={{

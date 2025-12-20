@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader } from "@shared/components";
+import { Loader, SeoHead } from "@shared/components";
 import { useUsers } from "@shared/hooks";
 import { NavLink, Outlet } from "react-router";
 import { 
@@ -26,10 +26,18 @@ export const ClientLayout = () => {
   // Hook personalizado para logout
   const { mutate: handleLogout, isPending: isLoggingOut } = useLogout();
 
-  if (isLoadingSession || isLoadingRole) return <Loader />;
+  if (isLoadingSession || isLoadingRole) {
+    return (
+      <>
+        <SeoHead title="Cargando..." description="Cargando información de la cuenta" />
+        <Loader />
+      </>
+    );
+  }
 
   return (
     <Box display="flex" flexDirection="column" gap={3}>
+      <SeoHead title="Mi cuenta" description="Gestiona tu cuenta y pedidos" />
       <AppBar
         position="static"
         elevation={0}

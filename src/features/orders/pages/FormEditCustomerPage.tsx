@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import { useCustomer, useUsers, useFormWithSchema } from "@shared/hooks";
-import { Loader } from "@shared/components";
+import { Loader, SeoHead } from "@shared/components";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useUpdateCustomer } from "../hooks";
@@ -67,7 +67,12 @@ const FormEditUserPage = () => {
   });
 
   if (sessionLoading || customerLoading) {
-    return <Loader />;
+    return (
+      <>
+        <SeoHead title="Cargando perfil..." description="Preparando formulario" />
+        <Loader />
+      </>
+    );
   }
 
   if (!session || !customer) {
@@ -83,6 +88,7 @@ const FormEditUserPage = () => {
         mx: "auto",
       }}
     >
+      <SeoHead title="Editar perfil" description="Modifica la información de tu cuenta" />
       <Button
         startIcon={<ArrowBackIcon />}
         onClick={() => navigate("/cuenta/pedidos")}
