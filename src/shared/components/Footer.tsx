@@ -1,8 +1,8 @@
 import {
   Box,
   Typography,
-  TextField,
-  Button,
+  //TextField,
+  //Button,
   Container,
   Link,
   IconButton,
@@ -11,14 +11,14 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import logo from '../../assets/images/logo_comercio_v2.png';
-import { FormEvent } from 'react';
+//import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+//import logo from '../../../public/logo_comercio_v2.png';
+//import { FormEvent } from 'react';
 
 export const Footer = () => {
-  const handleSubmit = (e: FormEvent) => {
+  /* const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-  };
+  }; */
 
   return (
     <Box component='footer'>
@@ -248,7 +248,7 @@ export const Footer = () => {
             </Box>
 
             {/* Suscribirse */}
-            <Box>
+            {/* <Box>
               <Typography
                 variant='h6'
                 sx={{
@@ -299,7 +299,7 @@ export const Footer = () => {
                 Recibí nuestras ofertas, novedades y consejos para tus proyectos
                 de pintura y ferretería.
               </Typography>
-            </Box>
+            </Box> */}
           </Box>
         </Container>
       </Box>
@@ -324,7 +324,7 @@ export const Footer = () => {
           >
             {/* Logo */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <img src={logo} alt='Logo Arco Iris' style={{ height: 50 }} />
+              <img src='/logo_comercio_v2.png' alt='Logo Arco Iris' style={{ height: 50 }} />
             </Box>
 
             {/* Copyright */}

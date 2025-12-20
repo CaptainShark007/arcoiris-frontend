@@ -10,7 +10,7 @@ import {
 import { Navigate } from "react-router-dom";
 import { useUpdatePassword } from "../hooks";
 import { useUsers } from "@shared/hooks";
-import { Loader } from "@shared/components";
+import { Loader, SeoHead } from "@shared/components";
 import toast from "react-hot-toast";
 
 const ResetPasswordPage = () => {
@@ -35,7 +35,15 @@ const ResetPasswordPage = () => {
     mutate(password);
   };
 
-  if (isLoading) return <Loader />;
+  //if (isLoading) return <Loader />;
+  if (isLoading) {
+    return (
+      <>
+        <SeoHead title="Nueva contraseña" description="Establece tu nueva contraseña" />
+        <Loader />
+      </>
+    );
+  }
   
   // Si no hay sesión, el usuario no viene del link de recuperación
   if (!session) return <Navigate to="/acceder" />;
@@ -53,6 +61,7 @@ const ResetPasswordPage = () => {
         minHeight: "100vh",
       }}
     >
+      <SeoHead title="Nueva contraseña" description="Crea una contraseña segura para tu cuenta" />
       <Box
         component="form"
         onSubmit={onSubmit}

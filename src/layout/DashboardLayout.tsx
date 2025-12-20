@@ -5,7 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { useUsers } from '@shared/hooks';
 import { useEffect, useState } from 'react';
 import { getSession, getUserRole } from '@/actions';
-import { Loader } from '@shared/components';
+import { Loader, SeoHead } from '@shared/components';
 import { useAuthStateChange } from '@features/auth/hooks';
 import { useSidebar } from '@/shared/contexts/SidebarContext';
 
@@ -38,7 +38,14 @@ export const DashboardLayout = () => {
     checkRole();
   }, [navigate]);
 
-  if (isLoading || !session || roleLoading) return <Loader />;
+  if (isLoading || !session || roleLoading) {
+    return (
+      <>
+        <SeoHead title="Cargando..." description="Cargando el panel de administración" />
+        <Loader />
+      </>
+    );
+  }
 
   return (
     <>

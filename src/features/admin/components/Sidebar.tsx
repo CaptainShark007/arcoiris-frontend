@@ -4,7 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import LogoutIcon from '@mui/icons-material/Logout';
 import CloseIcon from '@mui/icons-material/Close';
-import logo from '@/assets/images/logo_comercio_v2.png';
+//import logo from '../../../../public/logo_comercio_v2.png';
 import { dashboardLinks } from '@shared/constants/links';
 import { useAuthStateChange, useLogout } from '@features/auth/hooks';
 import { useSidebar } from '@/shared/contexts/SidebarContext';
@@ -97,7 +97,8 @@ export const Sidebar = () => {
         }}
       >
         <img 
-          src={logo} 
+          //src={logo} 
+          src='/logo_comercio_v2.png'
           alt="Logo" 
           style={{ 
             height: '80px',

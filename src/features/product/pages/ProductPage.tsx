@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useProduct } from '../hooks/useProduct';
 import { GridImages, ProductDescription } from '../components';
 import { formatPrice } from '@/helpers';
-import { Tag, Loader } from '@/shared/components';
+import { Tag, Loader, SeoHead } from '@/shared/components';
 import { useCartStore } from '@/storage/useCartStore';
 
 import {
@@ -232,379 +232,407 @@ const ProductPage = () => {
     setQuantity(1);
   };
 
-  if (isLoading) return <Loader />;
-  if (!product || isError)
-    return <Typography variant='h6'>Producto no encontrado</Typography>;
+  //if (isLoading) return <Loader />;
+  // Si está cargando, mostramos un título temporal
+  if (isLoading) {
+    return (
+      <>
+        <SeoHead 
+          title="Cargando..." 
+          description="Buscando producto..." 
+        />
+        <Loader />
+      </>
+    );
+  }
+  /* if (!product || isError)
+    return <Typography variant='h6'>Producto no encontrado</Typography>; */
+  // Si hay error
+  if (!product || isError) {
+    return (
+      <>
+        <SeoHead title="Producto no encontrado" description="Error" />
+        <Typography variant='h6'>Producto no encontrado</Typography>
+      </>
+    );
+  }
 
   const unitPrice = selectedVariant?.price ?? 0;
   const totalPrice = unitPrice * quantity;
 
   return (
-    <Box sx={{ p: { xs: 1.5, sm: 2, md: 4 }, maxWidth: 1400, margin: '0 auto' }}>
-      {/* Sección principal: Imagen y detalles */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          gap: { xs: 2, sm: 3, md: 4 },
-          alignItems: 'flex-start',
-          mb: 3,
-        }}
-      >
-        {/* Columna de imágenes */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', position: { xs: 'relative', md: 'sticky' }, top: { md: 20 } }}>
-          <GridImages images={product.images} onImageError={handleImageError} />
-        </Box>
-
-        {/* Columna de detalles */}
-        <Box>
-          {/* Encabezado del producto */}
-          <Box sx={{ mb: { xs: 2, md: 3 } }}>
-            <Typography fontWeight={700} gutterBottom sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' }, lineHeight: 1.3 }}>
-              {product.name}
-            </Typography>
-
-            <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
-              Marca: <Typography component='span' fontWeight={600}>{product.brand}</Typography>
-            </Typography>
-
-            {/* Precio y estado */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-              <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.875rem' }, color: 'primary.main' }}>
-                {formatPrice(unitPrice)}
-              </Typography>
-              {isOutOfStock && <Tag contentTag='agotado' />}
-            </Box>
+    <>
+    <SeoHead 
+      title={product.name}
+      description={product.description ? (typeof product.description === 'string' ? product.description : '') : 'Producto disponible en Arcoiris Tienda'}
+      image={getProductImage()}
+    />
+      <Box sx={{ p: { xs: 1.5, sm: 2, md: 4 }, maxWidth: 1400, margin: '0 auto' }}>
+        {/* Sección principal: Imagen y detalles */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+            gap: { xs: 2, sm: 3, md: 4 },
+            alignItems: 'flex-start',
+            mb: 3,
+          }}
+        >
+          {/* Columna de imágenes */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', position: { xs: 'relative', md: 'sticky' }, top: { md: 20 } }}>
+            <GridImages images={product.images} onImageError={handleImageError} />
           </Box>
 
-          <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
-
-          {/* Opciones del producto */}
-          <Box sx={{ mb: { xs: 2, md: 3 } }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-              <Typography fontWeight={600} sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
-                Opciones
+          {/* Columna de detalles */}
+          <Box>
+            {/* Encabezado del producto */}
+            <Box sx={{ mb: { xs: 2, md: 3 } }}>
+              <Typography fontWeight={700} gutterBottom sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' }, lineHeight: 1.3 }}>
+                {product.name}
               </Typography>
-              {(selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
-                <Button
-                  size='small'
-                  onClick={() =>
-                    setSelectedOptions({
-                      color: null,
-                      storage: null,
-                      finish: null,
-                    })
-                  }
-                  sx={{ textTransform: 'none', fontSize: { xs: '0.75rem', md: '0.875rem' }, color: 'text.secondary' }}
-                >
-                  Limpiar
-                </Button>
+
+              <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
+                Marca: <Typography component='span' fontWeight={600}>{product.brand}</Typography>
+              </Typography>
+
+              {/* Precio y estado */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.875rem' }, color: 'primary.main' }}>
+                  {formatPrice(unitPrice)}
+                </Typography>
+                {isOutOfStock && <Tag contentTag='agotado' />}
+              </Box>
+            </Box>
+
+            <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
+
+            {/* Opciones del producto */}
+            <Box sx={{ mb: { xs: 2, md: 3 } }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Typography fontWeight={600} sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                  Opciones
+                </Typography>
+                {(selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
+                  <Button
+                    size='small'
+                    onClick={() =>
+                      setSelectedOptions({
+                        color: null,
+                        storage: null,
+                        finish: null,
+                      })
+                    }
+                    sx={{ textTransform: 'none', fontSize: { xs: '0.75rem', md: '0.875rem' }, color: 'text.secondary' }}
+                  >
+                    Limpiar
+                  </Button>
+                )}
+              </Box>
+
+              {/* Color */}
+              {attributesPresent.hasColor && allOptions.colorOptions.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <FormControl fullWidth size='small'>
+                    <InputLabel id='color-label' sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Color</InputLabel>
+                    <Select
+                      labelId='color-label'
+                      value={selectedOptions.color || ''}
+                      label='Color'
+                      onChange={(e) => handleOptionChange('color', e.target.value || null)}
+                    >
+                      <MenuItem value=''>
+                        <em>Seleccionar color</em>
+                      </MenuItem>
+                      {allOptions.colorOptions.map((color) => {
+                        const isValid = isOptionValid.color(color.name);
+                        return (
+                          <MenuItem
+                            key={color.name}
+                            value={color.name}
+                            disabled={!isValid}
+                            sx={{ opacity: isValid ? 1 : 0.5 }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Box
+                                sx={{
+                                  width: 18,
+                                  height: 18,
+                                  borderRadius: '50%',
+                                  backgroundColor: color.hex,
+                                  border: '1px solid rgba(0,0,0,0.1)',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                  opacity: isValid ? 1 : 0.5,
+                                  flexShrink: 0,
+                                }}
+                              />
+                              <ListItemText
+                                primary={color.name}
+                                secondary={!isValid ? 'No disponible' : undefined}
+                              />
+                            </Box>
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
+
+              {/* Storage */}
+              {attributesPresent.hasStorage && allOptions.storageOptions.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <FormControl fullWidth size='small'>
+                    <InputLabel sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Presentación</InputLabel>
+                    <Select
+                      value={selectedOptions.storage || ''}
+                      label='Presentación'
+                      onChange={(e) => handleOptionChange('storage', e.target.value || null)}
+                    >
+                      <MenuItem value=''>
+                        <em>Seleccionar presentación</em>
+                      </MenuItem>
+                      {allOptions.storageOptions.map((storage) => {
+                        const isValid = isOptionValid.storage(storage);
+                        return (
+                          <MenuItem
+                            key={storage}
+                            value={storage}
+                            disabled={!isValid}
+                            sx={{ opacity: isValid ? 1 : 0.5 }}
+                          >
+                            <ListItemText
+                              primary={storage}
+                              secondary={!isValid ? 'No disponible' : undefined}
+                            />
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
+
+              {/* Finish */}
+              {attributesPresent.hasFinish && allOptions.finishOptions.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <FormControl fullWidth size='small'>
+                    <InputLabel sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Terminación</InputLabel>
+                    <Select
+                      value={selectedOptions.finish ?? ''}
+                      label='Terminación'
+                      onChange={(e) => handleOptionChange('finish', e.target.value === '' ? null : e.target.value)}
+                    >
+                      <MenuItem value=''>
+                        <em>Seleccionar terminación</em>
+                      </MenuItem>
+                      {allOptions.finishOptions.map((finish) => {
+                        const isValid = isOptionValid.finish(finish);
+                        return (
+                          <MenuItem
+                            key={finish ?? 'none'}
+                            value={finish ?? ''}
+                            disabled={!isValid}
+                            sx={{ opacity: isValid ? 1 : 0.5 }}
+                          >
+                            <ListItemText
+                              primary={finish || 'Sin terminación'}
+                              secondary={!isValid ? 'No disponible' : undefined}
+                            />
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+                </Box>
               )}
             </Box>
 
-            {/* Color */}
-            {attributesPresent.hasColor && allOptions.colorOptions.length > 0 && (
+            {/* Variante seleccionada */}
+            {selectedVariant && (
               <Box sx={{ mb: 2 }}>
-                <FormControl fullWidth size='small'>
-                  <InputLabel id='color-label' sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Color</InputLabel>
-                  <Select
-                    labelId='color-label'
-                    value={selectedOptions.color || ''}
-                    label='Color'
-                    onChange={(e) => handleOptionChange('color', e.target.value || null)}
-                  >
-                    <MenuItem value=''>
-                      <em>Seleccionar color</em>
-                    </MenuItem>
-                    {allOptions.colorOptions.map((color) => {
-                      const isValid = isOptionValid.color(color.name);
-                      return (
-                        <MenuItem
-                          key={color.name}
-                          value={color.name}
-                          disabled={!isValid}
-                          sx={{ opacity: isValid ? 1 : 0.5 }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box
-                              sx={{
-                                width: 18,
-                                height: 18,
-                                borderRadius: '50%',
-                                backgroundColor: color.hex,
-                                border: '1px solid rgba(0,0,0,0.1)',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                opacity: isValid ? 1 : 0.5,
-                                flexShrink: 0,
-                              }}
-                            />
-                            <ListItemText
-                              primary={color.name}
-                              secondary={!isValid ? 'No disponible' : undefined}
-                            />
-                          </Box>
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </Box>
-            )}
-
-            {/* Storage */}
-            {attributesPresent.hasStorage && allOptions.storageOptions.length > 0 && (
-              <Box sx={{ mb: 2 }}>
-                <FormControl fullWidth size='small'>
-                  <InputLabel sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Presentación</InputLabel>
-                  <Select
-                    value={selectedOptions.storage || ''}
-                    label='Presentación'
-                    onChange={(e) => handleOptionChange('storage', e.target.value || null)}
-                  >
-                    <MenuItem value=''>
-                      <em>Seleccionar presentación</em>
-                    </MenuItem>
-                    {allOptions.storageOptions.map((storage) => {
-                      const isValid = isOptionValid.storage(storage);
-                      return (
-                        <MenuItem
-                          key={storage}
-                          value={storage}
-                          disabled={!isValid}
-                          sx={{ opacity: isValid ? 1 : 0.5 }}
-                        >
-                          <ListItemText
-                            primary={storage}
-                            secondary={!isValid ? 'No disponible' : undefined}
-                          />
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </Box>
-            )}
-
-            {/* Finish */}
-            {attributesPresent.hasFinish && allOptions.finishOptions.length > 0 && (
-              <Box sx={{ mb: 2 }}>
-                <FormControl fullWidth size='small'>
-                  <InputLabel sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Terminación</InputLabel>
-                  <Select
-                    value={selectedOptions.finish ?? ''}
-                    label='Terminación'
-                    onChange={(e) => handleOptionChange('finish', e.target.value === '' ? null : e.target.value)}
-                  >
-                    <MenuItem value=''>
-                      <em>Seleccionar terminación</em>
-                    </MenuItem>
-                    {allOptions.finishOptions.map((finish) => {
-                      const isValid = isOptionValid.finish(finish);
-                      return (
-                        <MenuItem
-                          key={finish ?? 'none'}
-                          value={finish ?? ''}
-                          disabled={!isValid}
-                          sx={{ opacity: isValid ? 1 : 0.5 }}
-                        >
-                          <ListItemText
-                            primary={finish || 'Sin terminación'}
-                            secondary={!isValid ? 'No disponible' : undefined}
-                          />
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </Box>
-            )}
-          </Box>
-
-          {/* Variante seleccionada */}
-          {selectedVariant && (
-            <Box sx={{ mb: 2 }}>
-              <Typography variant='caption' color='text.secondary' fontWeight={600} sx={{ display: 'block', mb: 1 }}>
-                Variante seleccionada:
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {attributesPresent.hasColor && selectedVariant.color_name && (
-                  <Chip
-                    label={selectedVariant.color_name}
-                    size='small'
-                    avatar={
-                      <Box
-                        sx={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: '50%',
-                          backgroundColor: selectedVariant.color,
-                          ml: 0.5,
-                        }}
-                      />
-                    }
-                  />
-                )}
-                {attributesPresent.hasStorage && selectedVariant.storage && (
-                  <Chip label={selectedVariant.storage} size='small' />
-                )}
-                {attributesPresent.hasFinish && selectedVariant.finish && (
-                  <Chip label={selectedVariant.finish} size='small' />
-                )}
-              </Box>
-            </Box>
-          )}
-
-          {/* Alertas */}
-          {!selectedVariant && (selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
-            <Alert severity='warning' sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-              Combinación no disponible
-            </Alert>
-          )}
-
-          {selectedVariant && selectedVariant.stock === 0 && (
-            <Alert severity='error' sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-              Agotado
-            </Alert>
-          )}
-
-          {selectedVariant && selectedVariant.stock > 0 && selectedVariant.stock <= 10 && (
-            <Alert severity={selectedVariant.stock <= 3 ? 'warning' : 'info'} sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-              {selectedVariant.stock <= 3
-                ? `¡Últimas ${selectedVariant.stock} unidades!`
-                : `Solo ${selectedVariant.stock} disponibles`}
-            </Alert>
-          )}
-
-          <Divider sx={{ my: { xs: 1.5, md: 2.5 } }} />
-
-          {/* Cantidad y precios */}
-          <Stack spacing={{ xs: 1.5, md: 2 }} sx={{ mb: { xs: 2, md: 3 } }}>
-            {/* Selector de cantidad */}
-            <Box>
-              <Typography variant='caption' fontWeight={600} sx={{ display: 'block', mb: 1 }}>
-                Cantidad
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <IconButton
-                  size='small'
-                  onClick={handleDecrement}
-                  disabled={quantity <= 1 || !selectedVariant}
-                  sx={{ padding: '6px', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
-                >
-                  <RemoveIcon fontSize='small' />
-                </IconButton>
-
-                <Box
-                  sx={{
-                    minWidth: 50,
-                    textAlign: 'center',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    py: 0.75,
-                    px: 1.5,
-                  }}
-                >
-                  <Typography fontWeight={600} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                    {quantity}
-                  </Typography>
-                </Box>
-
-                <IconButton
-                  size='small'
-                  onClick={handleIncrement}
-                  disabled={!selectedVariant || quantity >= (selectedVariant?.stock || 0)}
-                  sx={{ padding: '6px', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
-                >
-                  <AddIcon fontSize='small' />
-                </IconButton>
-
-                {selectedVariant && (
-                  <Typography variant='caption' color='text.secondary' sx={{ ml: 'auto', fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-                    {selectedVariant.stock} disponibles
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-
-            {/* Precios */}
-            <Paper variant='outlined' sx={{ p: { xs: 1.5, md: 2 } }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
-                <Box>
-                  <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-                    Unitario
-                  </Typography>
-                  <Typography color='primary' fontWeight={700} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                    {formatPrice(unitPrice)}
-                  </Typography>
-                </Box>
-                <Box sx={{ textAlign: 'right' }}>
-                  <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-                    Total
-                  </Typography>
-                  <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.5rem' } }}>
-                    {formatPrice(totalPrice)}
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
-
-            {/* Botón agregar al carrito */}
-            <Button
-              variant='contained'
-              color='primary'
-              fullWidth
-              onClick={handleAddToCart}
-              disabled={!selectedVariant || isOutOfStock}
-              sx={{
-                height: { xs: 44, md: 48 },
-                borderRadius: 2,
-                fontWeight: 600,
-                textTransform: 'none',
-                fontSize: { xs: '0.95rem', md: '1rem' },
-              }}
-            >
-              {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
-            </Button>
-          </Stack>
-
-          {/* Features */}
-          {product.features && product.features.length > 0 && (
-            <Paper variant='outlined' sx={{ p: { xs: 1.5, md: 2.5 }, bgcolor: 'background.paper' }}>
-              <Typography fontWeight={600} sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, mb: 1.5 }}>
-                Características principales
-              </Typography>
-              <Stack spacing={1}>
-                {product.features.map((feature: string, idx: number) => (
-                  <Box key={idx} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        backgroundColor: 'primary.main',
-                        mt: 1,
-                        flexShrink: 0,
-                      }}
+                <Typography variant='caption' color='text.secondary' fontWeight={600} sx={{ display: 'block', mb: 1 }}>
+                  Variante seleccionada:
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {attributesPresent.hasColor && selectedVariant.color_name && (
+                    <Chip
+                      label={selectedVariant.color_name}
+                      size='small'
+                      avatar={
+                        <Box
+                          sx={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: '50%',
+                            backgroundColor: selectedVariant.color,
+                            ml: 0.5,
+                          }}
+                        />
+                      }
                     />
-                    <Typography sx={{ fontSize: { xs: '0.875rem', md: '0.95rem' } }}>
-                      {feature}
+                  )}
+                  {attributesPresent.hasStorage && selectedVariant.storage && (
+                    <Chip label={selectedVariant.storage} size='small' />
+                  )}
+                  {attributesPresent.hasFinish && selectedVariant.finish && (
+                    <Chip label={selectedVariant.finish} size='small' />
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {/* Alertas */}
+            {!selectedVariant && (selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
+              <Alert severity='warning' sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                Combinación no disponible
+              </Alert>
+            )}
+
+            {selectedVariant && selectedVariant.stock === 0 && (
+              <Alert severity='error' sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                Agotado
+              </Alert>
+            )}
+
+            {selectedVariant && selectedVariant.stock > 0 && selectedVariant.stock <= 10 && (
+              <Alert severity={selectedVariant.stock <= 3 ? 'warning' : 'info'} sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                {selectedVariant.stock <= 3
+                  ? `¡Últimas ${selectedVariant.stock} unidades!`
+                  : `Solo ${selectedVariant.stock} disponibles`}
+              </Alert>
+            )}
+
+            <Divider sx={{ my: { xs: 1.5, md: 2.5 } }} />
+
+            {/* Cantidad y precios */}
+            <Stack spacing={{ xs: 1.5, md: 2 }} sx={{ mb: { xs: 2, md: 3 } }}>
+              {/* Selector de cantidad */}
+              <Box>
+                <Typography variant='caption' fontWeight={600} sx={{ display: 'block', mb: 1 }}>
+                  Cantidad
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <IconButton
+                    size='small'
+                    onClick={handleDecrement}
+                    disabled={quantity <= 1 || !selectedVariant}
+                    sx={{ padding: '6px', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                  >
+                    <RemoveIcon fontSize='small' />
+                  </IconButton>
+
+                  <Box
+                    sx={{
+                      minWidth: 50,
+                      textAlign: 'center',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                      py: 0.75,
+                      px: 1.5,
+                    }}
+                  >
+                    <Typography fontWeight={600} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                      {quantity}
                     </Typography>
                   </Box>
-                ))}
-              </Stack>
-            </Paper>
-          )}
+
+                  <IconButton
+                    size='small'
+                    onClick={handleIncrement}
+                    disabled={!selectedVariant || quantity >= (selectedVariant?.stock || 0)}
+                    sx={{ padding: '6px', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                  >
+                    <AddIcon fontSize='small' />
+                  </IconButton>
+
+                  {selectedVariant && (
+                    <Typography variant='caption' color='text.secondary' sx={{ ml: 'auto', fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                      {selectedVariant.stock} disponibles
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+
+              {/* Precios */}
+              <Paper variant='outlined' sx={{ p: { xs: 1.5, md: 2 } }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                  <Box>
+                    <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                      Unitario
+                    </Typography>
+                    <Typography color='primary' fontWeight={700} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                      {formatPrice(unitPrice)}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                      Total
+                    </Typography>
+                    <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.5rem' } }}>
+                      {formatPrice(totalPrice)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Paper>
+
+              {/* Botón agregar al carrito */}
+              <Button
+                variant='contained'
+                color='primary'
+                fullWidth
+                onClick={handleAddToCart}
+                disabled={!selectedVariant || isOutOfStock}
+                sx={{
+                  height: { xs: 44, md: 48 },
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                }}
+              >
+                {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
+              </Button>
+            </Stack>
+
+            {/* Features */}
+            {product.features && product.features.length > 0 && (
+              <Paper variant='outlined' sx={{ p: { xs: 1.5, md: 2.5 }, bgcolor: 'background.paper' }}>
+                <Typography fontWeight={600} sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, mb: 1.5 }}>
+                  Características principales
+                </Typography>
+                <Stack spacing={1}>
+                  {product.features.map((feature: string, idx: number) => (
+                    <Box key={idx} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                      <Box
+                        sx={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: 'primary.main',
+                          mt: 1,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <Typography sx={{ fontSize: { xs: '0.875rem', md: '0.95rem' } }}>
+                        {feature}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </Paper>
+            )}
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: { xs: 2, md: 4 } }} />
+
+        {/* Descripción del producto */}
+        <Box sx={{ mb: 2 }}>
+          <ProductDescription content={product.description as any} />
         </Box>
       </Box>
-
-      <Divider sx={{ my: { xs: 2, md: 4 } }} />
-
-      {/* Descripción del producto */}
-      <Box sx={{ mb: 2 }}>
-        <ProductDescription content={product.description as any} />
-      </Box>
-    </Box>
+    </>
   );
 };
 

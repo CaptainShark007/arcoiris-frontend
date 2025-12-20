@@ -9,7 +9,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useRegister } from "../hooks";
 import { useFormWithSchema, useUsers } from "@shared/hooks";
 import { RegisterFormData, registerSchema } from "../schemas/registerSchema";
-import { Loader } from "@shared/components";
+import { Loader, SeoHead } from "@shared/components";
 
 const RegisterPage = () => {
   const {
@@ -34,7 +34,15 @@ const RegisterPage = () => {
     mutate({ email, password, fullName, phoneNumber });
   });
 
-  if (isLoading) return <Loader />;
+  //if (isLoading) return <Loader />;
+  if (isLoading) {
+    return (
+      <>
+        <SeoHead title="Crear cuenta" description="Regístrate en Arcoiris Shop" />
+        <Loader />
+      </>
+    );
+  }
 
   if (session) return <Navigate to="/" />;
 
@@ -51,6 +59,7 @@ const RegisterPage = () => {
         minHeight: "100vh",
       }}
     >
+      <SeoHead title="Crear cuenta" description="Únete a Arcoiris Shop y disfruta de nuestros productos" />
       <Box
         component="form"
         onSubmit={onRegister}

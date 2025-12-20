@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ProductListPage } from '../components';
 import { useSearchParams } from 'react-router';
 import { useDebounce, useFilteredProducts } from '../hooks';
+import { SeoHead } from '@shared/components';
 
 const ShopPage = () => {
-  
+
   const [ searchParams ] = useSearchParams();
 
   const [page, setPage] = useState(0);
@@ -27,9 +28,23 @@ const ShopPage = () => {
     const categoryId = searchParams.get('categoryId');
     if (categoryId) {
       setSelectedCategories([categoryId]);
-      //setPage(0);
     }
   }, [searchParams]);
+
+  const pageTitle = useMemo(() => {
+    const term = debouncedSearchTerm?.trim();
+
+    if (!term || term.length < 3) {
+      if (selectedCategories.length === 1) {
+         return "Categoría seleccionada";
+      }
+      return "Tienda";
+    }
+
+    const formattedTerm = term.charAt(0).toUpperCase() + term.slice(1);
+
+    return `Resultados para ${formattedTerm}`;
+  }, [debouncedSearchTerm, selectedCategories]);
 
   const {
     data: products = [],
@@ -40,30 +55,40 @@ const ShopPage = () => {
     brands: selectedBrands,
     categoriesIds: selectedCategories,
     itemsPerPage,
-    searchTerm: debouncedSearchTerm, // pasa el valor con retraso
+    searchTerm: debouncedSearchTerm,
     sortOrder,
   });
 
   return (
-    <ProductListPage
-      products={products}
-      isLoading={isLoading}
-      page={page}
-      setPage={setPage}
-      itemsPerPage={itemsPerPage}
-      setItemsPerPage={setItemsPerPage}
-      totalProducts={totalProducts}
-      // props de filtros
-      selectedBrands={selectedBrands}
-      setSelectedBrands={setSelectedBrands}
-      selectedCategories={selectedCategories}
-      setSelectedCategories={setSelectedCategories}
-      // props de busqueda y orden
-      searchTerm={searchTerm}
-      setSearchTerm={setSearchTerm}
-      sortOrder={sortOrder}
-      setSortOrder={setSortOrder}
-    />
+    <>
+      <SeoHead 
+        title={pageTitle}
+        description={
+          debouncedSearchTerm 
+            ? `Resultados de búsqueda para ${debouncedSearchTerm} en Arcoiris Shop.` 
+            : "Explora nuestra tienda - Encuentra los mejores productos en Arcoiris"
+        }
+      />
+      <ProductListPage
+        products={products}
+        isLoading={isLoading}
+        page={page}
+        setPage={setPage}
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        totalProducts={totalProducts}
+        // props de filtros
+        selectedBrands={selectedBrands}
+        setSelectedBrands={setSelectedBrands}
+        selectedCategories={selectedCategories}
+        setSelectedCategories={setSelectedCategories}
+        // props de busqueda y orden
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+      />
+    </>
   );
 };
 
