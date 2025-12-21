@@ -9,7 +9,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useLogin } from "../hooks";
 import { useUsers } from "@shared/hooks";
-import { Loader } from "@shared/components";
+import { Loader, SeoHead } from "@shared/components";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -37,7 +37,16 @@ const LoginPage = () => {
     }
   }, [session, isLoading, navigate, hasRedirected]);
 
-  if (isLoading) return <Loader />;
+  //if (isLoading) return <Loader />;
+  if (isLoading) {
+    return (
+      <>
+        <SeoHead title="Iniciar sesión" description="Ingresa a tu cuenta" />
+        <Loader />
+      </>
+    );
+  }
+
   if (session && hasRedirected) return null;
   if (session && !hasRedirected) return null;
 
@@ -53,6 +62,7 @@ const LoginPage = () => {
         bgcolor: "background.default",
       }}
     >
+      <SeoHead title="Iniciar sesión" description="Ingresa a tu cuenta en Arcoiris Shop" />
       <Box
         component="form"
         onSubmit={onLogin}

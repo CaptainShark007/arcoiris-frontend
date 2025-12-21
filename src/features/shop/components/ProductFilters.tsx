@@ -65,7 +65,7 @@ export const ProductFilters = ({
     <>
       {/* Filtro por Categorías */}
       <Accordion 
-        defaultExpanded
+        //defaultExpanded
         //defaultExpanded
         //disableGutters // Quita el borde superior que aparece por defecto
         elevation={0}

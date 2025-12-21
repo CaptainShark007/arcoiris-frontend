@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { useOrders } from "../hooks";
-import { Loader } from "@shared/components";
+import { Loader, SeoHead } from "@shared/components";
 import { TableOrders } from "../components";
 import { Box, Typography, Button, Stack, Card, CardContent, Divider } from "@mui/material";
 import { useCustomer, useUsers } from "@shared/hooks";
@@ -17,7 +17,12 @@ const OrdersUserPage = () => {
   const { data: orders, isLoading: ordersLoading } = useOrders();
 
   if (sessionLoading || customerLoading || ordersLoading) {
-    return <Loader />;
+    return (
+      <>
+        <SeoHead title="Cargando..." description="Obteniendo tu historial" />
+        <Loader />
+      </>
+    );
   }
 
   if (!session) {
@@ -31,7 +36,7 @@ const OrdersUserPage = () => {
       maxWidth: '1200px',
       mx: 'auto'
     }}>
-
+      <SeoHead title="Mis Pedidos" description="Revisa el historial de tus compras en Arcoiris Shop" />
       {/* De momento solo lo mostramos en este archivo */}
       {/* Card de perfil */}
       <Card 

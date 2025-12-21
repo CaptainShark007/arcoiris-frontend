@@ -10,7 +10,7 @@ import {
 import { Link, Navigate } from "react-router-dom";
 
 import { useUsers } from "@shared/hooks";
-import { Loader } from "@shared/components";
+import { Loader, SeoHead } from "@shared/components";
 import { useRequestPasswordReset } from "../hooks";
 
 const ForgotPasswordPage = () => {
@@ -28,7 +28,15 @@ const ForgotPasswordPage = () => {
     });
   };
 
-  if (isLoading) return <Loader />;
+  //if (isLoading) return <Loader />;
+  if (isLoading) {
+    return (
+      <>
+        <SeoHead title="Recuperar contraseña" description="Recupera el acceso a tu cuenta" />
+        <Loader />
+      </>
+    );
+  }
   if (session) return <Navigate to="/" />;
 
   if (emailSent) {
@@ -45,6 +53,7 @@ const ForgotPasswordPage = () => {
           minHeight: "100vh",
         }}
       >
+        <SeoHead title="Email enviado" description="Revisa tu correo" />
         <Box
           sx={{
             width: "100%",
@@ -94,6 +103,7 @@ const ForgotPasswordPage = () => {
         minHeight: "100vh",
       }}
     >
+      <SeoHead title="Recuperar contraseña" description="Ingresa tu email para restablecer tu contraseña" />
       <Box
         component="form"
         onSubmit={onSubmit}

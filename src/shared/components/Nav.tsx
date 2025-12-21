@@ -20,7 +20,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import SearchIcon from '@mui/icons-material/Search';
 import { useState, type MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../../assets/images/logo_comercio_v2.png';
+//import logo from '../../../public/logo_comercio_v2.png';
 import { NotificationPopup } from './NotificationPopup';
 import { useCustomer, useUsers } from '@shared/hooks';
 import { Loader } from './Loader';
@@ -102,7 +102,7 @@ export const Navbar = () => {
               gap: 1,
             }}
           >
-            <img src={logo} alt='Logo' style={{ height: 50 }} />
+            <img src='/logo_comercio_v2.png' alt='Logo' style={{ height: 50 }} />
           </Box>
 
           {/* Links centrales: solo visibles en pantallas grandes */}
