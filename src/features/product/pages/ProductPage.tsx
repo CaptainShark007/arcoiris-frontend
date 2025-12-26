@@ -228,7 +228,12 @@ const ProductPage = () => {
       },
     });
 
-    toast.success('Producto agregado al carrito', { position: 'top-right' });
+    toast.success('Producto agregado al carrito', { 
+      position: 'top-right',
+      style: {
+        marginTop: '50px',
+      }
+     });
     setQuantity(1);
   };
 

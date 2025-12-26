@@ -21,7 +21,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
   const isSm = useMediaQuery(theme.breakpoints.only('sm'));
   const isMd = useMediaQuery(theme.breakpoints.only('md'));
 
-  let visibleItems = 4;
+  let visibleItems = 5;
   if (isXs) visibleItems = 1;      
   else if (isSm) visibleItems = 2; 
   else if (isMd) visibleItems = 3; 
@@ -216,6 +216,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
             display: 'flex',
             justifyContent: 'center',
             mt: 3,
+            mb: 2,
             gap: 1,
             opacity: isLocked ? 0.3 : 1, // Feedback visual
             transition: 'opacity 0.3s'

@@ -96,7 +96,7 @@ export const searchProductsAction = async (query: string): Promise<ProductSearch
 
   const { data, error } = await supabase
     .from('products')
-    .select('id, name, slug, images, variants(price, color_name, storage, finish)')
+    .select('id, name, slug, images, variants(price, original_price, color_name, storage, finish)')
     .eq('is_active', true)
     .eq('variants.is_active', true)
     .ilike('name', `%${query}%`)
@@ -237,7 +237,7 @@ export const getProductBySlugAdmin = async (slug: string) => {
 export const getProductVariants = async (productId: string) => {
   const { data, error } = await supabase
     .from('variants')
-    .select('id, color, color_name, stock, price, storage, finish')
+    .select('id, color, color_name, stock, price, original_price, storage, finish, is_active')
     .eq('is_active', true)
     .eq('product_id', productId);
 

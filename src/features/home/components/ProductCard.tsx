@@ -7,13 +7,13 @@ import {
   Button,
 } from '@mui/material';
 import toast from 'react-hot-toast';
-import { formatPrice } from '@/helpers';
 import { useCartStore } from '@/storage/useCartStore';
 import { useProductVariants } from '../hooks';
-import { useState, useEffect } from 'react'; // Importamos useEffect
+import { useState, useEffect } from 'react';
 import { Product } from '@shared/types';
 import { ProductBadge, VariantSelectModal } from '@shared/components';
 import { Link } from 'react-router';
+import { calculateDiscount, formatPrice } from '@/helpers';
 
 interface ProductCardProps {
   product: Product;
@@ -21,27 +21,30 @@ interface ProductCardProps {
   onModalStateChange?: (isOpen: boolean) => void;
 }
 
-export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) => {
+export const ProductCard = ({
+  product,
+  onModalStateChange,
+}: ProductCardProps) => {
   const addItem = useCartStore((state) => state.addItem);
   const { variants, loading } = useProductVariants(product.id);
 
   // Esto maneja el error de carga de imagen
   const [imageError, setImageError] = useState(false);
-  
+
   const getProductImage = () => {
     if (imageError || !product.images[0]) {
-      return "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png";
+      return 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
     }
     return product.images[0];
-  }
-  
+  };
+
   const handleImageError = () => {
     setImageError(true);
   };
 
   const [openModal, setOpenModal] = useState(false);
 
-  // Sincroniza estado del modal con el padre 
+  // Sincroniza estado del modal con el padre
   useEffect(() => {
     if (onModalStateChange) {
       onModalStateChange(openModal);
@@ -80,12 +83,42 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
       });
       toast.success('Producto agregado al carrito', {
         position: 'top-right',
+        style: {
+          marginTop: '50px',
+        },
       });
       return;
     }
 
     setOpenModal(true);
   };
+
+  // Se crea una copia [...variants] para no mutar el estado original
+  const sortedVariants = [...variants].sort((a, b) => {
+    // 1. Prioridad: STOCK (Primero los que tienen stock)
+    const aHasStock = a.stock > 0;
+    const bHasStock = b.stock > 0;
+    if (aHasStock && !bHasStock) return -1;
+    if (!aHasStock && bHasStock) return 1;
+
+    // 2. Prioridad: MAYOR DESCUENTO
+    const aDiscount = calculateDiscount(a.price, a.original_price);
+    const bDiscount = calculateDiscount(b.price, b.original_price);
+    if (aDiscount > bDiscount) return -1;
+    if (bDiscount > aDiscount) return 1;
+
+    // 3. Prioridad: PRECIO MÁS BAJO (Desempate)
+    return a.price - b.price;
+  });
+
+  // Se toma la variante "ganadora" del ordenamiento
+  const mainVariant = sortedVariants[0];
+
+  const currentPrice = mainVariant?.price || 0;
+  const originalPrice = mainVariant?.original_price || 0;
+
+  const discountPercent = calculateDiscount(currentPrice, originalPrice);
+  const hasDiscount = discountPercent > 0 && !isOutOfStock;
 
   return (
     <>
@@ -115,7 +148,17 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
           },
         }}
       >
-        {isOutOfStock && <ProductBadge type='agotado' />}
+        {/* {isOutOfStock && <ProductBadge type='agotado' />} */}
+        {/* Badge de Agotado o Descuento */}
+        <Box sx={{ position: 'absolute', top: 10, left: 10, zIndex: 2 }}>
+          {isOutOfStock ? (
+            <ProductBadge type='agotado' />
+          ) : hasDiscount ? (
+            <ProductBadge type='oferta'>
+              {/* {`-${discountPercent}%`} */}
+            </ProductBadge>
+          ) : null}
+        </Box>
 
         <CardMedia
           component='img'
@@ -131,7 +174,7 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
           <Typography
             variant='body1'
             sx={{
-              mb: 1,
+              //mb: 1,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               display: '-webkit-box',
@@ -145,13 +188,71 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
           </Typography>
 
           <Box sx={{ mt: 'auto' }}>
+            {/* 1. Precio anterior y Descuento */}
+            {hasDiscount && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1,
+                  //mb: 0.5,
+                }}
+              >
+                <Typography
+                  variant='body2'
+                  sx={{
+                    textDecoration: 'line-through',
+                    color: 'text.secondary',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  {formatPrice(originalPrice)}
+                </Typography>
+
+                <Box
+                  component='span'
+                  sx={{
+                    bgcolor: '#D81B60',
+                    color: 'white',
+                    borderRadius: 1,
+                    px: 0.8,
+                    py: 0.2,
+                    fontSize: '0.75rem',
+                    fontWeight: 'bold',
+                    lineHeight: 1,
+                  }}
+                >
+                  {`-${discountPercent}%`}
+                </Box>
+              </Box>
+            )}
+
+            {/* 2. Precio Actual Grande */}
             <Typography
-              variant='h6'
-              color='primary'
-              sx={{ mb: 2, fontWeight: 600 }}
+              variant='h5'
+              color='text.primary'
+              sx={{ 
+                fontWeight: 800, 
+                lineHeight: 1.2,
+                mb: 1
+              }}
             >
-              {formatPrice(product.variants[0]?.price)}
+              {formatPrice(currentPrice)}
             </Typography>
+
+            {/* 3. Texto de impuestos */}
+            {/* <Typography
+              variant='caption'
+              sx={{
+                color: 'green',
+                display: 'block',
+                mt: 0.5,
+                mb: 1,
+              }}
+            >
+              Mismo precio 6 cuotas de {formatPrice(currentPrice / 6)} sin interés
+            </Typography> */}
 
             <Button
               variant='contained'
@@ -167,8 +268,8 @@ export const ProductCard = ({ product, onModalStateChange }: ProductCardProps) =
               {isOutOfStock
                 ? 'Sin stock'
                 : loading
-                ? 'Cargando...'
-                : 'Agregar al Carrito'}
+                  ? 'Cargando...'
+                  : 'Agregar al Carrito'}
             </Button>
           </Box>
         </CardContent>

@@ -42,8 +42,13 @@ const HomePage = () => {
             <CategoryCarousel categories={categories} />
           </Box>
 
-          {/* Nuevos Ingresos */}
-          <Box sx={{ mb: { xs: 4, md: 6 } }}>
+          {/* Ofertas */}
+          {/* <Box sx={{ 
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 1,
+            mb: { xs: 4, md: 6 } 
+          }}>
             <Typography 
               variant="h4" 
               sx={{ 
@@ -53,7 +58,7 @@ const HomePage = () => {
                 marginLeft: 5
               }}
             >
-              Nuevos Ingresos
+              Ofertas únicas
             </Typography>
             
             {isLoading ? (
@@ -65,9 +70,61 @@ const HomePage = () => {
                 products={recentProducts || []}
               />
             )}
+          </Box> */}
+
+          {/* Ofertas */}
+          <Box 
+            sx={{ 
+              position: 'relative', // 1. Necesario para posicionar el título absolutamente dentro
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 1, // Aumenté un poco el radio para que se vea más moderno
+              mb: { xs: 4, md: 6 },
+              pt: 6, // 4. Padding superior IMPORTANTE para que el carrusel no quede debajo del título
+              px: 2,
+              pb: 2
+            }}
+          >
+            {/* ESTE ES EL NUEVO BLOQUE DEL TÍTULO */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -1, // Se mueve 1px hacia arriba para tapar el borde del contenedor padre
+                left: -1, // Se mueve 1px hacia la izquierda para tapar el borde
+                backgroundColor: 'primary.main', // Color violeta similar al de la imagen (puedes usar 'primary.main' si tu tema lo tiene)
+                color: 'common.white', // Texto blanco
+                py: 1, // Padding vertical
+                px: 3, // Padding horizontal
+                borderTopLeftRadius: 8, // Bordes redondeados solo en las esquinas superiores
+                borderBottomRightRadius: 8,
+                boxShadow: 1 // Sombra suave para darle profundidad
+              }}
+            >
+              <Typography 
+                variant="h6" // Usamos h6 para que no sea excesivamente grande dentro de la etiqueta
+                component="h2"
+                sx={{ 
+                  fontWeight: 700, // Negrita
+                  // Quitamos los márgenes y tamaños anteriores ya que el Box contenedor maneja el espacio
+                }}
+              >
+                Ofertas únicas
+              </Typography>
+            </Box>
+            {/* FIN DEL NUEVO BLOQUE DEL TÍTULO */}
+
+            {isLoading ? (
+              <Box display="flex" justifyContent="center" py={4}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <ProductCarousel 
+                products={recentProducts || []}
+              />
+            )}
           </Box>
 
-          {/* Productos Populares */}
+          {/* Nuevos ingresos */}
           <Box sx={{ mb: { xs: 4, md: 6 } }}>
             <Typography 
               variant="h4" 
@@ -78,7 +135,7 @@ const HomePage = () => {
                 marginLeft: 5
               }}
             >
-              Productos Populares
+              Fijate lo nuevo
             </Typography>
             
             {isLoading ? (

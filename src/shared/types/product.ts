@@ -11,6 +11,7 @@ export interface VariantProduct {
 	id: string;
 	stock: number;
 	price: number;
+	original_price: number | null;
 	storage: string | null;
 	color: string | null;
 	color_name: string | null;
@@ -63,6 +64,7 @@ export interface Variant {
   color: string;
   stock: number;
   price: number;
+	original_price?: number | null;
   storage?: string;
   color_name?: string;
   finish?: string | null;
@@ -104,6 +106,7 @@ export interface VariantInput {
 	stock: number;
 	price: number;
 	color?: string;
+	original_price?: number | null;
 	storage?: string;
 	color_name?: string;
 	finish?: string | null;
@@ -123,6 +126,7 @@ export interface ProductSearch {
   images: string[];
   variants: Array<{ 
 		price: number
+		original_price: number | null
 		color_name: string | null
 		storage: string | null
 		finish:  string | null
