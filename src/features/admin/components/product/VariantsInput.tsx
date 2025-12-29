@@ -27,12 +27,13 @@ import {
   FormControlLabel,
   Checkbox,
   Collapse,
-  Stack,
   InputAdornment,
   Chip,
+  //Stack,
+  //InputAdornment,
+  //Chip,
 } from '@mui/material';
 import { ProductFormValues } from '@features/admin/schema/productSchema';
-//import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 
 interface VariantsProps {
   control: Control<ProductFormValues>;
@@ -43,14 +44,15 @@ interface VariantsProps {
 
 const headersVariants = [
   'Stock*',
-  'Precio*',
+  'Oferta',
+  'Precio Final*',
+  'Precio Antes',
   'Presentación',
   'Color',
   'Terminación',
   '',
 ];
 
-// Función auxiliar para calcular porcentaje en tiempo real
 const getDiscountLabel = (price: number, originalPrice: number) => {
   if (!originalPrice || originalPrice <= price) return null;
   const discount = Math.round(((originalPrice - price) / originalPrice) * 100);
@@ -70,7 +72,6 @@ export const VariantsInput = ({
 
   const [colorActive, setColorActive] = useState<(HTMLElement | null)[]>([]);
 
-  // Estado local para manejar visualmente qué filas tienen el toggle de oferta activado
   const [offersActive, setOffersActive] = useState<{ [key: string]: boolean }>(
     {}
   );
@@ -78,17 +79,14 @@ export const VariantsInput = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Observamos los valores para calcular descuentos en tiempo real
   const watchedVariants = useWatch({
     control,
     name: 'variants',
   });
 
-  // Inicializar el estado de los toggles basado en si ya existe un original_price (edición)
   useEffect(() => {
     const initialOffers: { [key: string]: boolean } = {};
     fields.forEach((field, index) => {
-      // Si viene data del backend y original_price es mayor al precio, activamos el toggle
       const currentVariant = watchedVariants?.[index];
       if (
         currentVariant?.originalPrice &&
@@ -97,12 +95,11 @@ export const VariantsInput = ({
         initialOffers[field.id] = true;
       }
     });
-    // Solo actualizamos si el objeto no está vacío para evitar rerenders infinitos
     if (Object.keys(initialOffers).length > 0) {
       setOffersActive((prev) => ({ ...prev, ...initialOffers }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Ejecutar solo al montar o cuando cambien los fields base
+  }, []);
 
   const addVariant = () => {
     append({
@@ -171,6 +168,7 @@ export const VariantsInput = ({
     setColorActive(fields.map(() => null));
   }, [fields]);
 
+  // Mobile view
   if (isMobile) {
     return (
       <Box
@@ -575,19 +573,18 @@ export const VariantsInput = ({
             variant='caption'
             sx={{ fontSize: '0.75rem', lineHeight: 1.4 }}
           >
-            <strong>Consejo:</strong> Si tu producto no tiene variaciones (es
+            <strong>Tip:</strong> Si tu producto no tiene variaciones (es
             único), crea una sola fila para definir <strong>Precio</strong> y{' '}
             <strong>Stock</strong>. Puedes dejar <em>vacíos</em> los campos de
             Color, Presentación y Terminación.
           </Typography>
           <Typography variant='caption'>
-            <strong>Tip:</strong> Activa la casilla &quot;Oferta&quot; dentro de
-            la columna Precios para agregar descuentos.
+            <strong>Tip:</strong> Activa la casilla <strong>&quot;Oferta&quot;</strong> para agregar descuentos.
           </Typography>
         </Box>
       </Alert>
       <Paper variant='outlined' sx={{ overflowX: 'auto' }}>
-        <Table sx={{ minWidth: 600 }}>
+        <Table sx={{ minWidth: 850 }}>
           <TableHead sx={{ backgroundColor: '#f9fafb' }}>
             <TableRow>
               {headersVariants.map((header, index) => (
@@ -597,7 +594,9 @@ export const VariantsInput = ({
                     fontSize: '0.75rem',
                     fontWeight: 'bold',
                     p: { xs: 1, sm: 1.5 },
+                    whiteSpace: 'nowrap'
                   }}
+                  align={header === 'Oferta' ? 'center' : 'left'} // Centramos el header de Oferta
                 >
                   {header}
                 </TableCell>
@@ -618,7 +617,8 @@ export const VariantsInput = ({
               return (
                 <TableRow key={field.id}>
                   <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
-                    {/* Stock */}
+
+                    {/* 1. Stock */}
                     <TextField
                       type='number'
                       placeholder='Stock'
@@ -629,130 +629,91 @@ export const VariantsInput = ({
                       sx={{ width: { xs: '70px', sm: '85px' } }}
                     />
                   </TableCell>
-                  {/* <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
+
+                  {/* 2. Checkbox Oferta */}
+                  <TableCell align="center" sx={{ p: { xs: 0.5, sm: 1 }, width: '60px' }}>
+                    <Checkbox
+                      checked={hasOffer}
+                      onChange={(e) =>
+                        toggleOffer(index, field.id, e.target.checked)
+                      }
+                      color="primary"
+                      size="small"
+                    />
+                  </TableCell>
+
+                  {/* 3. Precio Final */}
+                  <TableCell sx={{ p: { xs: 0.5, sm: 1 }, width: '180px' }}>
                     <TextField
                       type='number'
-                      placeholder='Precio'
+                      placeholder='$0.00'
                       size='small'
+                      fullWidth
+                      color={hasOffer ? 'success' : 'primary'}
+                      focused={hasOffer}
                       inputProps={{ step: '0.01' }}
                       {...register(`variants.${index}.price`, {
                         valueAsNumber: true,
                       })}
-                      sx={{ width: { xs: '80px', sm: '100px' } }}
+                      InputProps={{
+                         endAdornment: hasOffer && discountLabel && (
+                          <InputAdornment position='end'>
+                            <Chip
+                              label={discountLabel}
+                              size='small'
+                              color='error'
+                              sx={{ height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
+                            />
+                          </InputAdornment>
+                        ),
+                      }}
                     />
-                  </TableCell> */}
-                  {/* --- COLUMNA DE PRECIOS CON TOGGLE --- */}
-                  <TableCell sx={{ p: 1.5, width: '220px' }}>
-                    <Stack spacing={1}>
-                      <TextField
+                  </TableCell>
+
+                  {/* 4. Precio Antes (se habilita con el checkbox) */}
+                  <TableCell sx={{ p: { xs: 0.5, sm: 1 }, width: '140px' }}>
+                     <TextField
                         type='number'
-                        label={hasOffer ? 'Precio Final (Oferta)' : 'Precio'}
-                        placeholder='$0.00'
+                        placeholder={hasOffer ? '$0.00' : '-'} 
+                        disabled={!hasOffer} // Deshabilitado si no hay check
                         size='small'
                         fullWidth
-                        color={hasOffer ? 'success' : 'primary'}
-                        focused={hasOffer}
                         inputProps={{ step: '0.01' }}
-                        {...register(`variants.${index}.price`, {
-                          valueAsNumber: true,
+                        {...register(`variants.${index}.originalPrice`, {
+                           valueAsNumber: true,
                         })}
-                        InputProps={{
-                          endAdornment: hasOffer && discountLabel && (
-                            <InputAdornment position='end'>
-                              <Chip
-                                label={discountLabel}
-                                size='small'
-                                color='error'
-                                sx={{ height: 20, fontSize: '0.65rem' }}
-                              />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-
-                      <Box
                         sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
+                           // Estilo visual cuando está deshabilitado para que se vea "limpio"
+                           '& .MuiInputBase-root.Mui-disabled': {
+                              backgroundColor: '#f3f4f6', 
+                           },
+                           '& input': {
+                              textDecoration: hasOffer ? 'line-through' : 'none',
+                              color: 'text.secondary'
+                           }
                         }}
-                      >
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              size='small'
-                              checked={hasOffer}
-                              onChange={(e) =>
-                                toggleOffer(index, field.id, e.target.checked)
-                              }
-                              sx={{ p: 0.5 }}
-                            />
-                          }
-                          label={
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            >
-                              Aplicar oferta
-                            </Typography>
-                          }
-                          sx={{ ml: 0, mr: 0 }}
-                        />
-                      </Box>
-
-                      <Collapse in={hasOffer}>
-                        <TextField
-                          type='number'
-                          label='Precio Anterior (Tachado)'
-                          placeholder='$0.00'
-                          size='small'
-                          fullWidth
-                          variant='filled'
-                          inputProps={{ step: '0.01' }}
-                          {...register(`variants.${index}.originalPrice`, {
-                            valueAsNumber: true,
-                          })}
-                          sx={{
-                            '& .MuiFilledInput-root': {
-                              bgcolor: '#fff4e5',
-                              '&:hover': { bgcolor: '#ffe0b2' },
-                            },
-                            '& input': {
-                              textDecoration: 'line-through',
-                              color: 'text.secondary',
-                            },
-                          }}
-                        />
-                        {hasOffer &&
-                          currentOriginal <= currentPrice &&
-                          currentOriginal > 0 && (
-                            <Typography
-                              variant='caption'
-                              color='error'
-                              sx={{
-                                display: 'block',
-                                mt: 0.5,
-                                lineHeight: 1.1,
-                              }}
-                            >
-                              El precio anterior debe ser mayor.
-                            </Typography>
-                          )}
-                      </Collapse>
-                    </Stack>
+                     />
+                     {/* Validación de error pequeña debajo del input para no romper layout */}
+                     {hasOffer && currentOriginal > 0 && currentOriginal <= currentPrice && (
+                        <Typography variant="caption" color="error" sx={{ fontSize: '0.65rem', display:'block', mt: 0.5 }}>
+                           Debe ser mayor
+                        </Typography>
+                     )}
                   </TableCell>
+
+                  {/* 5. Presentación */}
                   <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
-                    {/* Presentación */}
                     <TextField
                       type='text'
-                      placeholder='Opcional (Ej: 1 Litro)'
+                      //placeholder='Opcional (Ej: 1 Litro)'
                       size='small'
                       {...register(`variants.${index}.storage`)}
-                      sx={{ width: { xs: '70px', sm: '190px' } }}
+                      sx={{ width: { xs: '70px', sm: '100px' } }}
                     />
                   </TableCell>
+
+                  {/* 6. Color */}
                   <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
-                    {/* Color */}
                     <Button
                       onClick={(e) => handleColorOpen(e, index)}
                       variant='outlined'
@@ -802,16 +763,19 @@ export const VariantsInput = ({
                       </Box>
                     </Popover>
                   </TableCell>
+
+                  {/* 7. Terminación */}
                   <TableCell sx={{ p: { xs: 0.5, sm: 1 } }}>
-                    {/* Terminación */}
                     <TextField
                       type='text'
-                      placeholder='Opcional (Ej: Brillante)'
+                      //placeholder='Opcional (Ej: Brillante)'
                       size='small'
                       {...register(`variants.${index}.finish`)}
-                      sx={{ width: { xs: '70px', sm: '190px' } }}
+                      sx={{ width: { xs: '70px', sm: '100px' } }}
                     />
                   </TableCell>
+
+                  {/* 8. Botón Eliminar Variante */}
                   <TableCell align='center' sx={{ p: { xs: 0.5, sm: 1 } }}>
                     <Button
                       onClick={() => removeVariant(index)}
