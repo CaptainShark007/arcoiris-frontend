@@ -71,6 +71,26 @@ export const productSchema = yup.object().shape({
 					.required('El precio es requerido')
 					.typeError('El precio debe ser un número')
 					.min(0.01, 'El precio debe ser mayor a 0'),
+				originalPrice: yup
+          .number()
+          .nullable()
+          .transform((value, originalValue) => (String(originalValue).trim() === '' ? null : value))
+          .notRequired()
+          .typeError('El precio original debe ser un número')
+          .test(
+            'is-greater-than-price', 
+            'El precio anterior debe ser mayor al precio final',
+            function (value) {
+              // Accede al precio hermano (price) para comparar
+              const { price } = this.parent;
+              
+              // Si no hay valor o es 0/negativo, es válido (significa que no hay oferta)
+              if (!value || value <= 0) return true;
+              
+              // Si hay valor, debe ser estrictamente mayor al precio actual
+              return value > price;
+            }
+          ),
 				storage: yup
 					.string()
 					//.required('El almacenamiento es requerido')
