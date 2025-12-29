@@ -181,7 +181,7 @@ export const ProductCard = ({
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               minHeight: 48,
-              fontWeight: 500,
+              fontWeight: 600,
             }}
           >
             {product.name}

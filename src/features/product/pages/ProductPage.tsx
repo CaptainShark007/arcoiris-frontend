@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useProduct } from '../hooks/useProduct';
 import { GridImages, ProductDescription } from '../components';
-import { formatPrice } from '@/helpers';
+import { calculateDiscount, formatPrice } from '@/helpers';
 import { Tag, Loader, SeoHead } from '@/shared/components';
 import { useCartStore } from '@/storage/useCartStore';
 
@@ -175,7 +175,32 @@ const ProductPage = () => {
     }));
   };
 
-  useEffect(() => {
+  // Lógica para encontrar la variante "ganadora" (igual a ProductCard)
+  const defaultVariant = useMemo(() => {
+    if (!product?.variants || product.variants.length === 0) return null;
+
+    // Creamos una copia [...] para no mutar el array original y romper el orden visual de los selects
+    const sorted = [...product.variants].sort((a, b) => {
+      // 1. Prioridad: STOCK
+      const aHasStock = a.stock > 0;
+      const bHasStock = b.stock > 0;
+      if (aHasStock && !bHasStock) return -1;
+      if (!aHasStock && bHasStock) return 1;
+
+      // 2. Prioridad: MAYOR DESCUENTO
+      const aDiscount = calculateDiscount(a.price, a.original_price);
+      const bDiscount = calculateDiscount(b.price, b.original_price);
+      if (aDiscount > bDiscount) return -1;
+      if (bDiscount > aDiscount) return 1;
+
+      // 3. Prioridad: PRECIO MÁS BAJO
+      return a.price - b.price;
+    });
+
+    return sorted[0]; // Retornamos la mejor opción
+  }, [product?.variants]);
+
+  /* useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
       const firstVariant = product.variants[0];
       const newOptions: SelectedOptions = {
@@ -186,7 +211,21 @@ const ProductPage = () => {
 
       setSelectedOptions(newOptions);
     }
-  }, [product?.variants, attributesPresent]);
+  }, [product?.variants, attributesPresent]); */
+
+  useEffect(() => {
+    // Usamos defaultVariant en lugar de product.variants[0]
+    if (defaultVariant) {
+      const newOptions: SelectedOptions = {
+        // Verificamos si existe el atributo antes de asignarlo
+        color: attributesPresent.hasColor ? (defaultVariant.color_name || null) : null,
+        storage: attributesPresent.hasStorage ? (defaultVariant.storage || null) : null,
+        finish: attributesPresent.hasFinish ? (defaultVariant.finish || null) : null,
+      };
+
+      setSelectedOptions(newOptions);
+    }
+  }, [defaultVariant, attributesPresent]);
 
   const isOutOfStock = selectedVariant?.stock === 0;
 
@@ -263,7 +302,15 @@ const ProductPage = () => {
   }
 
   const unitPrice = selectedVariant?.price ?? 0;
+
+  const originalPrice = selectedVariant?.original_price ?? 0;
+  const hasOffer = originalPrice > unitPrice;
+
+  const discountPercentage = calculateDiscount(unitPrice, originalPrice);
+
   const totalPrice = unitPrice * quantity;
+
+  const totalSavings = (originalPrice - unitPrice) * quantity;
 
   return (
     <>
@@ -301,11 +348,46 @@ const ProductPage = () => {
               </Typography>
 
               {/* Precio y estado */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.875rem' }, color: 'primary.main' }}>
-                  {formatPrice(unitPrice)}
-                </Typography>
-                {isOutOfStock && <Tag contentTag='agotado' />}
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  {/* Si hay oferta, mostramos el precio actual en rojo o destacado */}
+                  <Typography 
+                    fontWeight={700} 
+                    sx={{ 
+                      fontSize: { xs: '1.5rem', md: '1.875rem' }, 
+                      color: hasOffer ? 'error.main' : 'primary.main' // Rojo si hay oferta
+                    }}
+                  >
+                    {formatPrice(unitPrice)}
+                  </Typography>
+
+                  {/* Etiqueta de Agotado */}
+                  {isOutOfStock && <Tag contentTag='agotado' />}
+                  
+                  {/* Etiqueta de Descuento */}
+                  {hasOffer && !isOutOfStock && (
+                    <Chip 
+                      label={`-${discountPercentage}% OFF`} 
+                      color="error" 
+                      size="small" 
+                      sx={{ fontWeight: 'bold' }} 
+                    />
+                  )}
+                </Box>
+                
+                {/* Precio Original Tachado (debajo o al lado) */}
+                {hasOffer && (
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      textDecoration: 'line-through', 
+                      color: 'text.secondary',
+                      mt: -0.5 
+                    }}
+                  >
+                    {formatPrice(originalPrice)}
+                  </Typography>
+                )}
               </Box>
             </Box>
 
@@ -566,10 +648,22 @@ const ProductPage = () => {
                     <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                       Unitario
                     </Typography>
-                    <Typography color='primary' fontWeight={700} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                    
+                    {/* Mostrar precio tachado unitario si hay oferta */}
+                    {hasOffer && (
+                       <Typography 
+                         variant="caption" 
+                         sx={{ display: 'block', textDecoration: 'line-through', color: 'text.secondary' }}
+                       >
+                         {formatPrice(originalPrice)}
+                       </Typography>
+                    )}
+
+                    <Typography color={hasOffer ? 'error' : 'primary'} fontWeight={700} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
                       {formatPrice(unitPrice)}
                     </Typography>
                   </Box>
+
                   <Box sx={{ textAlign: 'right' }}>
                     <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                       Total
@@ -577,6 +671,13 @@ const ProductPage = () => {
                     <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.5rem' } }}>
                       {formatPrice(totalPrice)}
                     </Typography>
+                    
+                    {/* Mensaje de ahorro total */}
+                    {hasOffer && (
+                      <Typography variant="caption" sx={{ display: 'block', color: 'success.main', fontWeight: 600 }}>
+                        ¡Ahorras {formatPrice(totalSavings)}!
+                      </Typography>
+                    )}
                   </Box>
                 </Box>
               </Paper>
