@@ -14,7 +14,11 @@ import { Box, Button, IconButton, Typography } from '@mui/material';
 import { Loader } from '@shared/components';
 //import { useProduct } from '@features/product/hooks/useProduct';
 import { JSONContent } from '@tiptap/react';
-import { useCreateProduct, useGetProductBySlugAdmin, useUpdateProduct } from '@features/admin/hooks';
+import {
+  useCreateProduct,
+  useGetProductBySlugAdmin,
+  useUpdateProduct,
+} from '@features/admin/hooks';
 import {
   ProductFormValues,
   productSchema,
@@ -61,8 +65,12 @@ export const FormProduct = ({ titleForm }: Props) => {
         'variants',
         product.variants.map((v) => ({
           id: v.id,
-          stock: v.stock,
-          price: v.price,
+          stock: Number(v.stock),
+          price: Number(v.price),
+          // Si existe y es mayor a 0, lo convertimos a Número. Si no, enviamos null.
+          original_price: (v.original_price && Number(v.original_price) > 0) 
+            ? Number(v.original_price) 
+            : null,
           storage: v.storage || '',
           color: v.color || '',
           colorName: v.color_name || '',
@@ -73,46 +81,43 @@ export const FormProduct = ({ titleForm }: Props) => {
   }, [product, isLoading, setValue]);
 
   const onSubmit = (data: ProductFormValues) => {
+    const mappedVariants =
+      data.variants?.map((v) => {
+        const price = Number(v.price);
+        const rawOriginalPrice = v.original_price ? Number(v.original_price) : 0;
+        let finalOriginalPrice: number | null = null;
+
+        if (rawOriginalPrice > price) {
+          finalOriginalPrice = rawOriginalPrice;
+        }
+
+        return {
+          id: v.id,
+          stock: Number(v.stock),
+          price: price,
+          original_price: finalOriginalPrice, 
+          storage: v.storage,
+          color: v.color,
+          color_name: v.colorName,
+          finish: v.finish || null,
+        };
+      }) ?? [];
+
+    const productPayload = {
+      name: data.name,
+      brand: data.brand,
+      slug: data.slug,
+      description: data.description,
+      features: data.features?.map((f) => f.value) ?? [],
+      images: data.images ?? [],
+      variants: mappedVariants,
+      is_active: true,
+    };
+
     if (slug) {
-      updateProduct({
-        name: data.name,
-        brand: data.brand,
-        slug: data.slug,
-        description: data.description,
-        features: data.features?.map((f) => f.value) ?? [],
-        images: data.images ?? [],
-        variants:
-          data.variants?.map((v) => ({
-            id: v.id,
-            stock: v.stock,
-            price: v.price,
-            storage: v.storage,
-            color: v.color,
-            color_name: v.colorName,
-            finish: v.finish || null,
-          })) ?? [],
-        is_active: true,
-      });
+      updateProduct(productPayload);
     } else {
-      createProduct({
-        name: data.name,
-        brand: data.brand,
-        slug: data.slug,
-        description: data.description,
-        features: data.features?.map((f) => f.value) ?? [],
-        images: data.images ?? [],
-        variants:
-          data.variants?.map((v) => ({
-            id: v.id,
-            stock: v.stock,
-            price: v.price,
-            storage: v.storage,
-            color: v.color,
-            color_name: v.colorName,
-            finish: v.finish || null,
-          })) ?? [],
-        is_active: true,
-      });
+      createProduct(productPayload);
     }
   };
 
@@ -240,6 +245,7 @@ export const FormProduct = ({ titleForm }: Props) => {
                 control={control}
                 errors={errors}
                 register={register}
+                setValue={setValue}
               />
             </SectionFormProduct>
           </Box>

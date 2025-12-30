@@ -423,6 +423,7 @@ export const createProduct = async (productInput: ProductInput) => {
         p_variants: productInput.variants.map((v) => ({
           stock: v.stock,
           price: v.price,
+          original_price: v.original_price || null,
           storage: v.storage || null,
           color: v.color || null,
           color_name: v.color_name || null,
@@ -534,7 +535,7 @@ export const createProduct = async (productInput: ProductInput) => {
 };
 
 // ***********************************************************************************************
-// *********************************** ACTUALIZAR PRODUCTO ***************************************
+// *********************************** BORRAR PRODUCTO ***************************************
 // *************************************** NUEVA FORMA *******************************************
 export const deleteProduct = async (productId: string) => {
   try {
@@ -750,6 +751,7 @@ export const updateProduct = async (
           id: v.id || null,
           stock: v.stock,
           price: v.price,
+          original_price: v.original_price || null,
           storage: v.storage || null,
           color: v.color || null,
           color_name: v.color_name || null,

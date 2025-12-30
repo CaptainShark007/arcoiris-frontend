@@ -71,7 +71,7 @@ export const productSchema = yup.object().shape({
 					.required('El precio es requerido')
 					.typeError('El precio debe ser un número')
 					.min(0.01, 'El precio debe ser mayor a 0'),
-				originalPrice: yup
+				original_price: yup
           .number()
           .nullable()
           .transform((value, originalValue) => (String(originalValue).trim() === '' ? null : value))
