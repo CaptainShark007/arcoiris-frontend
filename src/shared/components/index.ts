@@ -33,3 +33,4 @@ export * from './UnderConstruction';
 export * from './NotificationPopup';
 export * from './CustomPagination';
 export * from './SeoHead';
+export * from './SectionHeader';

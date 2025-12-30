@@ -22,11 +22,14 @@ import {
   Stack,
   FormControl,
   InputLabel,
+  Chip,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import WhatshotIcon from '@mui/icons-material/Whatshot';
 import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
@@ -41,6 +44,10 @@ import CustomPagination from '@shared/components/CustomPagination';
 import { OptimisticSwitch } from './OptimisticSwitch';
 import { ProductStockStatus } from './ProductStockStatus';
 
+const checkIfVariantHasOffer = (variant: any) => {
+  if (!variant?.original_price) return false;
+  return Number(variant.original_price) > Number(variant.price);
+};
 
 const tableHeaders = {
   desktop: [
@@ -62,9 +69,13 @@ export const TableProduct = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'low_stock'>('all');
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'active' | 'inactive' | 'low_stock'
+  >('all');
   const [categoryIdFilter, setCategoryIdFilter] = useState<string>('all');
-  const [sortFilter, setSortFilter] = useState<'newest' | 'oldest' | 'name_asc' | 'name_desc'>('newest');
+  const [sortFilter, setSortFilter] = useState<
+    'newest' | 'oldest' | 'name_asc' | 'name_desc'
+  >('newest');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -83,7 +94,9 @@ export const TableProduct = () => {
     setDebouncedSearch('');
   };
 
-  const [selectedVariants, setSelectedVariants] = useState<{ [key: string]: number }>({});
+  const [selectedVariants, setSelectedVariants] = useState<{
+    [key: string]: number;
+  }>({});
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -97,9 +110,12 @@ export const TableProduct = () => {
   });
 
   const { categories, isLoading: isCategoriesLoading } = useCategories();
-  const { mutate: updateProductCategory, isPending: isUpdatingCategory } = useUpdateProductCategory();
+  const { mutate: updateProductCategory, isPending: isUpdatingCategory } =
+    useUpdateProductCategory();
   const { mutate: toggleProduct } = useToggleProduct();
-  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   const handleImageError = (productId: string) => {
     setImageErrors((prev) => ({ ...prev, [productId]: true }));
@@ -118,7 +134,10 @@ export const TableProduct = () => {
 
   const handleCategoryChange = (product: any, newCategory: any) => {
     if (newCategory) {
-      updateProductCategory({ productId: product.id, categoryId: newCategory.id });
+      updateProductCategory({
+        productId: product.id,
+        categoryId: newCategory.id,
+      });
     }
   };
 
@@ -128,14 +147,23 @@ export const TableProduct = () => {
     setPage(0);
   };
 
-  const handleStatusChange = (e: any) => { setStatusFilter(e.target.value); setPage(0); };
-  const handleCategoryFilterChange = (e: any) => { setCategoryIdFilter(e.target.value); setPage(0); };
-  const handleSortChange = (e: any) => { setSortFilter(e.target.value); setPage(0); };
+  const handleStatusChange = (e: any) => {
+    setStatusFilter(e.target.value);
+    setPage(0);
+  };
+  const handleCategoryFilterChange = (e: any) => {
+    setCategoryIdFilter(e.target.value);
+    setPage(0);
+  };
+  const handleSortChange = (e: any) => {
+    setSortFilter(e.target.value);
+    setPage(0);
+  };
 
-  const isDefaultState = 
-    searchTerm === '' && 
-    statusFilter === 'all' && 
-    categoryIdFilter === 'all' && 
+  const isDefaultState =
+    searchTerm === '' &&
+    statusFilter === 'all' &&
+    categoryIdFilter === 'all' &&
     sortFilter === 'newest';
 
   const handleClearAll = () => {
@@ -157,81 +185,241 @@ export const TableProduct = () => {
     }
 
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, bgcolor: '#F9FAFB', mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          bgcolor: '#F9FAFB',
+          mb: 2,
+        }}
+      >
         {products?.map((product, index) => {
           const selectedVariantIndex = selectedVariants[product.id] ?? 0;
           const selectedVariant = product.variants[selectedVariantIndex];
-          const selectedCategory = categories.find((cat) => cat.id === product.category_id);
+          const selectedCategory = categories.find(
+            (cat) => cat.id === product.category_id
+          );
+
+          const hasAnyOffer = product.variants.some(checkIfVariantHasOffer);
+          const isSelectedVariantOffer =
+            checkIfVariantHasOffer(selectedVariant);
 
           return (
-            <Card key={index} sx={{ p: 2, border: '1px solid #E5E7EB', boxShadow: 'none' }}>
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', mb: 2 }}>
+            <Card
+              key={index}
+              sx={{ p: 2, border: '1px solid #E5E7EB', boxShadow: 'none' }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 2,
+                  alignItems: 'flex-start',
+                  mb: 2,
+                }}
+              >
                 <Box
                   component='img'
                   src={getProductImage(product.id, product.images)}
                   loading='lazy'
                   onError={() => handleImageError(product.id)}
-                  sx={{ width: 60, height: 60, borderRadius: 1, objectFit: 'contain', flexShrink: 0 }}
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 1,
+                    objectFit: 'contain',
+                    flexShrink: 0,
+                  }}
                 />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant='subtitle2' sx={{ fontWeight: 600, mb: 0.5 }}>{product.name}</Typography>
-                  <Typography variant='body2' sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                    {selectedVariant ? formatPrice(selectedVariant.price) : '-'}
-                  </Typography>
+                  <Box display='flex' alignItems='center' gap={1} mb={0.5}>
+                    <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
+                      {product.name}
+                    </Typography>
+                    {hasAnyOffer && (
+                      <Tooltip title='Este producto tiene variantes en oferta'>
+                        <Chip
+                          label='%'
+                          size='small'
+                          color='error'
+                          sx={{
+                            height: 20,
+                            minWidth: 20,
+                            padding: 0,
+                            '& .MuiChip-label': { px: 1 },
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                    <Typography
+                      variant='body2'
+                      sx={{
+                        color: isSelectedVariantOffer
+                          ? 'error.main'
+                          : 'text.secondary',
+                        fontWeight: isSelectedVariantOffer ? 700 : 500,
+                      }}
+                    >
+                      {selectedVariant
+                        ? formatPrice(selectedVariant.price)
+                        : '-'}
+                    </Typography>
+                    {isSelectedVariantOffer && (
+                      <Typography
+                        variant='caption'
+                        sx={{
+                          textDecoration: 'line-through',
+                          color: 'text.disabled',
+                        }}
+                      >
+                        {formatPrice(selectedVariant.original_price)}
+                      </Typography>
+                    )}
+                  </Box>
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1.5,
+                  mb: 2,
+                }}
+              >
                 <Box>
-                  <Typography variant='caption' sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>Variante</Typography>
+                  <Typography
+                    variant='caption'
+                    sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}
+                  >
+                    Variante
+                  </Typography>
                   <Select
                     value={selectedVariantIndex}
-                    onChange={(e) => handleVariantChange(product.id, Number(e.target.value))}
+                    onChange={(e) =>
+                      handleVariantChange(product.id, Number(e.target.value))
+                    }
                     size='small'
                     fullWidth
                     sx={{ fontSize: '0.8rem' }}
+                    renderValue={(selected) => {
+                      const variant = product.variants[selected as number];
+                      const label = [
+                        variant.color_name,
+                        variant.storage,
+                        variant.finish,
+                      ]
+                        .filter(Boolean)
+                        .join(' • ');
+                      return (
+                        <Box display='flex' alignItems='center' gap={1}>
+                          {label}
+                          {checkIfVariantHasOffer(variant) && (
+                            <WhatshotIcon color='error' sx={{ fontSize: 16 }} />
+                          )}
+                        </Box>
+                      );
+                    }}
                   >
                     {product.variants.map((variant, variantIndex) => {
-                      const variantLabel = [variant.color_name, variant.storage, variant.finish].filter(Boolean).join(' • ');
-                      return <MenuItem key={variant.id} value={variantIndex}>{variantLabel}</MenuItem>;
+                      const variantLabel = [
+                        variant.color_name,
+                        variant.storage,
+                        variant.finish,
+                      ]
+                        .filter(Boolean)
+                        .join(' • ');
+                      const isOffer = checkIfVariantHasOffer(variant);
+
+                      return (
+                        <MenuItem
+                          key={variant.id}
+                          value={variantIndex}
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <span>{variantLabel}</span>
+                          {isOffer && (
+                            <Chip
+                              label='Oferta'
+                              size='small'
+                              color='error'
+                              variant='outlined'
+                              sx={{ height: 20, fontSize: '0.65rem' }}
+                            />
+                          )}
+                        </MenuItem>
+                      );
                     })}
                   </Select>
                 </Box>
+
                 <Box>
-                    <Typography variant='caption' sx={{ fontWeight: 600, display: 'block' }}>Categoría</Typography>
-                     <Typography variant='body2'>{selectedCategory?.name || 'Sin categoría'}</Typography>
+                  <Typography
+                    variant='caption'
+                    sx={{ fontWeight: 600, display: 'block' }}
+                  >
+                    Categoría
+                  </Typography>
+                  <Typography variant='body2'>
+                    {selectedCategory?.name || 'Sin categoría'}
+                  </Typography>
                 </Box>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: 2,
+                  }}
+                >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant='caption' sx={{ fontWeight: 600 }}>
-                        Stock:
-                      </Typography>
-                      <ProductStockStatus 
-                        currentStock={selectedVariant?.stock ?? 0}
-                        allVariants={product.variants}
-                        currentVariantId={selectedVariant?.id}
-                      />
+                    <Typography variant='caption' sx={{ fontWeight: 600 }}>
+                      Stock:
+                    </Typography>
+                    <ProductStockStatus
+                      currentStock={selectedVariant?.stock ?? 0}
+                      allVariants={product.variants}
+                      currentVariantId={selectedVariant?.id}
+                    />
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant='caption' sx={{ fontWeight: 600 }}>
-                          Fecha:
-                      </Typography>
-                      <Typography variant='body2'>
-                          {formatDate(product.created_at)}
-                      </Typography>
-                    </Box>
+                    <Typography variant='caption' sx={{ fontWeight: 600 }}>
+                      Fecha:
+                    </Typography>
+                    <Typography variant='body2'>
+                      {formatDate(product.created_at)}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
-                 <Typography variant="body2" color="text.secondary">Estado:</Typography>
-                 <OptimisticSwitch product={product} onToggle={toggleProduct} />
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography variant='body2' color='text.secondary'>
+                  Estado:
+                </Typography>
+                <OptimisticSwitch product={product} onToggle={toggleProduct} />
                 <Button
                   component={RouterLink}
                   to={`/panel/productos/editar/${product.slug}`}
                   size='small'
                   variant='contained'
-                  sx={{ backgroundColor: '#0007d7ff', fontSize: '0.75rem', '&:hover': { backgroundColor: '#0005a0ff' } }}
+                  sx={{
+                    backgroundColor: '#0007d7ff',
+                    fontSize: '0.75rem',
+                    '&:hover': { backgroundColor: '#0005a0ff' },
+                  }}
                 >
                   Editar
                 </Button>
@@ -244,12 +432,28 @@ export const TableProduct = () => {
   };
 
   const renderDesktopView = () => (
-    <TableContainer sx={{ borderRadius: 1, overflow: 'auto', mb: 2, '&::-webkit-scrollbar': { height: '8px' } }}>
+    <TableContainer
+      sx={{
+        borderRadius: 1,
+        overflow: 'auto',
+        mb: 2,
+        '&::-webkit-scrollbar': { height: '8px' },
+      }}
+    >
       <Table sx={{ minWidth: 900 }}>
-        <TableHead sx={{ bgcolor: '#F9FAFB', position: 'sticky', top: 0, zIndex: 10 }}>
+        <TableHead
+          sx={{ bgcolor: '#F9FAFB', position: 'sticky', top: 0, zIndex: 10 }}
+        >
           <TableRow>
             {tableHeaders.desktop.map((header, index) => (
-              <TableCell key={index} sx={{ fontWeight: 'bold', bgcolor: '#F9FAFB', whiteSpace: 'nowrap' }}>
+              <TableCell
+                key={index}
+                sx={{
+                  fontWeight: 'bold',
+                  bgcolor: '#F9FAFB',
+                  whiteSpace: 'nowrap',
+                }}
+              >
                 {header}
               </TableCell>
             ))}
@@ -257,53 +461,198 @@ export const TableProduct = () => {
         </TableHead>
         <TableBody>
           {products?.length === 0 ? (
-             <TableRow>
-               <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
-                 <Typography variant="body2" color="text.secondary">No se encontraron productos.</Typography>
-               </TableCell>
-             </TableRow>
+            <TableRow>
+              <TableCell colSpan={8} align='center' sx={{ py: 3 }}>
+                <Typography variant='body2' color='text.secondary'>
+                  No se encontraron productos.
+                </Typography>
+              </TableCell>
+            </TableRow>
           ) : (
             products?.map((product, index) => {
               const selectedVariantIndex = selectedVariants[product.id] ?? 0;
               const selectedVariant = product.variants[selectedVariantIndex];
-              const selectedCategory = categories.find((cat) => cat.id === product.category_id);
-              const categoryOptions = [{ id: 'clear', name: 'Sin categoría' }, ...categories];
+              const selectedCategory = categories.find(
+                (cat) => cat.id === product.category_id
+              );
+              const categoryOptions = [
+                { id: 'clear', name: 'Sin categoría' },
+                ...categories,
+              ];
+
+              const hasAnyOffer = product.variants.some(checkIfVariantHasOffer);
+              const isSelectedVariantOffer =
+                checkIfVariantHasOffer(selectedVariant);
 
               return (
-                <TableRow key={index} sx={{ borderBottom: '1px solid #F9FAFB' }}>
+                <TableRow
+                  key={index}
+                  sx={{ borderBottom: '1px solid #F9FAFB' }}
+                >
                   <TableCell sx={{ p: 1, width: '70px' }}>
                     <Box
                       component='img'
                       src={getProductImage(product.id, product.images)}
                       loading='lazy'
                       onError={() => handleImageError(product.id)}
-                      sx={{ width: 50, height: 50, borderRadius: 1, objectFit: 'contain' }}
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: 1,
+                        objectFit: 'contain',
+                      }}
                     />
                   </TableCell>
-                  <CellTableProduct content={product.name} />
+
+                  <TableCell>
+                    <Box>
+                      <Typography variant='body2'>{product.name}</Typography>
+                      {hasAnyOffer && (
+                        <Chip
+                          icon={
+                            <LocalOfferIcon
+                              sx={{ fontSize: '0.9rem !important' }}
+                            />
+                          }
+                          label='Oferta'
+                          size='small'
+                          color='error'
+                          variant='outlined'
+                          sx={{
+                            height: 20,
+                            fontSize: '0.65rem',
+                            mt: 0.5,
+                            border: 'none',
+                            bgcolor: '#FEF2F2',
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+
                   <TableCell sx={{ minWidth: 140, px: 2 }}>
                     <Select
                       value={selectedVariantIndex}
-                      onChange={(e) => handleVariantChange(product.id, Number(e.target.value))}
+                      onChange={(e) =>
+                        handleVariantChange(product.id, Number(e.target.value))
+                      }
                       size='small'
                       fullWidth
                       sx={{ fontSize: '0.875rem' }}
+                      renderValue={(selected) => {
+                        const variant = product.variants[selected as number];
+                        const label = [
+                          variant.color_name,
+                          variant.storage,
+                          variant.finish,
+                        ]
+                          .filter(Boolean)
+                          .join(' • ');
+
+                        return checkIfVariantHasOffer(variant) ? (
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <WhatshotIcon
+                              sx={{
+                                fontSize: '1rem',
+                                color: 'error.main',
+                                mr: 0.5,
+                              }}
+                            />
+                            {label}
+                          </Box>
+                        ) : (
+                          label
+                        );
+                      }}
                     >
                       {product.variants.map((variant, variantIndex) => {
-                        const variantLabel = [variant.color_name, variant.storage, variant.finish].filter(Boolean).join(' • ');
-                        return <MenuItem key={variant.id} value={variantIndex}>{variantLabel}</MenuItem>;
+                        const variantLabel = [
+                          variant.color_name,
+                          variant.storage,
+                          variant.finish,
+                        ]
+                          .filter(Boolean)
+                          .join(' • ');
+                        const isOffer = checkIfVariantHasOffer(variant);
+
+                        return (
+                          <MenuItem
+                            key={variant.id}
+                            value={variantIndex}
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span>{variantLabel}</span>
+
+                            {/* Si es oferta, mostramos SOLO el fueguito a la derecha */}
+                            {isOffer && (
+                              <WhatshotIcon
+                                sx={{ fontSize: '1rem', color: 'error.main' }}
+                              />
+                            )}
+                          </MenuItem>
+                        );
                       })}
                     </Select>
                   </TableCell>
-                  <CellTableProduct content={selectedVariant ? formatPrice(selectedVariant.price) : '-'} sx={{ fontWeight: 'bold' }} />
+
+                  {/* PRECIO DESKTOP: Estilo visual de oferta */}
+                  <TableCell sx={{ minWidth: 100 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      <Typography
+                        variant='body2'
+                        sx={{
+                          fontWeight: isSelectedVariantOffer
+                            ? 'bold'
+                            : 'normal',
+                          color: isSelectedVariantOffer
+                            ? 'error.main'
+                            : 'text.primary',
+                        }}
+                      >
+                        {selectedVariant
+                          ? formatPrice(selectedVariant.price)
+                          : '-'}
+                      </Typography>
+
+                      {/* Precio original tachado justo debajo */}
+                      {isSelectedVariantOffer && (
+                        <Typography
+                          variant='caption'
+                          sx={{
+                            textDecoration: 'line-through',
+                            color: 'text.disabled',
+                            fontSize: '0.75rem',
+                          }}
+                        >
+                          {formatPrice(selectedVariant.original_price)}
+                        </Typography>
+                      )}
+                    </Box>
+                  </TableCell>
+
                   <TableCell sx={{ minWidth: 180, px: 2 }}>
                     <Autocomplete
                       options={categoryOptions}
-                      getOptionLabel={(opt) => opt.id === 'clear' ? 'Sin categoría' : opt.name}
+                      getOptionLabel={(opt) =>
+                        opt.id === 'clear' ? 'Sin categoría' : opt.name
+                      }
                       value={selectedCategory || null}
                       onChange={(_, newVal) => {
                         if (newVal?.id === 'clear') {
-                          updateProductCategory({ productId: product.id, categoryId: null as any });
+                          updateProductCategory({
+                            productId: product.id,
+                            categoryId: null as any,
+                          });
                         } else if (newVal) {
                           handleCategoryChange(product, newVal);
                         }
@@ -311,11 +660,17 @@ export const TableProduct = () => {
                       loading={isCategoriesLoading || isUpdatingCategory}
                       size='small'
                       fullWidth
-                      renderInput={(params) => <TextField {...params} placeholder='Asignar' size='small' />}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder='Asignar'
+                          size='small'
+                        />
+                      )}
                     />
                   </TableCell>
-                  <TableCell sx={{ minWidth: 140 }}> 
-                    <ProductStockStatus 
+                  <TableCell sx={{ minWidth: 140 }}>
+                    <ProductStockStatus
                       currentStock={selectedVariant?.stock ?? 0}
                       allVariants={product.variants}
                       currentVariantId={selectedVariant?.id}
@@ -324,15 +679,22 @@ export const TableProduct = () => {
                   <CellTableProduct content={formatDate(product.created_at)} />
                   <TableCell sx={{ width: '120px' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <OptimisticSwitch product={product} onToggle={toggleProduct} />
-                      <Tooltip title="Editar detalles">
+                      <OptimisticSwitch
+                        product={product}
+                        onToggle={toggleProduct}
+                      />
+                      <Tooltip title='Editar detalles'>
                         <IconButton
                           component={RouterLink}
                           to={`/panel/productos/editar/${product.slug}`}
-                          size="small"
-                          sx={{ color: '#0007d7ff', bgcolor: '#f0f4ff', '&:hover': { bgcolor: '#dbeafe' } }}
+                          size='small'
+                          sx={{
+                            color: '#0007d7ff',
+                            bgcolor: '#f0f4ff',
+                            '&:hover': { bgcolor: '#dbeafe' },
+                          }}
                         >
-                          <EditIcon fontSize="small" />
+                          <EditIcon fontSize='small' />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -348,6 +710,8 @@ export const TableProduct = () => {
 
   if (isLoading) return <Loader />;
 
+  // El return del componente (Card, Stack, Pagination) sigue igual que el anterior
+  // Solo incluyo el return para que el snippet esté completo si copias todo.
   const totalPage = Math.ceil(totalProducts / rowsPerPage);
 
   return (
@@ -371,25 +735,38 @@ export const TableProduct = () => {
           Gestión de Productos
         </Typography>
 
-        <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} sx={{ mb: 3 }} alignItems="center">
-          
+        <Stack
+          direction={{ xs: 'column', lg: 'row' }}
+          spacing={2}
+          sx={{ mb: 3 }}
+          alignItems='center'
+        >
+          {/* Filtros iguales a tu código original... */}
           <TextField
             placeholder='Buscar producto...'
             value={searchTerm}
             onChange={handleSearchChange}
-            size="small"
-            sx={{ flex: 1, width: { xs: '100%', lg: 'auto' }, '& .MuiOutlinedInput-root': { bgcolor: 'white' } }}
+            size='small'
+            sx={{
+              flex: 1,
+              width: { xs: '100%', lg: 'auto' },
+              '& .MuiOutlinedInput-root': { bgcolor: 'white' },
+            }}
             slotProps={{
               input: {
                 startAdornment: (
                   <InputAdornment position='start'>
-                    <SearchIcon color='action' fontSize="small" />
+                    <SearchIcon color='action' fontSize='small' />
                   </InputAdornment>
                 ),
                 endAdornment: searchTerm && (
                   <InputAdornment position='end'>
-                    <IconButton size='small' onClick={handleClearSearch} edge='end'>
-                      <CloseIcon fontSize="small" />
+                    <IconButton
+                      size='small'
+                      onClick={handleClearSearch}
+                      edge='end'
+                    >
+                      <CloseIcon fontSize='small' />
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -397,53 +774,76 @@ export const TableProduct = () => {
             }}
           />
 
-          <FormControl size="small" sx={{ minWidth: 140, width: { xs: '100%', lg: 'auto' } }}>
+          <FormControl
+            size='small'
+            sx={{ minWidth: 140, width: { xs: '100%', lg: 'auto' } }}
+          >
             <InputLabel>Estado</InputLabel>
-            <Select value={statusFilter} label="Estado" onChange={handleStatusChange} sx={{ bgcolor: 'white' }}>
-              <MenuItem value="all">Todos</MenuItem>
-              <MenuItem value="active">Activos</MenuItem>
-              <MenuItem value="inactive">Inactivos</MenuItem>
-              <MenuItem value="low_stock" sx={{ color: 'orange', fontWeight: 'bold' }}>
+            <Select
+              value={statusFilter}
+              label='Estado'
+              onChange={handleStatusChange}
+              sx={{ bgcolor: 'white' }}
+            >
+              <MenuItem value='all'>Todos</MenuItem>
+              <MenuItem value='active'>Activos</MenuItem>
+              <MenuItem value='inactive'>Inactivos</MenuItem>
+              <MenuItem
+                value='low_stock'
+                sx={{ color: 'orange', fontWeight: 'bold' }}
+              >
                 Poco stock
               </MenuItem>
             </Select>
           </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: 160, width: { xs: '100%', lg: 'auto' } }}>
+          <FormControl
+            size='small'
+            sx={{ minWidth: 160, width: { xs: '100%', lg: 'auto' } }}
+          >
             <InputLabel>Categoría</InputLabel>
-            <Select 
-              value={categoryIdFilter} 
-              label="Categoría" 
-              onChange={handleCategoryFilterChange} 
+            <Select
+              value={categoryIdFilter}
+              label='Categoría'
+              onChange={handleCategoryFilterChange}
               sx={{ bgcolor: 'white' }}
             >
-              <MenuItem value="all">Todas</MenuItem>
-              <MenuItem value="uncategorized">Sin categoría</MenuItem> 
-              
+              <MenuItem value='all'>Todas</MenuItem>
+              <MenuItem value='uncategorized'>Sin categoría</MenuItem>
               {categories?.map((cat) => (
-                <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                <MenuItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          <FormControl size="small" sx={{ minWidth: 160, width: { xs: '100%', lg: 'auto' } }}>
+          <FormControl
+            size='small'
+            sx={{ minWidth: 160, width: { xs: '100%', lg: 'auto' } }}
+          >
             <InputLabel>Ordenar por</InputLabel>
-            <Select value={sortFilter} label="Ordenar por" onChange={handleSortChange} sx={{ bgcolor: 'white' }}>
-              <MenuItem value="newest">Más recientes</MenuItem>
-              <MenuItem value="oldest">Más antiguos</MenuItem>
-              <MenuItem value="name_asc">Nombre (A-Z)</MenuItem>
-              <MenuItem value="name_desc">Nombre (Z-A)</MenuItem>
+            <Select
+              value={sortFilter}
+              label='Ordenar por'
+              onChange={handleSortChange}
+              sx={{ bgcolor: 'white' }}
+            >
+              <MenuItem value='newest'>Más recientes</MenuItem>
+              <MenuItem value='oldest'>Más antiguos</MenuItem>
+              <MenuItem value='name_asc'>Nombre (A-Z)</MenuItem>
+              <MenuItem value='name_desc'>Nombre (Z-A)</MenuItem>
             </Select>
           </FormControl>
 
           <Button
-            variant="outlined"
-            color="inherit"
-            size="small"
+            variant='outlined'
+            color='inherit'
+            size='small'
             startIcon={<RestartAltIcon />}
             onClick={handleClearAll}
             disabled={isDefaultState}
-            sx={{ 
+            sx={{
               minWidth: { xs: '100%', lg: 'auto' },
               height: 40,
               borderColor: '#E5E7EB',
@@ -451,22 +851,20 @@ export const TableProduct = () => {
               '&:hover': {
                 borderColor: 'text.primary',
                 color: 'text.primary',
-                bgcolor: 'rgba(0,0,0,0.04)'
-              }
+                bgcolor: 'rgba(0,0,0,0.04)',
+              },
             }}
           >
             Limpiar
           </Button>
-
         </Stack>
 
         {isMobile ? renderMobileView() : renderDesktopView()}
-
       </Card>
-      
+
       {totalProducts > 0 && (
         <Box sx={{ px: { xs: 1, sm: 2 } }}>
-          <CustomPagination 
+          <CustomPagination
             page={page}
             totalPages={totalPage}
             totalItems={totalProducts}
