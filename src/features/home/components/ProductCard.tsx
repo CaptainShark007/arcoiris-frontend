@@ -148,7 +148,6 @@ export const ProductCard = ({
           },
         }}
       >
-        {/* {isOutOfStock && <ProductBadge type='agotado' />} */}
         {/* Badge de Agotado o Descuento */}
         <Box sx={{ position: 'absolute', top: 10, left: 10, zIndex: 2 }}>
           {isOutOfStock ? (
@@ -240,19 +239,6 @@ export const ProductCard = ({
             >
               {formatPrice(currentPrice)}
             </Typography>
-
-            {/* 3. Texto de impuestos */}
-            {/* <Typography
-              variant='caption'
-              sx={{
-                color: 'green',
-                display: 'block',
-                mt: 0.5,
-                mb: 1,
-              }}
-            >
-              Mismo precio 6 cuotas de {formatPrice(currentPrice / 6)} sin interés
-            </Typography> */}
 
             <Button
               variant='contained'

@@ -127,6 +127,36 @@ export const getBrands = async (): Promise<string[]> => {
   return uniqueBrands;
 };
 
+export const getSaleProducts = async () => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants!inner(*)') 
+    .eq('is_active', true)
+    .eq('variants.is_active', true)
+    .gt('variants.original_price', 0) 
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.error(error);
+    throw new Error('Error fetching sale products');
+  }
+
+  const products = data?.map((p) => {
+    const saleVariants = p.variants.filter((v: any) => v.original_price > 0 && v.price > 0);
+    const targetVariant = saleVariants[0]; 
+
+    return {
+      ...p,
+      image: p.images?.[0] ?? '/assets/images/img-default.png',
+      price: targetVariant ? targetVariant.price : 0, 
+      original_price: targetVariant ? targetVariant.original_price : null,
+    };
+  });
+
+  return products;
+};
+
 // metodo para obtener los productos recientes
 export const getRecentProducts = async () => {
   const { data, error } = await supabase

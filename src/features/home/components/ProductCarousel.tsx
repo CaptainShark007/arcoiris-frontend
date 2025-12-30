@@ -11,9 +11,6 @@ interface ProductCarouselProps {
 
 export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) => {
   const theme = useTheme();
-
-  // --- NUEVO ESTADO: Bloqueo de interacción ---
-  // Esto servirá para detener el carrusel si un hijo (modal) está abierto
   const [isLocked, setIsLocked] = useState(false);
 
   // 1. Configuración Responsive
@@ -112,11 +109,11 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
   return (
     <Box sx={{ position: 'relative', width: '100%' }}>
       
-      {/* Botones de navegación (ahora respetan isLocked) */}
+      {/* Botones de navegación */}
       {shouldClone && (
         <IconButton
           onClick={handlePrev}
-          disabled={isLocked} // Deshabilitar visualmente si es necesario
+          disabled={isLocked}
           sx={{
             display: { xs: 'none', md: 'flex' },
             position: 'absolute',
@@ -127,7 +124,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
             backgroundColor: 'rgba(255, 255, 255, 0.7)',
             boxShadow: theme.shadows[3],
             transition: 'all 0.3s ease',
-            opacity: isLocked ? 0 : 1, // Ocultar si hay modal
+            opacity: isLocked ? 0 : 1,
             pointerEvents: isLocked ? 'none' : 'auto',
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -170,7 +167,6 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
               }}
             >
               <Box sx={{ width: '100%', '& img': { pointerEvents: 'none' } }}>
-                 {/* Pasamos la función de bloqueo a la tarjeta */}
                  <ProductCard 
                     product={product} 
                     onModalStateChange={setIsLocked} 
@@ -218,7 +214,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({ products }) =>
             mt: 3,
             mb: 2,
             gap: 1,
-            opacity: isLocked ? 0.3 : 1, // Feedback visual
+            opacity: isLocked ? 0.3 : 1,
             transition: 'opacity 0.3s'
           }}
         >

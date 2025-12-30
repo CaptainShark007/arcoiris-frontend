@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, /* Card ,*/ CardActionArea } from '@mui/material';
+import { Box, Typography, CardActionArea } from '@mui/material';
 import { Category } from '@shared/types';
 import { useNavigate } from 'react-router';
 

@@ -28,13 +28,6 @@ export const HeroCarousel = ({ slides, mobileSlides }: HeroCarouselProps) => {
     displaySlides[0],
   ];
 
-  /* const getImageSource = (slide: CarouselSlide) => {
-    if (isMobile && slide.mobileImage) {
-      return slide.mobileImage ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerMobile.png";
-    }
-    return slide.image ?? "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerDesktop.png";
-  }; */
-
   const getImageSource = (slide: CarouselSlide) => {
     
     const defaultMobile = "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerMobile.png";
@@ -76,10 +69,9 @@ export const HeroCarousel = ({ slides, mobileSlides }: HeroCarouselProps) => {
             sx={{
               minWidth: "100%",
               position: "relative",
-              // Altura basada en el ratio de tus imágenes
               paddingTop: {
-                xs: "62.5%", // 400/640 = 0.625 (móvil)
-                md: "31.25%", // 600/1920 = 0.3125 (desktop)
+                xs: "62.5%",
+                md: "31.25%",
               },
               flexShrink: 0,
               overflow: "hidden",
