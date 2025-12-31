@@ -1,8 +1,8 @@
 import { Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
-import { useCarousel } from "../../../shared/hooks/useCarousel";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CarouselSlide } from "@shared/types";
+import { useCarousel } from "@shared/hooks";
 
 interface HeroCarouselProps {
   slides: CarouselSlide[];

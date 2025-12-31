@@ -34,6 +34,11 @@ interface SelectedOptions {
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
   const { product, isLoading, isError } = useProduct(slug || '');
   const addItem = useCartStore((state) => state.addItem);
 

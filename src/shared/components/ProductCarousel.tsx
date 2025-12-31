@@ -3,7 +3,7 @@ import { Box, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Product } from '@shared/types';
-import { ProductCard } from './ProductCard'; 
+import { ProductCard } from './ProductCard';
 
 interface ProductCarouselProps {
   products: Product[];

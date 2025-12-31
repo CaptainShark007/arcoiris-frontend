@@ -1,9 +1,9 @@
 import { Box, Container, Typography, CircularProgress } from '@mui/material';
 import { carouselSlides } from '../data/mockData';
-import { CategoryCarousel, HeroCarousel, ProductCarousel } from '../components';
+import { CategoryCarousel } from '../components';
 import { useHomeProducts } from '../hooks/useHomeProducts';
 import { useCategories } from '@features/shop/hooks/products/useCategories';
-import { Loader, SeoHead } from '@shared/components';
+import { HeroCarousel, Loader, ProductCarousel, SeoHead } from '@shared/components';
 import { motion, Variants } from 'framer-motion';
 import { SectionHeader } from '@shared/components';
 

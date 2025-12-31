@@ -1,8 +1,7 @@
 import { Box, CircularProgress } from '@mui/material';
 import { motion, Variants } from 'framer-motion';
-import { SectionHeader } from '@shared/components';
+import { ProductCarousel, SectionHeader } from '@shared/components';
 import { useSimilarProducts } from '../hooks/useSimilarProducts';
-import { ProductCarousel } from '@features/home/components';
 
 const MotionBox = motion(Box);
 
