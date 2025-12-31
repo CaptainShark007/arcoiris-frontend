@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useProduct } from '../hooks/useProduct';
 import { GridImages, ProductDescription } from '../components';
-import { formatPrice } from '@/helpers';
+import { calculateDiscount, formatPrice } from '@/helpers';
 import { Tag, Loader, SeoHead } from '@/shared/components';
 import { useCartStore } from '@/storage/useCartStore';
 
@@ -22,8 +22,20 @@ import {
   Alert,
   Divider,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
 } from '@mui/material';
 import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
+import { RelatedProductsSection } from '../components/RelatedProductsSection';
+import ShareIcon from '@mui/icons-material/Share';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import LinkIcon from '@mui/icons-material/Link';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface SelectedOptions {
   color: string | null;
@@ -33,15 +45,44 @@ interface SelectedOptions {
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
+  // Estado para el modal de compartir
+  const [openShare, setOpenShare] = useState(false);
+
+  // Función para WhatsApp
+  const handleShareWhatsApp = () => {
+    if (!product) return;
+    const currentUrl = window.location.href;
+    const text = `¡Fijate este producto en *Tienda Arcoiris*! 💜 ${product.name} ${currentUrl}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+
+    window.open(whatsappUrl, '_blank');
+    setOpenShare(false);
+  };
+
+  // Función para Copiar Link
+  const handleCopyLink = () => {
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() => {
+        toast.success('Link copiado al portapapeles');
+        setOpenShare(false);
+      })
+      .catch(() => toast.error('Error al copiar el link'));
+  };
+
   const { product, isLoading, isError } = useProduct(slug || '');
   const addItem = useCartStore((state) => state.addItem);
 
-  // Esto maneja el error de carga de imagen
   const [imageError, setImageError] = useState(false);
 
   const getProductImage = () => {
     if (imageError || !product?.images[0]) {
-      return "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png";
+      return 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
     }
     return product.images[0];
   };
@@ -114,7 +155,10 @@ const ProductPage = () => {
       color: (colorName: string) => {
         return product.variants.some((v) => {
           if (v.color_name !== colorName) return false;
-          if (selectedOptions.storage && v.storage?.trim() !== selectedOptions.storage)
+          if (
+            selectedOptions.storage &&
+            v.storage?.trim() !== selectedOptions.storage
+          )
             return false;
           if (selectedOptions.finish && v.finish !== selectedOptions.finish)
             return false;
@@ -136,7 +180,10 @@ const ProductPage = () => {
           if (v.finish !== finishName) return false;
           if (selectedOptions.color && v.color_name !== selectedOptions.color)
             return false;
-          if (selectedOptions.storage && v.storage?.trim() !== selectedOptions.storage)
+          if (
+            selectedOptions.storage &&
+            v.storage?.trim() !== selectedOptions.storage
+          )
             return false;
           return true;
         });
@@ -147,9 +194,12 @@ const ProductPage = () => {
   const selectedVariant = useMemo(() => {
     if (!product?.variants) return null;
 
-    const hasSelectedColor = attributesPresent.hasColor && selectedOptions.color !== null;
-    const hasSelectedStorage = attributesPresent.hasStorage && selectedOptions.storage !== null;
-    const hasSelectedFinish = attributesPresent.hasFinish && selectedOptions.finish !== null;
+    const hasSelectedColor =
+      attributesPresent.hasColor && selectedOptions.color !== null;
+    const hasSelectedStorage =
+      attributesPresent.hasStorage && selectedOptions.storage !== null;
+    const hasSelectedFinish =
+      attributesPresent.hasFinish && selectedOptions.finish !== null;
 
     if (attributesPresent.hasColor && !hasSelectedColor) return null;
     if (attributesPresent.hasStorage && !hasSelectedStorage) return null;
@@ -157,9 +207,15 @@ const ProductPage = () => {
 
     return (
       product.variants.find((v) => {
-        if (attributesPresent.hasColor && v.color_name !== selectedOptions.color)
+        if (
+          attributesPresent.hasColor &&
+          v.color_name !== selectedOptions.color
+        )
           return false;
-        if (attributesPresent.hasStorage && v.storage?.trim() !== selectedOptions.storage)
+        if (
+          attributesPresent.hasStorage &&
+          v.storage?.trim() !== selectedOptions.storage
+        )
           return false;
         if (attributesPresent.hasFinish && v.finish !== selectedOptions.finish)
           return false;
@@ -168,25 +224,53 @@ const ProductPage = () => {
     );
   }, [product?.variants, selectedOptions, attributesPresent]);
 
-  const handleOptionChange = (field: keyof SelectedOptions, value: string | null) => {
+  const handleOptionChange = (
+    field: keyof SelectedOptions,
+    value: string | null
+  ) => {
     setSelectedOptions((prev) => ({
       ...prev,
-      [field]: value === "" ? null : value,
+      [field]: value === '' ? null : value,
     }));
   };
 
+  const defaultVariant = useMemo(() => {
+    if (!product?.variants || product.variants.length === 0) return null;
+
+    const sorted = [...product.variants].sort((a, b) => {
+      const aHasStock = a.stock > 0;
+      const bHasStock = b.stock > 0;
+      if (aHasStock && !bHasStock) return -1;
+      if (!aHasStock && bHasStock) return 1;
+
+      const aDiscount = calculateDiscount(a.price, a.original_price);
+      const bDiscount = calculateDiscount(b.price, b.original_price);
+      if (aDiscount > bDiscount) return -1;
+      if (bDiscount > aDiscount) return 1;
+
+      return a.price - b.price;
+    });
+
+    return sorted[0];
+  }, [product?.variants]);
+
   useEffect(() => {
-    if (product?.variants && product.variants.length > 0) {
-      const firstVariant = product.variants[0];
+    if (defaultVariant) {
       const newOptions: SelectedOptions = {
-        color: attributesPresent.hasColor ? (firstVariant.color_name || null) : null,
-        storage: attributesPresent.hasStorage ? (firstVariant.storage || null) : null,
-        finish: attributesPresent.hasFinish ? (firstVariant.finish || null) : null,
+        color: attributesPresent.hasColor
+          ? defaultVariant.color_name || null
+          : null,
+        storage: attributesPresent.hasStorage
+          ? defaultVariant.storage || null
+          : null,
+        finish: attributesPresent.hasFinish
+          ? defaultVariant.finish || null
+          : null,
       };
 
       setSelectedOptions(newOptions);
     }
-  }, [product?.variants, attributesPresent]);
+  }, [defaultVariant, attributesPresent]);
 
   const isOutOfStock = selectedVariant?.stock === 0;
 
@@ -228,46 +312,60 @@ const ProductPage = () => {
       },
     });
 
-    toast.success('Producto agregado al carrito', { position: 'top-right' });
+    toast.success('Producto agregado al carrito', {
+      position: 'top-right',
+      style: {
+        marginTop: '50px',
+      },
+    });
     setQuantity(1);
   };
 
-  //if (isLoading) return <Loader />;
-  // Si está cargando, mostramos un título temporal
   if (isLoading) {
     return (
       <>
-        <SeoHead 
-          title="Cargando..." 
-          description="Buscando producto..." 
-        />
+        <SeoHead title='Cargando...' description='Buscando producto...' />
         <Loader />
       </>
     );
   }
-  /* if (!product || isError)
-    return <Typography variant='h6'>Producto no encontrado</Typography>; */
-  // Si hay error
+
   if (!product || isError) {
     return (
       <>
-        <SeoHead title="Producto no encontrado" description="Error" />
+        <SeoHead title='Producto no encontrado' description='Error' />
         <Typography variant='h6'>Producto no encontrado</Typography>
       </>
     );
   }
 
   const unitPrice = selectedVariant?.price ?? 0;
+
+  const originalPrice = selectedVariant?.original_price ?? 0;
+  const hasOffer = originalPrice > unitPrice;
+
+  const discountPercentage = calculateDiscount(unitPrice, originalPrice);
+
   const totalPrice = unitPrice * quantity;
+
+  const totalSavings = (originalPrice - unitPrice) * quantity;
 
   return (
     <>
-    <SeoHead 
-      title={product.name}
-      description={product.description ? (typeof product.description === 'string' ? product.description : '') : 'Producto disponible en Arcoiris Tienda'}
-      image={getProductImage()}
-    />
-      <Box sx={{ p: { xs: 1.5, sm: 2, md: 4 }, maxWidth: 1400, margin: '0 auto' }}>
+      <SeoHead
+        title={product.name}
+        description={
+          product.description
+            ? typeof product.description === 'string'
+              ? product.description
+              : ''
+            : 'Producto disponible en Arcoiris Tienda'
+        }
+        image={getProductImage()}
+      />
+      <Box
+        sx={{ p: { xs: 1.5, sm: 2, md: 4 }, maxWidth: 1400, margin: '0 auto' }}
+      >
         {/* Sección principal: Imagen y detalles */}
         <Box
           sx={{
@@ -279,28 +377,102 @@ const ProductPage = () => {
           }}
         >
           {/* Columna de imágenes */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', position: { xs: 'relative', md: 'sticky' }, top: { md: 20 } }}>
-            <GridImages images={product.images} onImageError={handleImageError} />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              position: { xs: 'relative', md: 'sticky' },
+              top: { md: 20 },
+            }}
+          >
+            <GridImages
+              images={product.images}
+              onImageError={handleImageError}
+            />
           </Box>
 
           {/* Columna de detalles */}
           <Box>
             {/* Encabezado del producto */}
             <Box sx={{ mb: { xs: 2, md: 3 } }}>
-              <Typography fontWeight={700} gutterBottom sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' }, lineHeight: 1.3 }}>
-                {product.name}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <IconButton
+                  onClick={() => setOpenShare(true)}
+                  aria-label='compartir'
+                  sx={{ 
+                    mt: 0.5,
+                    border: 1,
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    color: 'text.secondary',
+                  }}
+                >
+                  <ShareIcon sx={{ fontSize: { xs: '2rem', md: '1.3rem' } }} />
+                </IconButton>
+                <Typography
+                  fontWeight={700}
+                  gutterBottom
+                  sx={{
+                    fontSize: { xs: '1.5rem', md: '2.125rem' },
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {product.name}
+                </Typography>
+              </Box>
 
-              <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
-                Marca: <Typography component='span' fontWeight={600}>{product.brand}</Typography>
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{ mb: 1.5 }}
+              >
+                Marca:{' '}
+                <Typography component='span' fontWeight={600}>
+                  {product.brand}
+                </Typography>
               </Typography>
 
               {/* Precio y estado */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.875rem' }, color: 'primary.main' }}>
-                  {formatPrice(unitPrice)}
-                </Typography>
-                {isOutOfStock && <Tag contentTag='agotado' />}
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  {/* Si hay oferta, mostramos el precio actual en rojo o destacado */}
+                  <Typography
+                    fontWeight={700}
+                    sx={{
+                      fontSize: { xs: '1.5rem', md: '1.875rem' },
+                      color: hasOffer ? 'error.main' : 'primary.main',
+                    }}
+                  >
+                    {formatPrice(unitPrice)}
+                  </Typography>
+
+                  {/* Etiqueta de Agotado */}
+                  {isOutOfStock && <Tag contentTag='agotado' />}
+
+                  {/* Etiqueta de Descuento */}
+                  {hasOffer && !isOutOfStock && (
+                    <Chip
+                      label={`-${discountPercentage}% OFF`}
+                      color='error'
+                      size='small'
+                      sx={{ fontWeight: 'bold' }}
+                    />
+                  )}
+                </Box>
+
+                {/* Precio Original Tachado (debajo o al lado) */}
+                {hasOffer && (
+                  <Typography
+                    variant='body1'
+                    sx={{
+                      textDecoration: 'line-through',
+                      color: 'text.secondary',
+                      mt: -0.5,
+                    }}
+                  >
+                    {formatPrice(originalPrice)}
+                  </Typography>
+                )}
               </Box>
             </Box>
 
@@ -308,11 +480,23 @@ const ProductPage = () => {
 
             {/* Opciones del producto */}
             <Box sx={{ mb: { xs: 2, md: 3 } }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                <Typography fontWeight={600} sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 1.5,
+                }}
+              >
+                <Typography
+                  fontWeight={600}
+                  sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}
+                >
                   Opciones
                 </Typography>
-                {(selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
+                {(selectedOptions.color ||
+                  selectedOptions.storage ||
+                  selectedOptions.finish) && (
                   <Button
                     size='small'
                     onClick={() =>
@@ -322,7 +506,11 @@ const ProductPage = () => {
                         finish: null,
                       })
                     }
-                    sx={{ textTransform: 'none', fontSize: { xs: '0.75rem', md: '0.875rem' }, color: 'text.secondary' }}
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: { xs: '0.75rem', md: '0.875rem' },
+                      color: 'text.secondary',
+                    }}
                   >
                     Limpiar
                   </Button>
@@ -330,127 +518,169 @@ const ProductPage = () => {
               </Box>
 
               {/* Color */}
-              {attributesPresent.hasColor && allOptions.colorOptions.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <FormControl fullWidth size='small'>
-                    <InputLabel id='color-label' sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Color</InputLabel>
-                    <Select
-                      labelId='color-label'
-                      value={selectedOptions.color || ''}
-                      label='Color'
-                      onChange={(e) => handleOptionChange('color', e.target.value || null)}
-                    >
-                      <MenuItem value=''>
-                        <em>Seleccionar color</em>
-                      </MenuItem>
-                      {allOptions.colorOptions.map((color) => {
-                        const isValid = isOptionValid.color(color.name);
-                        return (
-                          <MenuItem
-                            key={color.name}
-                            value={color.name}
-                            disabled={!isValid}
-                            sx={{ opacity: isValid ? 1 : 0.5 }}
-                          >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              {attributesPresent.hasColor &&
+                allOptions.colorOptions.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <FormControl fullWidth size='small'>
+                      <InputLabel
+                        id='color-label'
+                        sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}
+                      >
+                        Color
+                      </InputLabel>
+                      <Select
+                        labelId='color-label'
+                        value={selectedOptions.color || ''}
+                        label='Color'
+                        onChange={(e) =>
+                          handleOptionChange('color', e.target.value || null)
+                        }
+                      >
+                        <MenuItem value=''>
+                          <em>Seleccionar color</em>
+                        </MenuItem>
+                        {allOptions.colorOptions.map((color) => {
+                          const isValid = isOptionValid.color(color.name);
+                          return (
+                            <MenuItem
+                              key={color.name}
+                              value={color.name}
+                              disabled={!isValid}
+                              sx={{ opacity: isValid ? 1 : 0.5 }}
+                            >
                               <Box
                                 sx={{
-                                  width: 18,
-                                  height: 18,
-                                  borderRadius: '50%',
-                                  backgroundColor: color.hex,
-                                  border: '1px solid rgba(0,0,0,0.1)',
-                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                  opacity: isValid ? 1 : 0.5,
-                                  flexShrink: 0,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1.5,
                                 }}
-                              />
-                              <ListItemText
-                                primary={color.name}
-                                secondary={!isValid ? 'No disponible' : undefined}
-                              />
-                            </Box>
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                </Box>
-              )}
+                              >
+                                <Box
+                                  sx={{
+                                    width: 18,
+                                    height: 18,
+                                    borderRadius: '50%',
+                                    backgroundColor: color.hex,
+                                    border: '1px solid rgba(0,0,0,0.1)',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                    opacity: isValid ? 1 : 0.5,
+                                    flexShrink: 0,
+                                  }}
+                                />
+                                <ListItemText
+                                  primary={color.name}
+                                  secondary={
+                                    !isValid ? 'No disponible' : undefined
+                                  }
+                                />
+                              </Box>
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                )}
 
               {/* Storage */}
-              {attributesPresent.hasStorage && allOptions.storageOptions.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <FormControl fullWidth size='small'>
-                    <InputLabel sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Presentación</InputLabel>
-                    <Select
-                      value={selectedOptions.storage || ''}
-                      label='Presentación'
-                      onChange={(e) => handleOptionChange('storage', e.target.value || null)}
-                    >
-                      <MenuItem value=''>
-                        <em>Seleccionar presentación</em>
-                      </MenuItem>
-                      {allOptions.storageOptions.map((storage) => {
-                        const isValid = isOptionValid.storage(storage);
-                        return (
-                          <MenuItem
-                            key={storage}
-                            value={storage}
-                            disabled={!isValid}
-                            sx={{ opacity: isValid ? 1 : 0.5 }}
-                          >
-                            <ListItemText
-                              primary={storage}
-                              secondary={!isValid ? 'No disponible' : undefined}
-                            />
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                </Box>
-              )}
+              {attributesPresent.hasStorage &&
+                allOptions.storageOptions.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <FormControl fullWidth size='small'>
+                      <InputLabel
+                        sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}
+                      >
+                        Presentación
+                      </InputLabel>
+                      <Select
+                        value={selectedOptions.storage || ''}
+                        label='Presentación'
+                        onChange={(e) =>
+                          handleOptionChange('storage', e.target.value || null)
+                        }
+                      >
+                        <MenuItem value=''>
+                          <em>Seleccionar presentación</em>
+                        </MenuItem>
+                        {allOptions.storageOptions.map((storage) => {
+                          const isValid = isOptionValid.storage(storage);
+                          return (
+                            <MenuItem
+                              key={storage}
+                              value={storage}
+                              disabled={!isValid}
+                              sx={{ opacity: isValid ? 1 : 0.5 }}
+                            >
+                              <ListItemText
+                                primary={storage}
+                                secondary={
+                                  !isValid ? 'No disponible' : undefined
+                                }
+                              />
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                )}
 
               {/* Finish */}
-              {attributesPresent.hasFinish && allOptions.finishOptions.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <FormControl fullWidth size='small'>
-                    <InputLabel sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}>Terminación</InputLabel>
-                    <Select
-                      value={selectedOptions.finish ?? ''}
-                      label='Terminación'
-                      onChange={(e) => handleOptionChange('finish', e.target.value === '' ? null : e.target.value)}
-                    >
-                      <MenuItem value=''>
-                        <em>Seleccionar terminación</em>
-                      </MenuItem>
-                      {allOptions.finishOptions.map((finish) => {
-                        const isValid = isOptionValid.finish(finish);
-                        return (
-                          <MenuItem
-                            key={finish ?? 'none'}
-                            value={finish ?? ''}
-                            disabled={!isValid}
-                            sx={{ opacity: isValid ? 1 : 0.5 }}
-                          >
-                            <ListItemText
-                              primary={finish || 'Sin terminación'}
-                              secondary={!isValid ? 'No disponible' : undefined}
-                            />
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                </Box>
-              )}
+              {attributesPresent.hasFinish &&
+                allOptions.finishOptions.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <FormControl fullWidth size='small'>
+                      <InputLabel
+                        sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}
+                      >
+                        Terminación
+                      </InputLabel>
+                      <Select
+                        value={selectedOptions.finish ?? ''}
+                        label='Terminación'
+                        onChange={(e) =>
+                          handleOptionChange(
+                            'finish',
+                            e.target.value === '' ? null : e.target.value
+                          )
+                        }
+                      >
+                        <MenuItem value=''>
+                          <em>Seleccionar terminación</em>
+                        </MenuItem>
+                        {allOptions.finishOptions.map((finish) => {
+                          const isValid = isOptionValid.finish(finish);
+                          return (
+                            <MenuItem
+                              key={finish ?? 'none'}
+                              value={finish ?? ''}
+                              disabled={!isValid}
+                              sx={{ opacity: isValid ? 1 : 0.5 }}
+                            >
+                              <ListItemText
+                                primary={finish || 'Sin terminación'}
+                                secondary={
+                                  !isValid ? 'No disponible' : undefined
+                                }
+                              />
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                )}
             </Box>
 
             {/* Variante seleccionada */}
             {selectedVariant && (
               <Box sx={{ mb: 2 }}>
-                <Typography variant='caption' color='text.secondary' fontWeight={600} sx={{ display: 'block', mb: 1 }}>
+                <Typography
+                  variant='caption'
+                  color='text.secondary'
+                  fontWeight={600}
+                  sx={{ display: 'block', mb: 1 }}
+                >
                   Variante seleccionada:
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -482,25 +712,39 @@ const ProductPage = () => {
             )}
 
             {/* Alertas */}
-            {!selectedVariant && (selectedOptions.color || selectedOptions.storage || selectedOptions.finish) && (
-              <Alert severity='warning' sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                Combinación no disponible
-              </Alert>
-            )}
+            {!selectedVariant &&
+              (selectedOptions.color ||
+                selectedOptions.storage ||
+                selectedOptions.finish) && (
+                <Alert
+                  severity='warning'
+                  sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}
+                >
+                  Combinación no disponible
+                </Alert>
+              )}
 
             {selectedVariant && selectedVariant.stock === 0 && (
-              <Alert severity='error' sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
+              <Alert
+                severity='error'
+                sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}
+              >
                 Agotado
               </Alert>
             )}
 
-            {selectedVariant && selectedVariant.stock > 0 && selectedVariant.stock <= 10 && (
-              <Alert severity={selectedVariant.stock <= 3 ? 'warning' : 'info'} sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}>
-                {selectedVariant.stock <= 3
-                  ? `¡Últimas ${selectedVariant.stock} unidades!`
-                  : `Solo ${selectedVariant.stock} disponibles`}
-              </Alert>
-            )}
+            {selectedVariant &&
+              selectedVariant.stock > 0 &&
+              selectedVariant.stock <= 10 && (
+                <Alert
+                  severity={selectedVariant.stock <= 3 ? 'warning' : 'info'}
+                  sx={{ mb: 2, fontSize: { xs: '0.875rem', md: '1rem' } }}
+                >
+                  {selectedVariant.stock <= 3
+                    ? `¡Últimas ${selectedVariant.stock} unidades!`
+                    : `Solo ${selectedVariant.stock} disponibles`}
+                </Alert>
+              )}
 
             <Divider sx={{ my: { xs: 1.5, md: 2.5 } }} />
 
@@ -508,7 +752,11 @@ const ProductPage = () => {
             <Stack spacing={{ xs: 1.5, md: 2 }} sx={{ mb: { xs: 2, md: 3 } }}>
               {/* Selector de cantidad */}
               <Box>
-                <Typography variant='caption' fontWeight={600} sx={{ display: 'block', mb: 1 }}>
+                <Typography
+                  variant='caption'
+                  fontWeight={600}
+                  sx={{ display: 'block', mb: 1 }}
+                >
                   Cantidad
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -516,7 +764,12 @@ const ProductPage = () => {
                     size='small'
                     onClick={handleDecrement}
                     disabled={quantity <= 1 || !selectedVariant}
-                    sx={{ padding: '6px', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                    sx={{
+                      padding: '6px',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                    }}
                   >
                     <RemoveIcon fontSize='small' />
                   </IconButton>
@@ -532,7 +785,10 @@ const ProductPage = () => {
                       px: 1.5,
                     }}
                   >
-                    <Typography fontWeight={600} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                    <Typography
+                      fontWeight={600}
+                      sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
+                    >
                       {quantity}
                     </Typography>
                   </Box>
@@ -540,14 +796,29 @@ const ProductPage = () => {
                   <IconButton
                     size='small'
                     onClick={handleIncrement}
-                    disabled={!selectedVariant || quantity >= (selectedVariant?.stock || 0)}
-                    sx={{ padding: '6px', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                    disabled={
+                      !selectedVariant ||
+                      quantity >= (selectedVariant?.stock || 0)
+                    }
+                    sx={{
+                      padding: '6px',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                    }}
                   >
                     <AddIcon fontSize='small' />
                   </IconButton>
 
                   {selectedVariant && (
-                    <Typography variant='caption' color='text.secondary' sx={{ ml: 'auto', fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                    <Typography
+                      variant='caption'
+                      color='text.secondary'
+                      sx={{
+                        ml: 'auto',
+                        fontSize: { xs: '0.75rem', md: '0.875rem' },
+                      }}
+                    >
                       {selectedVariant.stock} disponibles
                     </Typography>
                   )}
@@ -556,22 +827,73 @@ const ProductPage = () => {
 
               {/* Precios */}
               <Paper variant='outlined' sx={{ p: { xs: 1.5, md: 2 } }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 2,
+                  }}
+                >
                   <Box>
-                    <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                    <Typography
+                      variant='caption'
+                      color='text.secondary'
+                      sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    >
                       Unitario
                     </Typography>
-                    <Typography color='primary' fontWeight={700} sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
+
+                    {/* Mostrar precio tachado unitario si hay oferta */}
+                    {hasOffer && (
+                      <Typography
+                        variant='caption'
+                        sx={{
+                          display: 'block',
+                          textDecoration: 'line-through',
+                          color: 'text.secondary',
+                        }}
+                      >
+                        {formatPrice(originalPrice)}
+                      </Typography>
+                    )}
+
+                    <Typography
+                      color={hasOffer ? 'error' : 'primary'}
+                      fontWeight={700}
+                      sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
+                    >
                       {formatPrice(unitPrice)}
                     </Typography>
                   </Box>
+
                   <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant='caption' color='text.secondary' sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                    <Typography
+                      variant='caption'
+                      color='text.secondary'
+                      sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}
+                    >
                       Total
                     </Typography>
-                    <Typography fontWeight={700} sx={{ fontSize: { xs: '1.5rem', md: '1.5rem' } }}>
+                    <Typography
+                      fontWeight={700}
+                      sx={{ fontSize: { xs: '1.5rem', md: '1.5rem' } }}
+                    >
                       {formatPrice(totalPrice)}
                     </Typography>
+
+                    {/* Mensaje de ahorro total */}
+                    {hasOffer && (
+                      <Typography
+                        variant='caption'
+                        sx={{
+                          display: 'block',
+                          color: 'success.main',
+                          fontWeight: 600,
+                        }}
+                      >
+                        ¡Ahorras {formatPrice(totalSavings)}!
+                      </Typography>
+                    )}
                   </Box>
                 </Box>
               </Paper>
@@ -597,13 +919,26 @@ const ProductPage = () => {
 
             {/* Features */}
             {product.features && product.features.length > 0 && (
-              <Paper variant='outlined' sx={{ p: { xs: 1.5, md: 2.5 }, bgcolor: 'background.paper' }}>
-                <Typography fontWeight={600} sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, mb: 1.5 }}>
+              <Paper
+                variant='outlined'
+                sx={{ p: { xs: 1.5, md: 2.5 }, bgcolor: 'background.paper' }}
+              >
+                <Typography
+                  fontWeight={600}
+                  sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, mb: 1.5 }}
+                >
                   Características principales
                 </Typography>
                 <Stack spacing={1}>
                   {product.features.map((feature: string, idx: number) => (
-                    <Box key={idx} sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                    <Box
+                      key={idx}
+                      sx={{
+                        display: 'flex',
+                        gap: 1.5,
+                        alignItems: 'flex-start',
+                      }}
+                    >
                       <Box
                         sx={{
                           width: 6,
@@ -614,7 +949,9 @@ const ProductPage = () => {
                           flexShrink: 0,
                         }}
                       />
-                      <Typography sx={{ fontSize: { xs: '0.875rem', md: '0.95rem' } }}>
+                      <Typography
+                        sx={{ fontSize: { xs: '0.875rem', md: '0.95rem' } }}
+                      >
                         {feature}
                       </Typography>
                     </Box>
@@ -631,6 +968,54 @@ const ProductPage = () => {
         <Box sx={{ mb: 2 }}>
           <ProductDescription content={product.description as any} />
         </Box>
+
+        {/* Productos similares */}
+        {product.category_id && (
+          <RelatedProductsSection
+            categoryId={product.category_id}
+            currentProductId={product.id}
+          />
+        )}
+
+        <Dialog
+          open={openShare}
+          onClose={() => setOpenShare(false)}
+          maxWidth='xs'
+          fullWidth
+        >
+          <DialogTitle
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            Compartir producto
+            <IconButton onClick={() => setOpenShare(false)} size='small'>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent dividers>
+            <List sx={{ pt: 0 }}>
+              <ListItem disablePadding>
+                <ListItemButton onClick={handleShareWhatsApp}>
+                  <ListItemIcon>
+                    <WhatsAppIcon sx={{ color: '#25D366' }} />
+                  </ListItemIcon>
+                  <ListItemText primary='WhatsApp' />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton onClick={handleCopyLink}>
+                  <ListItemIcon>
+                    <LinkIcon color='primary' />
+                  </ListItemIcon>
+                  <ListItemText primary='Copiar Link' />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </DialogContent>
+        </Dialog>
       </Box>
     </>
   );

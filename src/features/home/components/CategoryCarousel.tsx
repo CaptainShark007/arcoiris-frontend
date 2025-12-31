@@ -221,9 +221,6 @@ export const CategoryCarousel: React.FC<CategoryCarouselProps> = ({ categories }
                 borderRadius: 4,
                 bgcolor: index === activeDotIndex ? theme.palette.primary.main : theme.palette.action.disabled,
                 transition: "all 0.3s ease",
-                // Opcional: Si quisieras que los dots fueran clickeables, habría que implementar
-                // una lógica compleja para buscar el clon más cercano. 
-                // Por ahora son solo visuales.
               }}
             />
           ))}

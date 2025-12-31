@@ -96,7 +96,7 @@ export const searchProductsAction = async (query: string): Promise<ProductSearch
 
   const { data, error } = await supabase
     .from('products')
-    .select('id, name, slug, images, variants(price, color_name, storage, finish)')
+    .select('id, name, slug, images, variants(price, original_price, color_name, storage, finish)')
     .eq('is_active', true)
     .eq('variants.is_active', true)
     .ilike('name', `%${query}%`)
@@ -125,6 +125,36 @@ export const getBrands = async (): Promise<string[]> => {
   const uniqueBrands = Array.from(new Set(data?.map((p: any) => p.brand)));
 
   return uniqueBrands;
+};
+
+export const getSaleProducts = async () => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants!inner(*)') 
+    .eq('is_active', true)
+    .eq('variants.is_active', true)
+    .gt('variants.original_price', 0) 
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.error(error);
+    throw new Error('Error fetching sale products');
+  }
+
+  const products = data?.map((p) => {
+    const saleVariants = p.variants.filter((v: any) => v.original_price > 0 && v.price > 0);
+    const targetVariant = saleVariants[0]; 
+
+    return {
+      ...p,
+      image: p.images?.[0] ?? '/assets/images/img-default.png',
+      price: targetVariant ? targetVariant.price : 0, 
+      original_price: targetVariant ? targetVariant.original_price : null,
+    };
+  });
+
+  return products;
 };
 
 // metodo para obtener los productos recientes
@@ -195,6 +225,45 @@ export const getRandomProducts = async () => {
   return randomProducts;
 };
 
+// productos relacionados por categoria
+export const getSimilarProducts = async (categoryId: string, excludeProductId: string) => {
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants (*)')
+    .eq('is_active', true)
+    .eq('variants.is_active', true)
+    .eq('category_id', categoryId)
+    .neq('id', excludeProductId)
+    .limit(20);
+
+  if (error) {
+    console.error(error);
+    throw new Error('Error fetching related products');
+  }
+
+  if (!data) return [];
+
+  // Mapear productos con precio mínimo
+  const productsWithPrice = data
+    .map((p) => {
+      const prices = p.variants
+        ?.map((v: any) => v.price)
+        .filter((price: number) => price > 0) || [];
+      
+      const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+
+      return {
+        ...p,
+        image: p.images?.[0] ?? '/assets/images/img-default.png',
+        price: minPrice,
+      };
+    })
+    .filter((p) => p.price > 0);
+
+  return productsWithPrice;
+}
+
 // metodo para buscar el producto por su slug
 export const getProductBySlug = async (slug: string) => {
   const { data, error } = await supabase
@@ -237,7 +306,7 @@ export const getProductBySlugAdmin = async (slug: string) => {
 export const getProductVariants = async (productId: string) => {
   const { data, error } = await supabase
     .from('variants')
-    .select('id, color, color_name, stock, price, storage, finish')
+    .select('id, color, color_name, stock, price, original_price, storage, finish, is_active')
     .eq('is_active', true)
     .eq('product_id', productId);
 
@@ -423,6 +492,7 @@ export const createProduct = async (productInput: ProductInput) => {
         p_variants: productInput.variants.map((v) => ({
           stock: v.stock,
           price: v.price,
+          original_price: v.original_price || null,
           storage: v.storage || null,
           color: v.color || null,
           color_name: v.color_name || null,
@@ -534,7 +604,7 @@ export const createProduct = async (productInput: ProductInput) => {
 };
 
 // ***********************************************************************************************
-// *********************************** ACTUALIZAR PRODUCTO ***************************************
+// *********************************** BORRAR PRODUCTO ***************************************
 // *************************************** NUEVA FORMA *******************************************
 export const deleteProduct = async (productId: string) => {
   try {
@@ -750,6 +820,7 @@ export const updateProduct = async (
           id: v.id || null,
           stock: v.stock,
           price: v.price,
+          original_price: v.original_price || null,
           storage: v.storage || null,
           color: v.color || null,
           color_name: v.color_name || null,
