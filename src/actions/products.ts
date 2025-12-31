@@ -225,6 +225,45 @@ export const getRandomProducts = async () => {
   return randomProducts;
 };
 
+// productos relacionados por categoria
+export const getSimilarProducts = async (categoryId: string, excludeProductId: string) => {
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants (*)')
+    .eq('is_active', true)
+    .eq('variants.is_active', true)
+    .eq('category_id', categoryId)
+    .neq('id', excludeProductId)
+    .limit(20);
+
+  if (error) {
+    console.error(error);
+    throw new Error('Error fetching related products');
+  }
+
+  if (!data) return [];
+
+  // Mapear productos con precio mínimo
+  const productsWithPrice = data
+    .map((p) => {
+      const prices = p.variants
+        ?.map((v: any) => v.price)
+        .filter((price: number) => price > 0) || [];
+      
+      const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+
+      return {
+        ...p,
+        image: p.images?.[0] ?? '/assets/images/img-default.png',
+        price: minPrice,
+      };
+    })
+    .filter((p) => p.price > 0);
+
+  return productsWithPrice;
+}
+
 // metodo para buscar el producto por su slug
 export const getProductBySlug = async (slug: string) => {
   const { data, error } = await supabase
