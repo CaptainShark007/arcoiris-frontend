@@ -20,7 +20,6 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import SearchIcon from '@mui/icons-material/Search';
 import { useState, type MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-//import logo from '../../../public/logo_comercio_v2.png';
 import { NotificationPopup } from './NotificationPopup';
 import { useCustomer, useUsers } from '@shared/hooks';
 import { Loader } from './Loader';
@@ -82,13 +81,13 @@ export const Navbar = () => {
     borderRadius: 8,
     '&:hover': {
       backgroundColor: 'transparent',
-      color: 'text.primary', // #93C5FD
+      color: 'text.primary',
     },
   };
 
   return (
     <>
-      <AppBar position='static' color='primary'>
+      <AppBar position='fixed' color='primary'>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           {/* Logo */}
           <Box
@@ -105,7 +104,7 @@ export const Navbar = () => {
             <img src='/logo_comercio_v2.png' alt='Logo' style={{ height: 50 }} />
           </Box>
 
-          {/* Links centrales: solo visibles en pantallas grandes */}
+          {/* Links centrales */}
           <Box
             sx={{
               display: { xs: 'none', sm: 'flex' },
@@ -162,7 +161,6 @@ export const Navbar = () => {
 
           {/* Iconos y Auth */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {/* Iconos solo en pantallas grandes */}
             <IconButton
               color='inherit'
               sx={{ display: { xs: 'none', sm: 'flex' } }}
@@ -187,7 +185,6 @@ export const Navbar = () => {
               <SearchIcon />
             </IconButton>
 
-            {/* Iconos solo visibles en pantallas chicas */}
             <IconButton
               color='inherit'
               sx={{ display: { xs: 'flex', sm: 'none' } }}
@@ -197,13 +194,6 @@ export const Navbar = () => {
                 <ShoppingCartIcon />
               </Badge>
             </IconButton>
-            {/* <IconButton
-              color='inherit'
-              sx={{ display: { xs: 'flex', sm: 'none' } }}
-              onClick={handleSnackbarClick}
-            >
-              <FavoriteBorderIcon />
-            </IconButton> */}
             <IconButton
               color='inherit'
               sx={{ display: { xs: 'flex', sm: 'none' } }}
@@ -212,7 +202,6 @@ export const Navbar = () => {
               <SearchIcon />
             </IconButton>
 
-            {/* Botón de perfil/login */}
             {isLoading ? (
               <Loader />
             ) : session ? (
@@ -241,7 +230,6 @@ export const Navbar = () => {
               </Box>
             ) : (
               <>
-                {/* Botón de texto en pantallas grandes */}
                 <Button
                   component={Link}
                   to='/acceder'
@@ -256,7 +244,6 @@ export const Navbar = () => {
                 >
                   Iniciar sesión
                 </Button>
-                {/* Icono en pantallas pequeñas */}
                 <IconButton
                   component={Link}
                   to='/acceder'
@@ -267,7 +254,6 @@ export const Navbar = () => {
                 </IconButton>
               </>
             )}
-            {/* Botón de menú hamburguesa */}
             <IconButton
               color='inherit'
               sx={{ display: { xs: 'flex', sm: 'none' } }}
@@ -280,12 +266,14 @@ export const Navbar = () => {
         </Toolbar>
       </AppBar>
 
+      <Toolbar /> {/* Espaciador para el AppBar fijo */}
+
       {/* Drawer para móvil */}
       <Drawer
         anchor='right'
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        //sx={{ backgroundColor: 'primary.main' }}
+        sx={{ zIndex: (theme) => theme.zIndex.appBar + 1 }}
       >
         <List
           sx={{
@@ -330,7 +318,6 @@ export const Navbar = () => {
         </List>
       </Drawer>
 
-      {/* Snackbar para notificaciones */}
       <NotificationPopup
         open={openSnackbar}
         message='Próximamente'

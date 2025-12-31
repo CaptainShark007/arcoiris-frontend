@@ -235,6 +235,9 @@ export const VariantSelectModal = ({
         `${quantity} ${quantity === 1 ? "producto" : "productos"} agregado al carrito`,
         {
           position: "top-right",
+          style: {
+            marginTop: '50px',
+          }
         }
       );
       onClose();

@@ -305,6 +305,7 @@ export type Database = {
           finish: string | null
           id: string
           is_active: boolean
+          original_price: number | null
           price: number
           product_id: string
           stock: number
@@ -316,6 +317,7 @@ export type Database = {
           finish?: string | null
           id?: string
           is_active?: boolean
+          original_price?: number | null
           price: number
           product_id: string
           stock: number
@@ -327,6 +329,7 @@ export type Database = {
           finish?: string | null
           id?: string
           is_active?: boolean
+          original_price?: number | null
           price?: number
           product_id?: string
           stock?: number

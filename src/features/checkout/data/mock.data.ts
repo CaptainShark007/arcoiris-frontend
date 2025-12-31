@@ -18,6 +18,7 @@
         storage: '1 Litro',
         color_name: 'Titanio Negro',
         finish: 'Mate',
+        quantity: 1,
       },
       {
         productName: 'Esmalte Sintetico Cintoplom',
@@ -26,6 +27,7 @@
         storage: '4 Litros',
         color_name: 'Blanco',
         finish: 'Brillante',
+        quantity: 2,
       },
       {
         productName: 'Esmalte Sintetico Cintoplom',
@@ -34,6 +36,7 @@
         storage: '10 Litros',
         color_name: 'Azul',
         finish: 'Satinado',
+        quantity: 2,
       },
       {
         productName: 'Canilla PVC',
@@ -42,6 +45,7 @@
         storage: '1/2 pulg',
         color_name: '',
         finish: '',
+        quantity: 4,
       },
       {
         productName: 'MagSafe Case',
@@ -50,6 +54,7 @@
         storage: '',
         color_name: 'Azul',
         finish: 'Mate',
+        quantity: 10,
       },
       {
         productName: 'MagSafe Case',
@@ -58,6 +63,7 @@
         storage: '',
         color_name: 'Azul',
         finish: 'Mate',
+        quantity: 4,
       },
     ],
     address: {

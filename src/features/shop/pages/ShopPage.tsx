@@ -19,6 +19,10 @@ const ShopPage = () => {
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [page]);
+
   // Resetear si cambion los filtros
   useEffect(() => {
     setPage(0);

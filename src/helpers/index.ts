@@ -8,6 +8,12 @@ export const formatPrice = (price?: number | null): string => {
   }).format(safePrice);
 };
 
+export const calculateDiscount = (price: number, originalPrice?: number | null) => {
+  if (!originalPrice || originalPrice <= price) return 0;
+  // Formula: ((Precio Original - Precio Actual) / Precio Original) * 100
+  return Math.round(((originalPrice - price) / originalPrice) * 100);
+}
+
 // Función para formatear la fecha a formato 3 de enero de 2022
 export const formatDateLong = (date: string): string => {
 	const dateObject = new Date(date);
