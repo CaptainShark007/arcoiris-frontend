@@ -196,7 +196,7 @@ export const getAllOrders = async (page: number = 1, limit: number = 10) => {
   const { data, error, count } = await supabase
     .from('orders')
     .select(
-      'id, total_amount, status, created_at, customers(full_name, email, phone)',
+      'id, total_amount, status, created_at, customers(full_name, email, phone), partners(name, code)',
       { count: 'exact' }
     )
     .order('created_at', { ascending: false })

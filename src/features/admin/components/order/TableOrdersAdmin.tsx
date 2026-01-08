@@ -11,13 +11,15 @@ import {
   Card,
   useMediaQuery,
   useTheme,
+  Chip,
 } from '@mui/material';
+import { PersonOutline as PersonIcon } from '@mui/icons-material';
 import { formatDateLong, formatPrice } from '@/helpers';
 import { OrderWithCustomer } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { useChangeStatusOrder } from '@features/admin/hooks';
 
-const tableHeaders = ['N°', 'Cliente', 'Fecha', 'Estado', 'Total'];
+const tableHeaders = ['N°', 'Cliente', 'Referido', 'Fecha', 'Estado', 'Total'];
 
 const statusOptions = [
   { value: 'pending', label: 'Pendiente' },
@@ -52,59 +54,84 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
               p: 2,
               cursor: 'pointer',
               border: '1px solid #e5e7eb',
-              borderRadius: 1,
+              borderRadius: 1, 
+              position: 'relative', 
+              overflow: 'visible', 
               '&:hover': {
                 backgroundColor: '#f8fafc',
-                transition: 'background-color 200ms',
+                borderColor: '#cbd5e1',
+                transition: 'all 200ms',
               },
-              boxShadow: 'none',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
             }}
           >
+            {order.partners && (
+              <Chip
+                icon={<PersonIcon style={{ fontSize: 12, color: '#1e40af' }} />}
+                label={order.partners.code}
+                size='small'
+                sx={{
+                  position: 'absolute',
+                  top: 12,
+                  right: 12,
+                  height: 20,
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                  bgcolor: '#dbeafe',
+                  color: '#1e40af',
+                  border: '1px solid #93c5fd',
+                  zIndex: 1
+                }}
+              />
+            )}
+
             {/* Header móvil */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5, pr: order.partners ? 8 : 0 }}>
               <Box sx={{ flex: 1 }}>
-                <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', mb: 0.5 }}>
-                  N°{order.id} - {order.customers?.full_name}
+                <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', mb: 0.25, color: '#1f2937' }}>
+                  #{order.id}
                 </Typography>
-                <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', mb: 1 }}>
+                <Typography sx={{ fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>
+                  {order.customers?.full_name}
+                </Typography>
+                <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af', mt: 0.5 }}>
                   {formatDateLong(order.created_at)}
                 </Typography>
               </Box>
-              <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>
-                {formatPrice(order.total_amount)}
-              </Typography>
             </Box>
 
-            {/* Estado */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', minWidth: '60px' }}>
-                Estado:
-              </Typography>
+            <Box sx={{ my: 1.5, borderTop: '1px dashed #e5e7eb' }} />
+
+            {/* Fila Inferior: Estado y Total */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              
+              {/* Select de Estado Compacto */}
               <Select
                 value={order.status}
                 onChange={(e) => handleStatusChange(order.id, e.target.value)}
                 onClick={(e) => e.stopPropagation()}
-                size="small"
+                size='small'
+                variant="standard"
+                disableUnderline
                 sx={{
-                  fontSize: '0.75rem',
-                  flex: 1,
-                  '& .MuiSelect-select': { py: 0.5 },
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  color: '#4b5563',
+                  '& .MuiSelect-select': { py: 0.5, pl: 0, pr: '24px !important' },
                 }}
               >
                 {statusOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value} sx={{ fontSize: '0.75rem' }}>
+                  <MenuItem key={option.value} value={option.value} sx={{ fontSize: '0.8rem' }}>
                     {option.label}
                   </MenuItem>
                 ))}
               </Select>
-            </Box>
 
-            {/* Contacto */}
-            <Box sx={{ mt: 1.5, pt: 1, borderTop: '1px solid #f1f5f9' }}>
-              <Typography sx={{ fontSize: '0.7rem', color: '#64748b' }}>
-                {[order.customers?.email, order.customers?.phone].filter(Boolean).join(' • ')}
+              <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#111827' }}>
+                {formatPrice(order.total_amount)}
               </Typography>
             </Box>
+
           </Card>
         ))}
       </Box>
@@ -155,14 +182,36 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
               </TableCell>
               {/* Cliente */}
               <TableCell sx={{ p: 2 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+                >
                   <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                     {order.customers?.full_name}
                   </Typography>
                   <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                    {[order.customers?.email, order.customers?.phone].filter(Boolean).join(' | ')}
+                    {[order.customers?.email, order.customers?.phone]
+                      .filter(Boolean)
+                      .join(' | ')}
                   </Typography>
                 </Box>
+              </TableCell>
+
+              {/* Referido */}
+              <TableCell sx={{ p: 2 }}>
+                {order.partners ? (
+                  <Chip
+                    label={order.partners.code}
+                    size='small'
+                    color='info'
+                    variant='outlined'
+                    title={`Socio: ${order.partners.name}`}
+                    sx={{ fontWeight: 'bold' }}
+                  />
+                ) : (
+                  <Typography variant='caption' color='text.disabled'>
+                    Directo
+                  </Typography>
+                )}
               </TableCell>
 
               {/* Fecha */}
@@ -176,7 +225,7 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
                   value={order.status}
                   onChange={(e) => handleStatusChange(order.id, e.target.value)}
                   onClick={(e) => e.stopPropagation()}
-                  size="small"
+                  size='small'
                   sx={{
                     fontSize: '0.875rem',
                     minWidth: 120,

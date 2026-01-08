@@ -43,6 +43,10 @@ export interface OrderWithCustomer {
 		email: string;
     phone: string | null;
 	} | null;
+  partners?: {
+    name: string;
+    code: string;
+  } | null;
 }
 
 // Define la estructura de tu snapshot (coincide con el JSON del SP)
