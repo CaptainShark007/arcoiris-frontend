@@ -19,7 +19,7 @@ import { OrderWithCustomer } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { useChangeStatusOrder } from '@features/admin/hooks';
 
-const tableHeaders = ['N°', 'Cliente', 'Referido', 'Fecha', 'Estado', 'Total'];
+const tableHeaders = ['N°', 'Cliente', 'Canal', 'Fecha', 'Estado', 'Total'];
 
 const statusOptions = [
   { value: 'pending', label: 'Pendiente' },

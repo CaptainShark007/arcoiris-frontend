@@ -1,9 +1,10 @@
-import { Box, Card, Typography } from '@mui/material';
+import { Box, Card, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import { Loader, SeoHead } from '@shared/components';
 import { useAllOrders } from '../hooks';
 import { TableOrdersAdmin } from '../components';
 import { useState } from 'react';
 import CustomPagination from '@shared/components/CustomPagination';
+import { OrderFilterType } from '@/actions';
 
 const DashboardOrdersPage = () => {
 
@@ -11,9 +12,12 @@ const DashboardOrdersPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const [filter, setFilter] = useState<OrderFilterType>('all');
+
   const { orders, totalItems, isLoading } = useAllOrders({
     page: page + 1,
     limit: rowsPerPage,
+    filter,
   });
 
   const handleChangePage = (newPage: number) => {
@@ -24,6 +28,11 @@ const DashboardOrdersPage = () => {
     setRowsPerPage(newRows);
     setPage(0); // Reinicia a la primera página cuando cambia la cantidad de filas
   }
+
+  const handleFilterChange = (e: any) => {
+    setFilter(e.target.value);
+    setPage(0);
+  };
 
   if (isLoading || !orders) {
     return (
@@ -47,9 +56,26 @@ const DashboardOrdersPage = () => {
         title="Panel de Pedidos" 
         description="Gestión de pedidos en el panel de administración"
       />
-      <Typography variant="h5" sx={{ fontWeight: '800', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-        Pedidos
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mt: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: '800', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+          Pedidos
+        </Typography>
+
+        {/* SELECTOR DE FILTRO */}
+        <FormControl size="small" sx={{ minWidth: 180, bgcolor: 'white' }}>
+          <InputLabel id="filter-select-label">Filtrar por origen</InputLabel>
+          <Select
+            labelId="filter-select-label"
+            value={filter}
+            label="Filtrar por origen"
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="all">Todos los pedidos</MenuItem>
+            <MenuItem value="partner">Solo Socios / Referidos</MenuItem>
+            <MenuItem value="direct">Solo Ventas Directas</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
 
       <Card sx={{ 
         p: { xs: 1.5, sm: 2.5 },

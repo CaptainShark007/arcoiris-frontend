@@ -11,6 +11,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import { Person as PersonIcon, Store as StoreIcon } from '@mui/icons-material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { Loader, SeoHead } from '@shared/components';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -281,6 +282,57 @@ const DashboardOrderPage = () => {
               </Typography>
             </Box>
           </Box>
+        </Card>
+
+        {/* Tarjeta de Canal de Venta / Socio */}
+        <Card sx={{ 
+          p: { xs: 1.5, sm: 2.5 }, 
+          bgcolor: '#F9FAFB', 
+          boxShadow: 'none', 
+          border: '1px solid #E5E7EB',
+          height: 'fit-content',
+        }}>
+          <Typography variant='h6' sx={{ 
+            fontWeight: 'bold', 
+            mb: 2,
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}>
+            Canal de Venta
+          </Typography>
+          
+          {order.partner ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: '#eff6ff', borderRadius: 1, border: '1px solid #bfdbfe' }}>
+                <PersonIcon sx={{ color: '#2563eb' }} />
+                <Box>
+                  <Typography sx={{ fontWeight: 600, color: '#1e3a8a', fontSize: '0.9rem' }}>
+                    Socio: {order.partner.name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#3b82f6', fontWeight: 500 }}>
+                    Código: {order.partner.code}
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                Esta venta fue generada a través de un link de referido.
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: 'white', borderRadius: 1, border: '1px solid #e5e7eb' }}>
+              <StoreIcon sx={{ color: '#6b7280' }} />
+              <Box>
+                <Typography sx={{ fontWeight: 600, color: '#374151', fontSize: '0.9rem' }}>
+                  Venta Directa
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Orgánica / Sin referido
+                </Typography>
+              </Box>
+            </Box>
+          )}
         </Card>
 
         {/* Dirección */}
