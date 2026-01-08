@@ -197,6 +197,7 @@ export type Database = {
           created_at: string
           customer_id: string
           id: number
+          partner_id: string | null
           status: string
           total_amount: number
         }
@@ -205,6 +206,7 @@ export type Database = {
           created_at?: string
           customer_id: string
           id?: number
+          partner_id?: string | null
           status?: string
           total_amount: number
         }
@@ -213,6 +215,7 @@ export type Database = {
           created_at?: string
           customer_id?: string
           id?: number
+          partner_id?: string | null
           status?: string
           total_amount?: number
         }
@@ -231,7 +234,44 @@ export type Database = {
             referencedRelation: "customers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orders_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      partners: {
+        Row: {
+          code: string
+          commission_default: number | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          commission_default?: number | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          commission_default?: number | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       products: {
         Row: {
@@ -357,6 +397,7 @@ export type Database = {
           p_cart_items: Json
           p_city: string
           p_country: string
+          p_partner_code?: string
           p_postal_code: string
           p_state: string
           p_total_amount: number

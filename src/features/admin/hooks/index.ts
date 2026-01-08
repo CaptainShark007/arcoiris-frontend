@@ -16,3 +16,6 @@ export * from './category/useCountProductsByCategory';
 export * from './order/useAllOrders';
 export * from './order/useChangeStatusOrder';
 export * from './order/useOrderAdmin';
+
+// partners
+export * from './partner/usePartners';

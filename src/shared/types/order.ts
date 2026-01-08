@@ -13,6 +13,7 @@ export interface OrderInput {
     price: number;
   }[];
   totalAmount: number;
+  partnerCode?: string | null;
 }
 
 export interface CreateOrderResponse {

@@ -48,6 +48,7 @@ export const createOrder = async (
         p_country: order.address.country,
         p_cart_items: cartItemsJson,
         p_total_amount: order.totalAmount,
+        p_partner_code: order.partnerCode || null,
       }
     );
 
