@@ -58,7 +58,7 @@ export const PaymentStep = ({
       // ============================================================
       // ENVÍO DE EMAIL
       // ============================================================
-      /* try {
+      try {
         await enviarEmailOrden({
           id: response.orderId,
           email: customer?.email || '',
@@ -86,7 +86,7 @@ export const PaymentStep = ({
             position: 'bottom-right',
           }
         );
-      } */
+      }
       // ============================================================
 
       // Navegar al siguiente paso
@@ -340,7 +340,7 @@ export const PaymentStep = ({
           variant='outlined'
           onClick={onBack}
           fullWidth
-          //disabled={isPending || isLoading || isLoadingCustomer}
+          disabled={isPending || isLoading || isLoadingCustomer}
           //disabled={isPending}
         >
           Volver

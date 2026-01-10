@@ -26,7 +26,7 @@ const DashboardOrdersPage = () => {
 
   const handleChangeRowsPerPage = (newRows: number) => {
     setRowsPerPage(newRows);
-    setPage(0); // Reinicia a la primera página cuando cambia la cantidad de filas
+    setPage(0);
   }
 
   const handleFilterChange = (e: any) => {
@@ -88,11 +88,6 @@ const DashboardOrdersPage = () => {
       </Card>
 
       <Box sx={{ px: { xs: 1, sm: 2 } }}>
-        {/* <Pagination 
-          totalItems={totalItems}
-          page={page}
-          setPage={setPage}
-        /> */}
         <CustomPagination 
           page={page}
           totalPages={totalPage}
