@@ -48,6 +48,7 @@ export const createOrder = async (
         p_country: order.address.country,
         p_cart_items: cartItemsJson,
         p_total_amount: order.totalAmount,
+        p_partner_code: order.partnerCode || null,
       }
     );
 
@@ -187,19 +188,32 @@ export const getOrderById = async (orderId: number) => {
 // *********************************************************************************************
 //                                    ADMINISTRADOR
 // *********************************************************************************************
-// Metodo usado en el panel de administrador para obtener todas las ordenes
-export const getAllOrders = async (page: number = 1, limit: number = 10) => {
+export type OrderFilterType = 'all' | 'partner' | 'direct';
+
+export const getAllOrders = async (
+  page: number = 1,
+  limit: number = 10,
+  filter: OrderFilterType = 'all'
+) => {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from('orders')
     .select(
-      'id, total_amount, status, created_at, customers(full_name, email, phone)',
+      'id, total_amount, status, created_at, customers(full_name, email, phone), partners(name, code)',
       { count: 'exact' }
-    )
-    .order('created_at', { ascending: false })
-    .range(from, to);
+    );
+
+  if (filter === 'partner') {
+    query = query.not('partner_id', 'is', null);
+  } else if (filter === 'direct') {
+    query = query.is('partner_id', null);
+  }
+
+  query = query.order('created_at', { ascending: false }).range(from, to);
+
+  const { data, error, count } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -236,7 +250,7 @@ export const getOrderByIdAdmin = async (id: number) => {
   const { data: order, error } = await supabase
     .from('orders')
     .select(
-      '*, addresses(*), customers(full_name, email), order_items(quantity, price, product_snapshot)'
+      '*, addresses(*), customers(full_name, email), order_items(quantity, price, product_snapshot), partners(name, code)'
     )
     .eq('id', id)
     .single();
@@ -250,6 +264,12 @@ export const getOrderByIdAdmin = async (id: number) => {
       email: order?.customers?.email,
       full_name: order.customers?.full_name,
     },
+    partner: order.partners
+      ? {
+          name: order.partners.name,
+          code: order.partners.code,
+        }
+      : null,
     totalAmount: order.total_amount,
     status: order.status,
     created_at: order.created_at,

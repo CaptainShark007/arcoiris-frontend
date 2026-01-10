@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 
 const DashboardNewProductPage = () => {
 	return (
-		<Box> {/* sx={{ p: 2 }} */}
+		<Box>
 			<SeoHead 
 				title="Nuevo Producto"
 				description="Formulario para agregar un nuevo producto en el panel de administración"

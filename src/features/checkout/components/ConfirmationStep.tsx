@@ -28,10 +28,10 @@ import { formatPrice } from '@/helpers';
 import { useNavigate } from 'react-router';
 
 // DESCOMENTAR para usar la version real
-//import { useOrder } from '@features/orders/hooks/useOrder';
-//import { Loader } from '@shared/components';
+import { useOrder } from '@features/orders/hooks/useOrder';
+import { Loader } from '@shared/components';
 
-import { mockData } from '../data/mock.data'; // COMENTAR para usar la version de prueba
+//import { mockData } from '../data/mock.data'; // COMENTAR para usar la version de prueba
 import { useState } from 'react';
 
 interface ConfirmationStepProps {
@@ -58,12 +58,12 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
   }
 
   // DESCOMENTAR para usar la version real
-  /* const { data, isLoading, isError } = useOrder(orderId || 0);
+  const { data, isLoading, isError } = useOrder(orderId || 0);
   if (isError) return <Typography variant='body2' sx={{ textAlign: 'center' }}>Error al cargar los detalles de la orden.</Typography>;
   if (isLoading) return <Loader />
-  if (!data) return <Typography variant='body2' sx={{ textAlign: 'center' }}>No hay datos disponibles.</Typography>; */
+  if (!data) return <Typography variant='body2' sx={{ textAlign: 'center' }}>No hay datos disponibles.</Typography>;
 
-  const data = mockData; // COMENTAR para usar la version de prueba
+  //const data = mockData; // COMENTAR para usar la version de prueba
 
   // --- LÓGICA DE MENSAJE ---
   const phoneNumber = "5493624105888"; 
