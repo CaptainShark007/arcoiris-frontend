@@ -13,6 +13,7 @@ export interface OrderInput {
     price: number;
   }[];
   totalAmount: number;
+  partnerCode?: string | null;
 }
 
 export interface CreateOrderResponse {
@@ -42,6 +43,10 @@ export interface OrderWithCustomer {
 		email: string;
     phone: string | null;
 	} | null;
+  partners?: {
+    name: string;
+    code: string;
+  } | null;
 }
 
 // Define la estructura de tu snapshot (coincide con el JSON del SP)

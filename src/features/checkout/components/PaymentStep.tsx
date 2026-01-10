@@ -14,8 +14,9 @@ import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
 // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
-//import { enviarEmailOrden } from '@/services/emailService';
-//import { useCustomer, useUsers } from '@shared/hooks';
+import { enviarEmailOrden } from '@/services/emailService';
+import { useCustomer, useUsers } from '@shared/hooks';
+import { useReferral } from '@shared/hooks/useReferral';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -33,9 +34,11 @@ export const PaymentStep = ({
   isProcessingRef,
 }: PaymentStepProps) => {
   // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
-  /* const { session, isLoading } = useUsers();
+  const { session, isLoading } = useUsers();
   const userId = session?.user?.id;
-  const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId); */
+  const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
+
+  const { getReferralCode } = useReferral();
 
   const [selected, setSelected] = useState<'acordar'>('acordar');
 
@@ -55,7 +58,7 @@ export const PaymentStep = ({
       // ============================================================
       // ENVÍO DE EMAIL
       // ============================================================
-      /* try {
+      try {
         await enviarEmailOrden({
           id: response.orderId,
           email: customer?.email || '',
@@ -83,7 +86,7 @@ export const PaymentStep = ({
             position: 'bottom-right',
           }
         );
-      } */
+      }
       // ============================================================
 
       // Navegar al siguiente paso
@@ -108,12 +111,12 @@ export const PaymentStep = ({
   const handleConfirm = useCallback(async () => {
     // Validar que los datos del cliente se hayan cargado
     // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
-    /* if (isLoadingCustomer) {
+    if (isLoadingCustomer) {
       toast.error('Por favor espera mientras se cargan tus datos', {
         position: 'top-right',
       });
       return;
-    } */
+    }
 
     // Validar que la información de envío esté completa
     if (!shippingInfo) {
@@ -139,7 +142,7 @@ export const PaymentStep = ({
     // ============================================================
 
     // Mostrar toast de procesamiento
-    /* toast.loading('Procesando tu orden...', {
+    toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'top-right',
       duration: Infinity,
@@ -161,6 +164,7 @@ export const PaymentStep = ({
         price: item.price,
       })),
       totalAmount: orderSummary.totalPrice,
+      partnerCode: getReferralCode() || null,
     };
 
     // Ejecutar la mutación
@@ -169,13 +173,13 @@ export const PaymentStep = ({
     // Cerrar toast después de que la mutación termine
     setTimeout(() => {
       toast.dismiss('order-processing');
-    }, 100); */
+    }, 100);
 
     // ============================================================
     // OPCIÓN 2: SIMULACIÓN (Para pruebas sin ejecutar SP)
     // Comenta esta sección cuando uses OPCIÓN 1
     // ============================================================
-    toast.loading('Procesando tu orden...', {
+    /* toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'bottom-right',
       duration: 1500,
@@ -191,7 +195,7 @@ export const PaymentStep = ({
       });
 
       onNext();
-    }, 1500);
+    }, 1500); */
   }, [
     shippingInfo,
     orderSummary,
@@ -336,7 +340,7 @@ export const PaymentStep = ({
           variant='outlined'
           onClick={onBack}
           fullWidth
-          //disabled={isPending || isLoading || isLoadingCustomer}
+          disabled={isPending || isLoading || isLoadingCustomer}
           //disabled={isPending}
         >
           Volver
@@ -350,7 +354,7 @@ export const PaymentStep = ({
             position: 'relative',
           }}
         >
-          {isPending ? 'Procesando...' : 'Confirmar orden'}
+          {isPending ? 'Procesando...' : isLoading || isLoadingCustomer ? 'Cargando datos...' : 'Confirmar orden'}
         </Button>
       </Box>
     </Box>
