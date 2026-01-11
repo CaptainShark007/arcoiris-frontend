@@ -1,8 +1,11 @@
 import { supabase } from "@/supabase/client";
 import { ContactFormValues } from "@features/contact/schemas/contact.schema";
 
+type ContactoPayload = ContactFormValues & {
+  destinationEmail?: string | null;
+};
 
-export async function enviarEmailContacto(datos: ContactFormValues) {
+export async function enviarEmailContacto(datos: ContactoPayload) {
   try {
     const { data, error } = await supabase.functions.invoke(
       'send-contact-email',

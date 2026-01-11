@@ -8,11 +8,11 @@ import {
 } from '../schemas/contact.schema';
 import { enviarEmailContacto } from '@/services/emailContactService';
 
-interface ContactFormProps {
+interface Props {
   partnerEmail?: string | null;
 }
 
-export const ContactForm = ({ partnerEmail }: ContactFormProps) => {
+export const ContactForm = ({ partnerEmail }: Props) => {
   const {
     register,
     handleSubmit,
@@ -23,18 +23,12 @@ export const ContactForm = ({ partnerEmail }: ContactFormProps) => {
   });
 
   const onSubmit = async (data: ContactFormValues) => {
-    // 3. (Opcional) Combinamos los datos del formulario con el email del socio
-    // para que tu servicio sepa a quién enviar el correo.
-    const datosParaEnviar = {
-        ...data,
-        destinationEmail: partnerEmail // Asegúrate que tu servicio maneje esto
+    const payload = {
+      ...data, 
+      destinationEmail: partnerEmail 
     };
 
-    // Nota: Si 'enviarEmailContacto' no acepta parámetros extra, 
-    // tendrás que actualizar ese servicio también.
-    // Por ahora, lo paso como estaba pero asumiendo que modificarás el servicio:
-    
-    const promise = enviarEmailContacto(datosParaEnviar as any).then((resultado) => {
+    const promise = enviarEmailContacto(payload).then((resultado) => {
       if (!resultado.success) {
         throw new Error(resultado.error || 'Error desconocido');
       }
