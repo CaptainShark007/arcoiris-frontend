@@ -1,6 +1,6 @@
 import { SeoHead } from '@shared/components';
 import { AddressData, ContactForm } from '../components';
-import { useCurrentPartner } from '../hooks/useCurrentPartner';
+import { useCurrentPartner } from '../../../shared/hooks/useCurrentPartner';
 import { useEffect } from 'react';
 
 const ContactPage = () => {
