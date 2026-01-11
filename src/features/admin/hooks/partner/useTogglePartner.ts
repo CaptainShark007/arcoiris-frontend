@@ -6,11 +6,10 @@ import toast from 'react-hot-toast';
 export const useTogglePartner = () => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync, isPending } = useMutation({ // <--- CAMBIO: isPending
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => 
       togglePartnerStatus(id, isActive),
     onSuccess: (_, variables) => {
-      // <--- CAMBIO v5
       queryClient.invalidateQueries({ queryKey: ['partners'] });
       toast.success(
         `Socio ${variables.isActive ? 'activado' : 'desactivado'} correctamente`
@@ -23,6 +22,6 @@ export const useTogglePartner = () => {
 
   return {
     togglePartner: mutateAsync,
-    isToggling: isPending, // Mapeamos isPending
+    isToggling: isPending,
   };
 };

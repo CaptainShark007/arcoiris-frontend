@@ -1,26 +1,32 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-const REFERRAL_KEY = 'ecommerce_partner_code';
+const REFERRAL_KEY = 'arcoiris_partner_code';
 
 export const useReferral = () => {
+  // Inicializamos el estado leyendo de localStorage para persistencia inmediata
+  const [referralCode, setReferralCode] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(REFERRAL_KEY);
+    }
+    return null;
+  });
+
   useEffect(() => {
-
     const params = new URLSearchParams(window.location.search);
-    const refCode = params.get('ref');
+    const refCodeFromUrl = params.get('ref');
 
-    if (refCode) {
-      console.log('✅ Referido detectado y guardado:', refCode);
-      localStorage.setItem(REFERRAL_KEY, refCode);
+    if (refCodeFromUrl) {
       
-      // Opcional: Si quieres limpiar la URL visualmente sin recargar
+      const normalizedCode = refCodeFromUrl.toUpperCase();
+      
+      localStorage.setItem(REFERRAL_KEY, normalizedCode);
+      setReferralCode(normalizedCode);
+      
+      // Opcional: Limpiar URL
       // const newUrl = window.location.pathname + window.location.hash;
       // window.history.replaceState({}, '', newUrl);
     }
-  }, []); // Se ejecuta solo una vez al montar el componente que lo llame
+  }, []);
 
-  const getReferralCode = (): string | null => {
-    return localStorage.getItem(REFERRAL_KEY);
-  };
-
-  return { getReferralCode };
+  return { referralCode };
 };

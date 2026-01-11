@@ -1,5 +1,6 @@
 import { SeoHead } from '@shared/components';
 import { AddressData, ContactForm } from '../components';
+import { useCurrentPartner } from '../hooks/useCurrentPartner';
 import { useEffect } from 'react';
 
 const ContactPage = () => {
@@ -7,14 +8,18 @@ const ContactPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const { data: partner } = useCurrentPartner();
+
   return (
     <>
       <SeoHead
-        title='Contacto'
-        description='Ponte en contacto con Arcoiris - Estamos aquí para ayudarte con tus consultas y pedidos'
+        title={partner ? `Contacto - ${partner.name}` : 'Contacto'}
+        description='Ponte en contacto con nosotros'
       />
-      <ContactForm />
-      <AddressData />
+      
+      <ContactForm partnerEmail={partner?.email} />
+      
+      <AddressData partner={partner} />
     </>
   );
 };
