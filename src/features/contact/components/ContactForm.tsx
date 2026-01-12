@@ -1,12 +1,13 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, Button, TextField, Typography, Paper } from '@mui/material';
 import toast from 'react-hot-toast';
 import {
   contactFormSchema,
   ContactFormValues,
 } from '../schemas/contact.schema';
 import { enviarEmailContacto } from '@/services/emailContactService';
+import SendIcon from '@mui/icons-material/Send';
 
 interface Props {
   partnerEmail?: string | null;
@@ -46,113 +47,136 @@ export const ContactForm = ({ partnerEmail }: Props) => {
   };
 
   return (
-    <Box
-      component='form'
-      onSubmit={handleSubmit(onSubmit)}
+    <Paper
+      elevation={0}
       sx={{
-        width: '100%',
-        maxWidth: { xs: '100%', sm: '90%', md: '80%', lg: '60%' },
-        mx: 'auto',
-        my: { xs: 2, md: 3 },
-        px: { xs: 2, sm: 3, md: 4 },
-        py: { xs: 3, sm: 4, md: 5 },
+        p: { xs: 3, md: 5 },
+        borderRadius: 1,
+        bgcolor: 'background.paper',
+        height: '100%',
+        boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
+        border: '1px solid',
+        borderColor: 'divider'
       }}
-      noValidate
     >
-      <Typography
-        variant='h3'
-        component='h2'
-        sx={{
-          mb: { xs: 2, md: 3 },
-          fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
-          textAlign: 'center',
-          fontWeight: 600,
-          color: 'text.primary',
-        }}
-      >
-        Pongámonos en contacto
-      </Typography>
-
-      <Typography
-        variant='body1'
-        color='text.secondary'
-        sx={{
-          mb: { xs: 3, md: 4 },
-          textAlign: { xs: 'left', sm: 'center' },
-          fontSize: { xs: '0.95rem', sm: '1rem' },
-          lineHeight: 1.6,
-        }}
-      >
-        No dude en enviarnos su consulta o pedido de cotización. En breve nos
-        estaremos comunicando con usted. Estamos para servirle.
-      </Typography>
-
       <Box
-        sx={{
-          display: 'grid',
-          gap: { xs: 2.5, sm: 3 },
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-        }}
+        component='form'
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
       >
-        <TextField
-          label='Su nombre *'
-          fullWidth
-          {...register('name')}
-          error={!!errors.name}
-          helperText={errors.name?.message}
-        />
-        <TextField
-          label='Número de teléfono *'
-          fullWidth
-          defaultValue='+54'
-          {...register('phone')}
-          error={!!errors.phone}
-          helperText={errors.phone?.message}
-        />
-        <TextField
-          label='Su correo electrónico'
-          fullWidth
-          type='email'
-          {...register('email')}
-          error={!!errors.email}
-          helperText={errors.email?.message}
-        />
-        <TextField
-          label='Asunto *'
-          fullWidth
-          {...register('subject')}
-          error={!!errors.subject}
-          helperText={errors.subject?.message}
-        />
+        <Typography
+          variant='overline'
+          color='primary'
+          fontWeight="bold"
+          sx={{ letterSpacing: 1.5 }}
+        >
+          CONTACTO
+        </Typography>
 
-        <TextField
-          label='Su pregunta *'
+        <Typography
+          variant='h4'
+          component='h2'
+          sx={{
+            mt: 1,
+            mb: 2,
+            fontWeight: 800,
+            color: 'text.primary',
+            fontSize: { xs: '1.75rem', md: '2.2rem' }
+          }}
+        >
+          Envíanos un mensaje
+        </Typography>
+
+        <Typography
+          variant='body1'
+          color='text.secondary'
+          sx={{ mb: 4, maxWidth: '600px', lineHeight: 1.7 }}
+        >
+          ¿Tienes alguna duda o proyecto en mente? Completa el formulario y nuestro equipo te responderá a la brevedad.
+        </Typography>
+
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 3,
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+          }}
+        >
+          <TextField
+            label='Su nombre'
+            variant="outlined"
+            fullWidth
+            {...register('name')}
+            error={!!errors.name}
+            helperText={errors.name?.message}
+            InputProps={{ sx: { borderRadius: 1 } }}
+          />
+          <TextField
+            label='Teléfono'
+            variant="outlined"
+            fullWidth
+            defaultValue='+54'
+            {...register('phone')}
+            error={!!errors.phone}
+            helperText={errors.phone?.message}
+            InputProps={{ sx: { borderRadius: 1 } }}
+          />
+          <TextField
+            label='Correo electrónico'
+            variant="outlined"
+            fullWidth
+            type='email'
+            {...register('email')}
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            InputProps={{ sx: { borderRadius: 1 } }}
+            sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}
+          />
+          <TextField
+            label='Asunto'
+            variant="outlined"
+            fullWidth
+            {...register('subject')}
+            error={!!errors.subject}
+            helperText={errors.subject?.message}
+            InputProps={{ sx: { borderRadius: 1 } }}
+            sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}
+          />
+
+          <TextField
+            label='¿En qué podemos ayudarte?'
+            variant="outlined"
+            fullWidth
+            multiline
+            rows={4}
+            sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}
+            {...register('message')}
+            error={!!errors.message}
+            helperText={errors.message?.message}
+            InputProps={{ sx: { borderRadius: 1 } }}
+          />
+        </Box>
+
+        <Button
+          type='submit'
+          variant='contained'
+          size='large'
+          disabled={isSubmitting}
           fullWidth
-          multiline
-          rows={4}
-          sx={{ gridColumn: { xs: 'span 1', sm: 'span 2' } }}
-          {...register('message')}
-          error={!!errors.message}
-          helperText={errors.message?.message}
-        />
+          endIcon={<SendIcon />}
+          sx={{
+            mt: 4,
+            py: 2,
+            borderRadius: 1,
+            fontWeight: 700,
+            textTransform: 'none',
+            fontSize: '1.1rem',
+            boxShadow: '0 8px 16px -4px rgba(0,0,0,0.2)'
+          }}
+        >
+          {isSubmitting ? 'Enviando...' : 'Enviar Mensaje'}
+        </Button>
       </Box>
-
-      {/* Botón */}
-      <Button
-        type='submit'
-        variant='contained'
-        size='large'
-        disabled={isSubmitting}
-        fullWidth
-        sx={{
-          mt: { xs: 3, md: 4 },
-          py: { xs: 1.5, sm: 1.75 },
-          fontSize: { xs: '0.95rem', sm: '1rem' },
-          fontWeight: 600,
-        }}
-      >
-        {isSubmitting ? 'Enviando...' : 'Enviar Mensaje'}
-      </Button>
-    </Box>
+    </Paper>
   );
 };
