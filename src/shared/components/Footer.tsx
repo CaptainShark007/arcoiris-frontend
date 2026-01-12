@@ -13,13 +13,13 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 
-// Iconos
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CodeIcon from '@mui/icons-material/Code';
+import { useCurrentPartner } from '@shared/hooks';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -54,9 +54,19 @@ const FooterLink = ({ href, children }: { href: string; children: React.ReactNod
   </Link>
 );
 
+const DEFAULT_CONTACT = {
+  address: "Av. Edison 352, Resistencia, Chaco",
+  email: "tienda.arcoiris.team@gmail.com"
+};
+
 export const Footer = () => {
   const theme = useTheme();
   const currentYear = new Date().getFullYear();
+
+  const { data: partner } = useCurrentPartner();
+
+  const displayAddress = partner?.address || DEFAULT_CONTACT.address;
+  const displayEmail = partner?.email || DEFAULT_CONTACT.email;
 
   return (
     <Box
@@ -112,7 +122,7 @@ export const Footer = () => {
                   sx={{ 
                     bgcolor: 'rgba(255,255,255,0.1)', 
                     borderRadius: 1,
-                    input: { color: 'white', py: 1 }, // Ajuste de padding
+                    input: { color: 'white', py: 1 }, 
                     '& fieldset': { border: 'none' }
                   }}
                 />
@@ -156,17 +166,17 @@ export const Footer = () => {
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', color: '#94a3b8' }}>
                     <LocationOnIcon fontSize="small" sx={{ color: theme.palette.primary.main, mt: 0.5 }} />
                     <Typography variant="body2">
-                        Av. Edison 352, Resistencia, Chaco
+                        {displayAddress}
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', color: '#94a3b8' }}>
                     <MailOutlineIcon fontSize="small" sx={{ color: theme.palette.primary.main }} />
                     <Typography variant="body2">
-                        tienda.arcoiris.team@gmail.com
+                        {displayEmail}
                     </Typography>
                 </Box>
                 
-                {/* Redes Sociales */}
+                {/* Redes Sociales*/}
                 <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                     {[
                         { icon: <FacebookIcon />, url: 'https://www.facebook.com/share/19rHBtzMM2/' },
@@ -191,13 +201,13 @@ export const Footer = () => {
 
         <Divider sx={{ my: 4, borderColor: 'rgba(255,255,255,0.1)' }} />
 
-        {/* BARRA INFERIOR (Flexbox simple) */}
+        {/* BARRA INFERIOR */}
         <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' }, 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            gap: 2 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          gap: 2 
         }}>
           <Typography variant="caption" sx={{ color: '#64748b', textAlign: 'center' }}>
             © {currentYear} Arcoiris Pinturería. Todos los derechos reservados.
@@ -222,7 +232,7 @@ export const Footer = () => {
             <Typography variant="caption" sx={{ color: '#64748b' }}>
                 Desarrollado por {' '}
                 <Link 
-                    href="#" // Tu link personal
+                    href="#"
                     target="_blank"
                     sx={{ 
                         color: theme.palette.primary.light, 

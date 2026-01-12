@@ -12,17 +12,29 @@ import {
   Fade,
   Avatar,
 } from '@mui/material';
+import { useCurrentPartner } from '@shared/hooks';
+
+const DEFAULT_PHONE = '5493624049548';
+const DEFAULT_NAME = 'Atención al Cliente';
 
 export const WhatsappButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
+  const { data: partner } = useCurrentPartner();
+
+  const displayPhone = partner?.phone || DEFAULT_PHONE;
+  const displayName = partner?.name || DEFAULT_NAME;
+  const displayRole = partner ? 'Asesor Comercial' : 'Arcoiris';
+
   const handleOpenWhatsapp = () => {
+    const cleanPhone = displayPhone.replace(/\D/g, ''); 
+    
     const message = encodeURIComponent(
       'Hola! Tengo una consulta sobre un producto.'
     );
-    const phone = '5493624049548';
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    
+    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
 
   const toggleChat = () => {
@@ -57,14 +69,6 @@ export const WhatsappButton = () => {
               justifyContent: 'space-between',
             }}
           >
-            {/* <Box display="flex" alignItems="center" gap={1}>
-              <Avatar sx={{ bgcolor: "#25D366", width: 32, height: 32 }}>
-                <WhatsAppIcon fontSize="small" />
-              </Avatar>
-              <Typography variant="subtitle1" fontWeight="bold">
-                Atención al Cliente | Arcoiris
-              </Typography>
-            </Box> */}
             <Box
               sx={{
                 bgcolor: '#1f2937',
@@ -83,16 +87,13 @@ export const WhatsappButton = () => {
                   fontWeight='bold'
                   lineHeight={1.2}
                 >
-                  Atención al Cliente
+                  {displayName}
                 </Typography>
                 <Typography variant='caption' sx={{ opacity: 0.8 }}>
-                  Arcoiris
+                  {displayRole}
                 </Typography>
               </Box>
             </Box>
-            {/* <IconButton size="small" onClick={toggleChat} sx={{ color: "grey.400" }}>
-              <CloseIcon fontSize="small" />
-            </IconButton> */}
           </Box>
 
           <Box sx={{ p: 2, bgcolor: '#e5e7eb', minHeight: 100 }}>
@@ -137,14 +138,14 @@ export const WhatsappButton = () => {
                 },
               }}
             >
-              Abrir chat
+              Abrir chat con {partner ? partner.name.split(' ')[0] : 'nosotros'}
             </Button>
           </Box>
         </Paper>
       </Fade>
 
       <Tooltip
-        title={isOpen ? 'Cerrar' : 'Contáctanos por WhatsApp'}
+        title={isOpen ? 'Cerrar' : `Contactar a ${partner ? partner.name : 'Soporte'}`}
         placement='left'
       >
         <Fab

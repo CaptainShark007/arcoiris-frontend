@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -15,20 +16,26 @@ import {
   Card,
   useMediaQuery,
   useTheme,
-  Button
+  Button,
+  Stack,
+  Divider
 } from '@mui/material';
 import { 
   ContentCopy as CopyIcon, 
   Delete as DeleteIcon,
   Block as BlockIcon,
   CheckCircle as CheckIcon,
-  Person as PersonIcon
+  Edit as EditIcon,
+  Phone as PhoneIcon,
+  Email as EmailIcon,
+  Map as MapIcon
 } from '@mui/icons-material';
 import { toast } from 'react-hot-toast';
 
 import { Partner } from '@/shared/types/partner';
 import { useDeletePartner } from '../../hooks/partner/useDeletePartner';
 import { useTogglePartner } from '../../hooks/partner/useTogglePartner';
+import { EditPartnerModal } from './EditPartnerModal';
 
 interface Props {
   partners: Partner[];
@@ -39,7 +46,8 @@ export const PartnersTable = ({ partners, isLoading }: Props) => {
   const { deletePartner, isDeleting } = useDeletePartner();
   const { togglePartner, isToggling } = useTogglePartner();
   
-  // Hooks para detectar móvil
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -78,185 +86,232 @@ export const PartnersTable = ({ partners, isLoading }: Props) => {
   // --- VISTA MÓVIL (TARJETAS) ---
   if (isMobile) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {partners.map((partner) => (
-          <Card 
-            key={partner.id}
-            sx={{ 
-              p: 2, 
-              border: '1px solid #e5e7eb', 
-              borderRadius: 2,
-              boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-              position: 'relative'
-            }}
-          >
-            {/* Header Tarjeta */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Box sx={{ bgcolor: '#eff6ff', p: 1, borderRadius: '50%' }}>
-                   <PersonIcon sx={{ color: '#2563eb', fontSize: 20 }} />
-                </Box>
+      <>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {partners.map((partner) => (
+            <Card 
+              key={partner.id}
+              sx={{ p: 2, border: '1px solid #e5e7eb', borderRadius: 2, position: 'relative' }}
+            >
+              {/* Header: Nombre y Estado */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                 <Box>
-                  <Typography fontWeight={600} sx={{ fontSize: '0.95rem' }}>
+                  <Typography fontWeight={600} variant="h6" sx={{ fontSize: '1rem' }}>
                     {partner.name}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Creado: {new Date(partner.created_at).toLocaleDateString()}
                   </Typography>
                 </Box>
-              </Box>
-              <Chip 
-                label={partner.is_active ? 'Activo' : 'Inactivo'} 
-                color={partner.is_active ? 'success' : 'default'}
-                size="small"
-                variant="outlined"
-                sx={{ height: 24, fontSize: '0.7rem' }}
-              />
-            </Box>
-
-            {/* Código / Link */}
-            <Box 
-              onClick={() => handleCopyLink(partner.code)}
-              sx={{ 
-                bgcolor: '#f8fafc', 
-                p: 1.5, 
-                borderRadius: 1, 
-                border: '1px dashed #cbd5e1',
-                mb: 2,
-                cursor: 'pointer',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                '&:active': { bgcolor: '#e2e8f0' }
-              }}
-            >
-              <Box>
-                <Typography variant="caption" sx={{ display: 'block', color: '#64748b', mb: 0.5 }}>
-                  Código de referido
-                </Typography>
-                <Typography sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#0f172a' }}>
-                  {partner.code}
-                </Typography>
-              </Box>
-              <CopyIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
-            </Box>
-
-            {/* Acciones */}
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 1.5, borderTop: '1px solid #f1f5f9' }}>
-               <Button 
-                 size="small" 
-                 variant="outlined"
-                 color={partner.is_active ? 'warning' : 'success'}
-                 onClick={() => handleToggle(partner.id, !!partner.is_active)}
-                 disabled={isToggling}
-                 startIcon={partner.is_active ? <BlockIcon /> : <CheckIcon />}
-               >
-                 {partner.is_active ? 'Desactivar' : 'Activar'}
-               </Button>
-               <IconButton 
-                 size="small" 
-                 color="error"
-                 onClick={() => handleDelete(partner.id)}
-                 disabled={isDeleting}
-                 sx={{ border: '1px solid #fecaca', bgcolor: '#fef2f2' }}
-               >
-                 <DeleteIcon fontSize="small" />
-               </IconButton>
-            </Box>
-          </Card>
-        ))}
-      </Box>
-    );
-  }
-
-  // --- VISTA DESKTOP (TABLA ORIGINAL) ---
-  return (
-    <TableContainer component={Paper} variant="outlined">
-      <Table>
-        <TableHead sx={{ bgcolor: 'grey.100' }}>
-          <TableRow>
-            <TableCell>Nombre</TableCell>
-            <TableCell>Código</TableCell>
-            <TableCell>Link Referido</TableCell>
-            <TableCell>Estado</TableCell>
-            <TableCell>Creado</TableCell>
-            <TableCell align="right">Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {partners.map((partner) => (
-            <TableRow key={partner.id} hover>
-              <TableCell sx={{ fontWeight: 500 }}>{partner.name}</TableCell>
-              
-              <TableCell>
-                <Chip 
-                  label={partner.code} 
-                  size="small" 
-                  sx={{ fontWeight: 'bold', borderRadius: 1, bgcolor: '#eff6ff', color: '#1d4ed8' }} 
-                />
-              </TableCell>
-
-              <TableCell>
-                <Box 
-                  onClick={() => handleCopyLink(partner.code)}
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 1, 
-                    cursor: 'pointer',
-                    color: 'text.secondary',
-                    '&:hover': { color: 'primary.main' }
-                  }}
-                >
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                    /?ref={partner.code}
-                  </Typography>
-                  <CopyIcon fontSize="small" sx={{ fontSize: 16 }} />
-                </Box>
-              </TableCell>
-              
-              <TableCell>
                 <Chip 
                   label={partner.is_active ? 'Activo' : 'Inactivo'} 
                   color={partner.is_active ? 'success' : 'default'}
                   size="small"
                   variant="outlined"
                 />
-              </TableCell>
-              
-              <TableCell sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
-                {new Date(partner.created_at).toLocaleDateString()}
-              </TableCell>
-              
-              <TableCell align="right">
-                <Box display="flex" gap={1} justifyContent="flex-end">
-                  <Tooltip title={partner.is_active ? "Desactivar" : "Activar"}>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleToggle(partner.id, !!partner.is_active)}
-                      disabled={isToggling}
-                      color={partner.is_active ? 'warning' : 'success'}
-                    >
-                      {partner.is_active ? <BlockIcon fontSize="small" /> : <CheckIcon fontSize="small" />}
-                    </IconButton>
-                  </Tooltip>
+              </Box>
 
-                  <Tooltip title="Eliminar">
-                    <IconButton 
-                      size="small" 
-                      color="error" 
-                      onClick={() => handleDelete(partner.id)}
-                      disabled={isDeleting}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+              <Divider sx={{ my: 1.5 }} />
+
+              {/* Información de Contacto (Iconos) */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                 <Tooltip title={partner.phone || "Sin teléfono"}>
+                    <PhoneIcon fontSize="small" color={partner.phone ? "action" : "disabled"} />
+                 </Tooltip>
+                 <Tooltip title={partner.email || "Sin email"}>
+                    <EmailIcon fontSize="small" color={partner.email ? "action" : "disabled"} />
+                 </Tooltip>
+                 <Tooltip title={partner.map_url ? "Mapa configurado" : "Sin mapa"}>
+                    <MapIcon fontSize="small" color={partner.map_url ? "primary" : "disabled"} />
+                 </Tooltip>
+              </Box>
+
+              {/* Link Referido */}
+              <Box 
+                onClick={() => handleCopyLink(partner.code)}
+                sx={{ 
+                  bgcolor: '#f8fafc', p: 1.5, borderRadius: 1, mb: 2, 
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                  cursor: 'pointer', border: '1px dashed #cbd5e1'
+                }}
+              >
+                <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">Código Referido</Typography>
+                    <Typography sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#0f172a' }}>
+                        {partner.code}
+                    </Typography>
                 </Box>
-              </TableCell>
-            </TableRow>
+                <CopyIcon fontSize="small" sx={{ color: '#94a3b8' }} />
+              </Box>
+
+              {/* Botones de Acción */}
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                 <Button 
+                   size="small" 
+                   variant="outlined" 
+                   startIcon={<EditIcon />} 
+                   onClick={() => setEditingPartner(partner)}
+                   fullWidth
+                 >
+                   Editar
+                 </Button>
+                 
+                 <IconButton 
+                   size="small" 
+                   onClick={() => handleToggle(partner.id, !!partner.is_active)}
+                   color={partner.is_active ? 'warning' : 'success'}
+                   sx={{ border: '1px solid', borderColor: 'divider' }}
+                 >
+                   {partner.is_active ? <BlockIcon fontSize="small" /> : <CheckIcon fontSize="small" />}
+                 </IconButton>
+
+                 <IconButton 
+                   size="small" 
+                   color="error" 
+                   onClick={() => handleDelete(partner.id)}
+                   sx={{ border: '1px solid', borderColor: 'error.main', bgcolor: '#fef2f2' }}
+                 >
+                   <DeleteIcon fontSize="small" />
+                 </IconButton>
+              </Box>
+            </Card>
           ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </Box>
+        
+        <EditPartnerModal 
+          open={!!editingPartner} 
+          partnerToEdit={editingPartner} 
+          onClose={() => setEditingPartner(null)} 
+        />
+      </>
+    );
+  }
+
+  // --- VISTA DESKTOP (TABLA) ---
+  return (
+    <>
+      <TableContainer component={Paper} variant="outlined">
+        <Table>
+          <TableHead sx={{ bgcolor: 'grey.100' }}>
+            <TableRow>
+              <TableCell>Nombre</TableCell>
+              <TableCell>Código</TableCell>
+              <TableCell>Datos Contacto</TableCell>
+              <TableCell>Link Referido</TableCell>
+              <TableCell>Estado</TableCell>
+              <TableCell align="right">Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {partners.map((partner) => (
+              <TableRow key={partner.id} hover>
+                <TableCell sx={{ fontWeight: 500 }}>{partner.name}</TableCell>
+                
+                <TableCell>
+                  <Chip 
+                    label={partner.code} 
+                    size="small" 
+                    sx={{ fontWeight: 'bold', borderRadius: 1, bgcolor: '#eff6ff', color: '#1d4ed8' }} 
+                  />
+                </TableCell>
+
+                <TableCell>
+                  <Stack direction="row" spacing={1}>
+                    {/* Icono Teléfono */}
+                    {partner.phone ? (
+                        <Tooltip title={`Tel: ${partner.phone}`}>
+                            <PhoneIcon fontSize="small" color="action" />
+                        </Tooltip>
+                    ) : (
+                        <PhoneIcon fontSize="small" color="disabled" sx={{ opacity: 0.2 }} />
+                    )}
+
+                    {/* Icono Email */}
+                    {partner.email ? (
+                        <Tooltip title={partner.email}>
+                            <EmailIcon fontSize="small" color="action" />
+                        </Tooltip>
+                    ) : (
+                        <EmailIcon fontSize="small" color="disabled" sx={{ opacity: 0.2 }} />
+                    )}
+
+                    {/* Icono Mapa */}
+                    {partner.map_url ? (
+                        <Tooltip title="Mapa configurado">
+                            <MapIcon fontSize="small" color="primary" />
+                        </Tooltip>
+                    ) : (
+                        <MapIcon fontSize="small" color="disabled" sx={{ opacity: 0.2 }} />
+                    )}
+                  </Stack>
+                </TableCell>
+
+                <TableCell>
+                  <Box 
+                    onClick={() => handleCopyLink(partner.code)}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
+                  >
+                    <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>/?ref={partner.code}</Typography>
+                    <CopyIcon fontSize="small" sx={{ fontSize: 16 }} />
+                  </Box>
+                </TableCell>
+                
+                <TableCell>
+                  <Chip 
+                    label={partner.is_active ? 'Activo' : 'Inactivo'} 
+                    color={partner.is_active ? 'success' : 'default'}
+                    size="small"
+                    variant="outlined"
+                  />
+                </TableCell>
+                
+                <TableCell align="right">
+                  <Box display="flex" gap={1} justifyContent="flex-end">
+                    
+                    <Tooltip title="Editar">
+                      <IconButton 
+                        size="small" 
+                        color="primary"
+                        onClick={() => setEditingPartner(partner)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title={partner.is_active ? "Desactivar" : "Activar"}>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleToggle(partner.id, !!partner.is_active)}
+                        disabled={isToggling}
+                        color={partner.is_active ? 'warning' : 'success'}
+                      >
+                        {partner.is_active ? <BlockIcon fontSize="small" /> : <CheckIcon fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Eliminar">
+                      <IconButton 
+                        size="small" 
+                        color="error" 
+                        onClick={() => handleDelete(partner.id)}
+                        disabled={isDeleting}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <EditPartnerModal 
+        open={!!editingPartner} 
+        partnerToEdit={editingPartner} 
+        onClose={() => setEditingPartner(null)} 
+      />
+    </>
   );
 };
