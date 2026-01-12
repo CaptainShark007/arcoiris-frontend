@@ -71,32 +71,33 @@ export const getPartnerById = async (id: string) => {
 // ============================================================================
 // CREAR SOCIO
 // ============================================================================
-export const createPartner = async (name: string, code: string) => {
+export const createPartner = async (partnerData: PartnerInput) => {
   try {
-    // 1. Validaciones básicas
+    const { name, code, phone, email, address, schedule, map_url } = partnerData;
+
     if (!name.trim()) throw new Error('El nombre es obligatorio.');
     if (!code.trim()) throw new Error('El código es obligatorio.');
 
-    // 2. Limpieza de datos (Código en mayúsculas, sin espacios)
     const cleanCode = code.trim().toUpperCase().replace(/\s+/g, '');
     const cleanName = name.trim();
 
-    // 3. Insertar en BD
     const { data, error } = await supabase
       .from('partners')
       .insert([{ 
         name: cleanName, 
         code: cleanCode,
-        is_active: true // Por defecto activo
+        is_active: true,
+        phone,
+        email,
+        address,
+        schedule,
+        map_url
       }])
       .select()
       .single();
 
     if (error) {
-      // Manejo de error de duplicados (código único)
-      if (error.code === '23505') {
-        throw new Error(`El código "${cleanCode}" ya está en uso por otro socio.`);
-      }
+      if (error.code === '23505') throw new Error(`El código "${cleanCode}" ya está en uso.`);
       throw error;
     }
 
@@ -104,7 +105,6 @@ export const createPartner = async (name: string, code: string) => {
 
   } catch (error: any) {
     console.error('Error creating partner:', error);
-    // Relanzamos el error limpio para que lo muestre la UI
     throw new Error(error.message || 'Error al crear el socio.');
   }
 };
@@ -114,25 +114,39 @@ export const createPartner = async (name: string, code: string) => {
 // ============================================================================
 export const updatePartner = async (id: string, updates: Partial<PartnerInput>) => {
   try {
-    // Si se actualiza el código, limpiarlo igual que al crear
-    if (updates.code) {
-      updates.code = updates.code.trim().toUpperCase().replace(/\s+/g, '');
+    const cleanUpdates: any = { ...updates };
+
+    if (cleanUpdates.code) {
+      cleanUpdates.code = cleanUpdates.code.trim().toUpperCase().replace(/\s+/g, '');
     }
-    
-    if (updates.name) {
-      updates.name = updates.name.trim();
+
+    if (cleanUpdates.name) {
+      cleanUpdates.name = cleanUpdates.name.trim();
     }
+
+    const optionalFields = ['phone', 'email', 'address', 'schedule', 'map_url'];
+
+    optionalFields.forEach((field) => {
+      if (field in cleanUpdates) {
+        const value = cleanUpdates[field];
+        if (typeof value === 'string' && value.trim() === '') {
+          cleanUpdates[field] = null;
+        } else if (typeof value === 'string') {
+          cleanUpdates[field] = value.trim();
+        }
+      }
+    });
 
     const { data, error } = await supabase
       .from('partners')
-      .update(updates)
+      .update(cleanUpdates)
       .eq('id', id)
       .select()
       .single();
 
     if (error) {
       if (error.code === '23505') {
-        throw new Error(`El código "${updates.code}" ya está en uso.`);
+        throw new Error(`El código "${cleanUpdates.code}" ya está en uso.`);
       }
       throw error;
     }
@@ -182,4 +196,16 @@ export const togglePartnerStatus = async (id: string, isActive: boolean) => {
   }
 
   return data;
+};
+
+export const getPartnerByCode = async (code: string) => {
+  const { data, error } = await supabase
+    .from('partners')
+    .select('*')
+    .eq('code', code.toUpperCase())
+    .eq('is_active', true)
+    .single();
+
+  if (error) return null;
+  return data as Partner;
 };

@@ -5,10 +5,9 @@ import toast from 'react-hot-toast';
 export const useDeletePartner = () => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync, isPending } = useMutation({ // <--- CAMBIO: isPending
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: (id: string) => deletePartner(id),
     onSuccess: () => {
-      // <--- CAMBIO v5
       queryClient.invalidateQueries({ queryKey: ['partners'] });
       toast.success('Socio eliminado');
     },
@@ -19,6 +18,6 @@ export const useDeletePartner = () => {
 
   return {
     deletePartner: mutateAsync,
-    isDeleting: isPending, // Mapeamos isPending
+    isDeleting: isPending,
   };
 };

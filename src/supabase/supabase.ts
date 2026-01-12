@@ -245,30 +245,45 @@ export type Database = {
       }
       partners: {
         Row: {
+          address: string | null
           code: string
           commission_default: number | null
           created_at: string | null
+          email: string | null
           id: string
           is_active: boolean | null
+          map_url: string | null
           name: string
+          phone: string | null
+          schedule: string | null
           user_id: string | null
         }
         Insert: {
+          address?: string | null
           code: string
           commission_default?: number | null
           created_at?: string | null
+          email?: string | null
           id?: string
           is_active?: boolean | null
+          map_url?: string | null
           name: string
+          phone?: string | null
+          schedule?: string | null
           user_id?: string | null
         }
         Update: {
+          address?: string | null
           code?: string
           commission_default?: number | null
           created_at?: string | null
+          email?: string | null
           id?: string
           is_active?: boolean | null
+          map_url?: string | null
           name?: string
+          phone?: string | null
+          schedule?: string | null
           user_id?: string | null
         }
         Relationships: []

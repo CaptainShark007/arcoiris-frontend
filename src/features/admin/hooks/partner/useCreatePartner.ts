@@ -6,10 +6,9 @@ import toast from 'react-hot-toast';
 export const useCreatePartner = () => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync, isPending, isError, error } = useMutation({ // <--- CAMBIO: isPending
-    mutationFn: (newPartner: PartnerInput) => createPartner(newPartner.name, newPartner.code),
+  const { mutateAsync, isPending, isError, error } = useMutation({
+    mutationFn: (newPartner: PartnerInput) => createPartner(newPartner),
     onSuccess: () => {
-      // <--- CAMBIO v5: queryKey dentro de objeto
       queryClient.invalidateQueries({ queryKey: ['partners'] });
       toast.success('Socio creado correctamente');
     },
@@ -20,7 +19,7 @@ export const useCreatePartner = () => {
 
   return {
     createPartner: mutateAsync,
-    isLoading: isPending, // Mapeamos isPending a isLoading para mantener compatibilidad con tu UI
+    isLoading: isPending,
     isError,
     error,
   };

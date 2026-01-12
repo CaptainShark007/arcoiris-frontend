@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, alpha, useTheme } from "@mui/material";
 import type { ReactNode, ElementType } from "react";
 
 interface InfoItemProps {
@@ -12,69 +12,54 @@ export const InfoItem = ({
   title, 
   description 
 }: InfoItemProps) => {
+  const theme = useTheme();
+
   return (
     <Box
       sx={{
         display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        textAlign: "center",
-        px: { xs: 2, sm: 3 },
-        maxWidth: { xs: "100%", sm: "350px" },
-        width: "100%",
+        alignItems: "flex-start",
+        gap: 2,
+        p: 2,
+        borderRadius: 2,
+        transition: "all 0.3s ease",
+        "&:hover": {
+          bgcolor: alpha(theme.palette.primary.main, 0.04),
+          transform: "translateX(5px)"
+        }
       }}
     >
-      {/* Contenedor del ícono */}
+      {/* Icono Minimalista */}
       <Box
         sx={{
-          backgroundColor: "primary.main",
-          width: { xs: 70, sm: 80, md: 90 },
-          height: { xs: 70, sm: 80, md: 90 },
-          borderRadius: "50%",
+          color: "primary.main",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          mb: { xs: 2, sm: 2.5 },
-          boxShadow: 2,
-          transition: "transform 0.3s ease",
-          "&:hover": {
-            transform: "scale(1.05)",
-          },
+          mt: 0.5 // Alineación óptica con el título
         }}
       >
-        <IconComponent 
-          sx={{ 
-            fontSize: { xs: 35, sm: 40, md: 45 }, 
-            color: "#fff" 
-          }} 
-        />
+        <IconComponent sx={{ fontSize: 28 }} />
       </Box>
 
-      {/* Título */}
-      <Typography 
-        variant="h6" 
-        component="h3"
-        sx={{
-          fontWeight: 700,
-          mb: { xs: 1, sm: 1.5 },
-          fontSize: { xs: "1.1rem", sm: "1.25rem" },
-          color: "text.primary",
-        }}
-      >
-        {title}
-      </Typography>
+      <Box>
+        {/* Título */}
+        <Typography 
+          variant="subtitle1" 
+          fontWeight="700"
+          color="text.primary"
+          sx={{ lineHeight: 1.2, mb: 0.5 }}
+        >
+          {title}
+        </Typography>
 
-      {/* Descripción */}
-      <Typography 
-        variant="body2" 
-        color="text.secondary"
-        sx={{
-          fontSize: { xs: "0.9rem", sm: "0.95rem" },
-          lineHeight: 1.7,
-        }}
-      >
-        {description}
-      </Typography>
+        {/* Descripción */}
+        <Typography 
+          variant="body2" 
+          color="text.secondary"
+          sx={{ lineHeight: 1.6 }}
+        >
+          {description}
+        </Typography>
+      </Box>
     </Box>
   );
 };

@@ -13,10 +13,12 @@ import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import toast from 'react-hot-toast';
+// ============================================================
 // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
 import { enviarEmailOrden } from '@/services/emailService';
 import { useCustomer, useUsers } from '@shared/hooks';
 import { useReferral } from '@shared/hooks/useReferral';
+// ============================================================
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -33,12 +35,13 @@ export const PaymentStep = ({
   onConfirmOrderRef,
   isProcessingRef,
 }: PaymentStepProps) => {
+  // ============================================================
   // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
   const { session, isLoading } = useUsers();
   const userId = session?.user?.id;
   const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
-
-  const { getReferralCode } = useReferral();
+  const { referralCode } = useReferral();
+  // ============================================================
 
   const [selected, setSelected] = useState<'acordar'>('acordar');
 
@@ -88,6 +91,8 @@ export const PaymentStep = ({
         );
       }
       // ============================================================
+      // ENVÍO DE EMAIL
+      // ============================================================
 
       // Navegar al siguiente paso
       onNext();
@@ -98,10 +103,8 @@ export const PaymentStep = ({
   // Manejo de error en la creación de la orden
   const handleOrderError = useCallback(async (error: Error) => {
     console.error('Error en la creación de la orden:', error);
-    // toast de error ya es manejado en el hook useCreateOrder
   }, []);
 
-  // Hook para crear la orden con callbacks personalizados
   const { mutate: createOrder, isPending } = useCreateOrder({
     onSuccess: handleOrderSuccess,
     onError: handleOrderError,
@@ -109,7 +112,8 @@ export const PaymentStep = ({
 
   // Función para confirmar la orden
   const handleConfirm = useCallback(async () => {
-    // Validar que los datos del cliente se hayan cargado
+
+    // ============================================================
     // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
     if (isLoadingCustomer) {
       toast.error('Por favor espera mientras se cargan tus datos', {
@@ -117,6 +121,7 @@ export const PaymentStep = ({
       });
       return;
     }
+    // ============================================================
 
     // Validar que la información de envío esté completa
     if (!shippingInfo) {
@@ -138,17 +143,14 @@ export const PaymentStep = ({
     }
 
     // ============================================================
-    // OPCIÓN 1: FUNCIONAMIENTO REAL CON SP (Descomenta este bloque)
+    // FUNCIONAMIENTO REAL CON SP
     // ============================================================
-
-    // Mostrar toast de procesamiento
     toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'top-right',
       duration: Infinity,
     });
 
-    // Preparar datos de la orden
     const orderData = {
       address: {
         addressLine1: shippingInfo.addressLine1,
@@ -164,20 +166,20 @@ export const PaymentStep = ({
         price: item.price,
       })),
       totalAmount: orderSummary.totalPrice,
-      partnerCode: getReferralCode() || null,
+      partnerCode: referralCode || null,
     };
 
-    // Ejecutar la mutación
     createOrder(orderData);
 
-    // Cerrar toast después de que la mutación termine
     setTimeout(() => {
       toast.dismiss('order-processing');
     }, 100);
+    // ============================================================
+    // FUNCIONAMIENTO REAL CON SP
+    // ============================================================
 
     // ============================================================
-    // OPCIÓN 2: SIMULACIÓN (Para pruebas sin ejecutar SP)
-    // Comenta esta sección cuando uses OPCIÓN 1
+    // SIMULACIÓN
     // ============================================================
     /* toast.loading('Procesando tu orden...', {
       id: 'order-processing',
@@ -196,6 +198,10 @@ export const PaymentStep = ({
 
       onNext();
     }, 1500); */
+    // ============================================================
+    // SIMULACIÓN
+    // ============================================================
+
   }, [
     shippingInfo,
     orderSummary,
@@ -203,7 +209,7 @@ export const PaymentStep = ({
     setOrderId,
     clearCart,
     onNext,
-    //isLoadingCustomer,
+    isLoadingCustomer,
   ]);
 
   // Actualizar ref con la función de confirmar

@@ -6,7 +6,7 @@ export const usePartners = (filters: PartnerSearchFilters) => {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['partners', filters],
     queryFn: () => getPartners(filters),
-    placeholderData: keepPreviousData, // <--- CAMBIO v5
+    placeholderData: keepPreviousData,
   });
 
   return {

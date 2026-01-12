@@ -6,11 +6,10 @@ import toast from 'react-hot-toast';
 export const useUpdatePartner = () => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync, isPending } = useMutation({ // <--- CAMBIO: isPending
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<PartnerInput> }) => 
       updatePartner(id, data),
     onSuccess: () => {
-      // <--- CAMBIO v5
       queryClient.invalidateQueries({ queryKey: ['partners'] });
       toast.success('Socio actualizado correctamente');
     },
@@ -21,6 +20,6 @@ export const useUpdatePartner = () => {
 
   return {
     updatePartner: mutateAsync,
-    isUpdating: isPending, // Mapeamos isPending
+    isUpdating: isPending,
   };
 };
