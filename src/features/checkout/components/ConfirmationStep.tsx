@@ -9,30 +9,36 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  Fade,
   Avatar,
-  //IconButton
+  Dialog,
+  IconButton,
+  DialogContent,
 } from '@mui/material';
 import {
   CheckCircle,
   Receipt,
-  //Email,
   AccountCircle,
   LocationOn,
   WhatsApp,
   Send as SendIcon,
-  //Close as CloseIcon
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import { formatPrice } from '@/helpers';
 import { useNavigate } from 'react-router';
+import { useState } from 'react';
+import { useCurrentPartner } from '@shared/hooks';
 
+// ============================================================
 // DESCOMENTAR para usar la version real
 import { useOrder } from '@features/orders/hooks/useOrder';
 import { Loader } from '@shared/components';
+// ============================================================
 
-//import { mockData } from '../data/mock.data'; // COMENTAR para usar la version de prueba
-import { useState } from 'react';
+// ============================================================
+// COMENTAR para usar la version de prueba
+//import { mockData } from '../data/mock.data'; 
+// ============================================================
 
 interface ConfirmationStepProps {
   onReset: () => void;
@@ -42,10 +48,10 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
   const navigate = useNavigate();
   const { orderId, clearCheckout } = useCheckoutStore();
 
-  // Estado para el hover del botón de notificación (Abre el modal)
   const [showPreview, setShowPreview] = useState(false);
-  // Estado para el hover del botón DENTRO del modal
   const [isButtonHovered, setIsButtonHovered] = useState(false);
+
+  const { data: partner } = useCurrentPartner();
 
   const handleResetMobile = () => {
     clearCheckout();
@@ -57,16 +63,26 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
     navigate('/cuenta/pedidos');
   }
 
+  // ============================================================
   // DESCOMENTAR para usar la version real
   const { data, isLoading, isError } = useOrder(orderId || 0);
   if (isError) return <Typography variant='body2' sx={{ textAlign: 'center' }}>Error al cargar los detalles de la orden.</Typography>;
   if (isLoading) return <Loader />
   if (!data) return <Typography variant='body2' sx={{ textAlign: 'center' }}>No hay datos disponibles.</Typography>;
+  // ============================================================
 
-  //const data = mockData; // COMENTAR para usar la version de prueba
+  // ============================================================
+  // COMENTAR para usar la version de prueba
+  //const data = mockData; 
+  // ============================================================
 
-  // --- LÓGICA DE MENSAJE ---
-  const phoneNumber = "5493624105888"; 
+  const DEFAULT_PHONE = "5493624105888";
+  
+  const phoneNumber = partner?.phone 
+    ? partner.phone.replace(/\D/g, '')
+    : DEFAULT_PHONE;
+
+  const contactName = partner ? partner.name : "arcoiris";
   
   const messageBody = data ? (() => {
     const itemsList = data.orderItems.map(item => 
@@ -85,13 +101,12 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
   const handleNotifyWhatsapp = () => {
     if (!data) return;
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(messageBody)}`, '_blank');
+    setShowPreview(false);
   };
-  // ------------------------------------
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 2, md: 4 } }}>
 
-      {/* Icono de éxito */}
       <Box sx={{ textAlign: 'center', py: { xs: 2, sm: 3, md: 4 } }}>
         <CheckCircle
           sx={{
@@ -117,7 +132,6 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
         </Typography>
       </Box>
 
-      {/* --- SECCIÓN: NOTIFICACIÓN FLOTANTE ANIMADA + MODAL TIPO WIDGET --- */}
       <Box 
         sx={{ 
           display: 'flex', 
@@ -128,9 +142,7 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
         }}
       >
         <Box 
-          onMouseEnter={() => setShowPreview(true)}
-          onMouseLeave={() => setShowPreview(false)}
-          // onClick={handleNotifyWhatsapp} // Quitamos el click aquí para que no se dispare al intentar interactuar con el modal si se solapara, aunque el modal está encima.
+          onClick={() => setShowPreview(true)}
           sx={{
             cursor: 'pointer',
             display: 'flex',
@@ -140,7 +152,7 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
             px: 2,
             py: 1.5,
             borderRadius: 1,
-            boxShadow: '0 4px 20px rgba(12, 234, 93, 0.1)', // cambiar a una sombra verde
+            boxShadow: '0 4px 20px rgba(12, 234, 93, 0.1)',
             border: '1px solid #e0e0e0',
             transition: 'all 0.3s ease',
             '&:hover': {
@@ -150,7 +162,6 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
             }
           }}
         >
-          {/* Icono con animación de pulso */}
           <Box sx={{ position: 'relative', display: 'flex' }}>
             <Box
               sx={{
@@ -177,132 +188,108 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
               ¿Quieres agilizar tu pedido?
             </Typography>
             <Typography variant="caption" sx={{ color: '#25D366', fontWeight: 600 }}>
-              Notifícanos por WhatsApp aquí
+              Notifica a {contactName} por WhatsApp aquí
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+
+      <Dialog
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2, overflow: 'hidden' }
+        }}
+      >
+        <Box
+          sx={{
+            bgcolor: "#1f2937",
+            color: "white",
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between"
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Avatar sx={{ bgcolor: "#25D366", width: 36, height: 36 }}>
+              <WhatsApp fontSize="small" />
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold" lineHeight={1.2}>
+                Atención al Cliente
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                {partner ? partner.name : 'Arcoiris'}
+              </Typography>
+            </Box>
+          </Box>
+          
+          <IconButton size="small" onClick={() => setShowPreview(false)} sx={{ color: 'white' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <DialogContent sx={{ p: 0 }}>
+          <Box sx={{ p: 2, bgcolor: "#e5e7eb" }}>
+            <Box
+              sx={{
+                bgcolor: "white",
+                p: 2,
+                borderRadius: "0px 12px 12px 12px",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                maxWidth: "100%",
+                maxHeight: 300, 
+                overflowY: 'auto',
+                '&::-webkit-scrollbar': { width: '6px' },
+                '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: '3px' }
+              }}
+            >
+              <Typography 
+                variant="body2" 
+                color="text.primary" 
+                sx={{ 
+                  whiteSpace: 'pre-wrap', 
+                  fontFamily: 'inherit',
+                  fontSize: '0.85rem'
+                }}
+              >
+                {messageBody}
+              </Typography>
+            </Box>
+            <Typography variant="caption" color="text.disabled" sx={{ mt: 1, display: "block", textAlign: 'right' }}>
+                Vista previa del mensaje
             </Typography>
           </Box>
 
-          {/* --- MODAL ESTILO WIDGET (REEMPLAZA AL TOOLTIP ANTERIOR) --- */}
-          <Fade in={showPreview} timeout={300}>
-            <Paper
-              elevation={6}
+          <Box sx={{ p: 2, bgcolor: "white" }}>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={handleNotifyWhatsapp}
+              onMouseEnter={() => setIsButtonHovered(true)}
+              onMouseLeave={() => setIsButtonHovered(false)}
+              startIcon={isButtonHovered ? <SendIcon /> : <WhatsApp />}
               sx={{
-                position: 'absolute',
-                bottom: '120%', // Aparece ARRIBA del botón
-                left: '50%',
-                transform: 'translateX(-50%)', // Centrado horizontalmente
-                width: 320, // Un poco más ancho para leer bien el detalle
+                bgcolor: "#25D366",
                 borderRadius: 1,
-                overflow: 'hidden', // Importante para el header y footer
-                zIndex: 9999,
-                display: 'flex',
-                flexDirection: 'column',
-                bgcolor: '#f5f5f5',
-                cursor: 'default' // Reset cursor
+                textTransform: "none",
+                fontSize: "1rem",
+                fontWeight: 600,
+                py: 1.5,
+                "&:hover": {
+                  bgcolor: "#1EBE57",
+                },
               }}
-              // Eventos para mantener el modal abierto si el mouse sube hacia él
-              onMouseEnter={() => setShowPreview(true)}
-              onMouseLeave={() => setShowPreview(false)}
             >
-              {/* Header Oscuro */}
-              <Box
-                sx={{
-                  bgcolor: "#1f2937",
-                  color: "white",
-                  p: 2,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1
-                }}
-              >
-                 <Avatar sx={{ bgcolor: "#25D366", width: 32, height: 32 }}>
-                   <WhatsApp fontSize="small" />
-                 </Avatar>
-                 <Box>
-                   <Typography variant="subtitle1" fontWeight="bold" lineHeight={1.2}>
-                     Atención al Cliente
-                   </Typography>
-                   <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                     Arcoiris
-                   </Typography>
-                 </Box>
-              </Box>
+              Enviar mensaje ahora
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
 
-              {/* Cuerpo del Mensaje (Gris) */}
-              <Box sx={{ p: 2, bgcolor: "#e5e7eb" }}>
-                <Box
-                  sx={{
-                    bgcolor: "white",
-                    p: 2,
-                    // ESTILO ESPECÍFICO SOLICITADO
-                    borderRadius: "0px 12px 12px 12px",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                    maxWidth: "100%",
-                    // SCROLL SOLICITADO
-                    maxHeight: 200, 
-                    overflowY: 'auto',
-                    // Estilo del scrollbar para que sea sutil
-                    '&::-webkit-scrollbar': { width: '6px' },
-                    '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: '3px' }
-                  }}
-                >
-                  <Typography 
-                    variant="body2" 
-                    color="text.primary" 
-                    sx={{ 
-                      whiteSpace: 'pre-wrap', 
-                      fontFamily: 'inherit',
-                      fontSize: '0.85rem'
-                    }}
-                  >
-                    {messageBody}
-                  </Typography>
-                </Box>
-                <Typography variant="caption" color="text.disabled" sx={{ mt: 1, display: "block", textAlign: 'right' }}>
-                   Vista previa del mensaje
-                </Typography>
-              </Box>
-
-              {/* Footer con Botón de Acción */}
-              <Box sx={{ p: 2, bgcolor: "white" }}>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={handleNotifyWhatsapp}
-                  onMouseEnter={() => setIsButtonHovered(true)}
-                  onMouseLeave={() => setIsButtonHovered(false)}
-                  startIcon={isButtonHovered ? <SendIcon /> : <WhatsApp />}
-                  sx={{
-                    bgcolor: "#25D366",
-                    borderRadius: 1,
-                    textTransform: "none",
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    py: 1,
-                    "&:hover": {
-                      bgcolor: "#1EBE57",
-                    },
-                  }}
-                >
-                  Enviar mensaje ahora
-                </Button>
-              </Box>
-              
-              {/* Triangulito decorativo abajo (opcional, para conectar con el botón) */}
-              <Box sx={{
-                position: 'absolute', bottom: -8, left: '50%', ml: -1,
-                width: 0, height: 0,
-                borderLeft: '8px solid transparent',
-                borderRight: '8px solid transparent',
-                borderTop: '8px solid white', // Color del footer
-                zIndex: 1
-              }} />
-            </Paper>
-          </Fade>
-        </Box>
-      </Box>
-      {/* --------------------------------------------------- */}
-
-      {/* Información de la orden */}
       <Paper
         sx={{
           p: { xs: 2, sm: 2.5, md: 3 },
@@ -326,7 +313,6 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
 
         <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
 
-        {/* DETALLES DEL PEDIDO */}
         <Box sx={{ mb: { xs: 2, md: 3 } }}>
           <Typography 
             variant='h6' 
@@ -336,7 +322,6 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
             Detalles del pedido
           </Typography>
 
-          {/* Tabla de items con altura fija y scroll */}
           <TableContainer
             sx={{
               mb: { xs: 2, md: 3 },
@@ -417,7 +402,6 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
             </Table>
           </TableContainer>
 
-          {/* Total */}
           <Box
             sx={{
               display: 'flex',
@@ -444,7 +428,6 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
             </Box>
           </Box>
 
-          {/* Información adicional */}
           <Box
             sx={{
               display: 'grid',
@@ -452,7 +435,7 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
               gap: { xs: 2, md: 3 },
             }}
           >
-            {/* Información de contacto */}
+
             <Box>
               <Box sx={{ display: 'flex', gap: 1, mb: { xs: 0.5, md: 1 } }}>
                 <AccountCircle color='primary' sx={{ fontSize: { xs: 18, md: 20 } }} />
@@ -479,7 +462,6 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
               </Typography>
             </Box>
 
-            {/* Dirección de envío */}
             {data.address && (
               <Box>
                 <Box sx={{ display: 'flex', gap: 1, mb: { xs: 0.5, md: 1 } }}>
@@ -538,7 +520,6 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
         <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
       </Paper>
 
-      {/* Botones solo visibles en móviles */}
       <Box
         sx={{
           display: { xs: 'flex', md: 'none' },
