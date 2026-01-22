@@ -183,3 +183,16 @@ export const compressImageCategory = async (file: File, maxSizeMB: number = 1.5)
     reader.readAsDataURL(file);
   });
 };
+
+// Función para normalizar texto: eliminar espacios extras y capitalizar cada palabra
+export const normalizeText = (text: string | undefined | null) => {
+  if (!text) return '';
+  
+  return text
+    .trim() 
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};

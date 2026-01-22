@@ -6,13 +6,12 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { SectionFormProduct } from './SectionFormProduct';
 import { InputForm } from './InputForm';
 import { FeaturesInput } from './FeaturesInput';
-import { generateSlug } from '@/helpers';
+import { generateSlug, normalizeText } from '@/helpers';
 import { VariantsInput } from './VariantsInput';
 import { UploaderImages } from './UploaderImages';
 import { Editor } from './Editor';
 import { Box, Button, IconButton, Typography } from '@mui/material';
 import { Loader } from '@shared/components';
-//import { useProduct } from '@features/product/hooks/useProduct';
 import { JSONContent } from '@tiptap/react';
 import {
   useCreateProduct,
@@ -96,19 +95,19 @@ export const FormProduct = ({ titleForm }: Props) => {
           stock: Number(v.stock),
           price: price,
           original_price: finalOriginalPrice, 
-          storage: v.storage,
+          storage: normalizeText(v.storage),
           color: v.color,
-          color_name: v.colorName,
-          finish: v.finish || null,
+          color_name: normalizeText(v.colorName),
+          finish: normalizeText(v.finish || null),
         };
       }) ?? [];
 
     const productPayload = {
-      name: data.name,
-      brand: data.brand,
+      name: data.name.trim(),
+      brand: data.brand.trim(),
       slug: data.slug,
       description: data.description,
-      features: data.features?.map((f) => f.value) ?? [],
+      features: data.features?.map((f) => f.value.trim()) ?? [],
       images: data.images ?? [],
       variants: mappedVariants,
       is_active: true,
