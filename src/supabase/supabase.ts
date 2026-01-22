@@ -298,6 +298,7 @@ export type Database = {
           id: string
           images: string[]
           is_active: boolean | null
+          is_deleted: boolean
           name: string
           slug: string
         }
@@ -310,6 +311,7 @@ export type Database = {
           id?: string
           images: string[]
           is_active?: boolean | null
+          is_deleted?: boolean
           name: string
           slug: string
         }
@@ -322,6 +324,7 @@ export type Database = {
           id?: string
           images?: string[]
           is_active?: boolean | null
+          is_deleted?: boolean
           name?: string
           slug?: string
         }

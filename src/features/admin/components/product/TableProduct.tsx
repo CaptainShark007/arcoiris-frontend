@@ -23,13 +23,20 @@ import {
   FormControl,
   InputLabel,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Link as RouterLink } from 'react-router-dom';
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
@@ -39,6 +46,7 @@ import {
   useProducts,
   useToggleProduct,
   useUpdateProductCategory,
+  useDeleteProduct,
 } from '@features/admin/hooks';
 import CustomPagination from '@shared/components/CustomPagination';
 import { OptimisticSwitch } from './OptimisticSwitch';
@@ -76,6 +84,13 @@ export const TableProduct = () => {
   const [sortFilter, setSortFilter] = useState<
     'newest' | 'oldest' | 'name_asc' | 'name_desc'
   >('newest');
+
+  // --- ESTADOS PARA EL MODAL DE ELIMINACIÓN ---
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  // Hook de borrado
+  const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -173,6 +188,26 @@ export const TableProduct = () => {
     setCategoryIdFilter('all');
     setSortFilter('newest');
     setPage(0);
+  };
+
+  const handleOpenDeleteModal = (id: string, name: string) => {
+    setProductToDelete({ id, name });
+    setDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setTimeout(() => setProductToDelete(null), 200);
+  };
+
+  const handleConfirmDelete = () => {
+    if (productToDelete) {
+      deleteProduct(productToDelete.id, {
+        onSuccess: () => {
+            handleCloseDeleteModal();
+        }
+      });
+    }
   };
 
   const renderMobileView = () => {
@@ -423,6 +458,19 @@ export const TableProduct = () => {
                 >
                   Editar
                 </Button>
+                <IconButton 
+                    size="small" 
+                    onClick={() => handleOpenDeleteModal(product.id, product.name)}
+                    sx={{ 
+                        color: '#ef4444', 
+                        bgcolor: '#fef2f2', 
+                        border: '1px solid #fee2e2',
+                        borderRadius: 1,
+                        '&:hover': { bgcolor: '#fee2e2' } 
+                    }}
+                >
+                    <DeleteIcon fontSize="small" />
+                </IconButton>
               </Box>
             </Card>
           );
@@ -587,7 +635,6 @@ export const TableProduct = () => {
                           >
                             <span>{variantLabel}</span>
 
-                            {/* Si es oferta, mostramos SOLO el fueguito a la derecha */}
                             {isOffer && (
                               <WhatshotIcon
                                 sx={{ fontSize: '1rem', color: 'error.main' }}
@@ -599,7 +646,6 @@ export const TableProduct = () => {
                     </Select>
                   </TableCell>
 
-                  {/* PRECIO DESKTOP: Estilo visual de oferta */}
                   <TableCell sx={{ minWidth: 100 }}>
                     <Box
                       sx={{
@@ -697,6 +743,19 @@ export const TableProduct = () => {
                           <EditIcon fontSize='small' />
                         </IconButton>
                       </Tooltip>
+                      <Tooltip title='Eliminar producto'>
+                        <IconButton
+                          size='small'
+                          onClick={() => handleOpenDeleteModal(product.id, product.name)}
+                          sx={{
+                            color: '#ef4444',
+                            bgcolor: '#fef2f2',
+                            '&:hover': { bgcolor: '#fee2e2' },
+                          }}
+                        >
+                          <DeleteIcon fontSize='small' />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -710,8 +769,6 @@ export const TableProduct = () => {
 
   if (isLoading) return <Loader />;
 
-  // El return del componente (Card, Stack, Pagination) sigue igual que el anterior
-  // Solo incluyo el return para que el snippet esté completo si copias todo.
   const totalPage = Math.ceil(totalProducts / rowsPerPage);
 
   return (
@@ -741,7 +798,6 @@ export const TableProduct = () => {
           sx={{ mb: 3 }}
           alignItems='center'
         >
-          {/* Filtros iguales a tu código original... */}
           <TextField
             placeholder='Buscar producto...'
             value={searchTerm}
@@ -875,6 +931,70 @@ export const TableProduct = () => {
           />
         </Box>
       )}
+
+      <Dialog
+        open={deleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        PaperProps={{
+            sx: { borderRadius: 2, maxWidth: '450px' }
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 3, px: 3 }}>
+            <Box sx={{ 
+                bgcolor: '#FEF2F2', 
+                borderRadius: '50%', 
+                p: 2, 
+                display: 'flex', 
+                mb: 2 
+            }}>
+                <WarningAmberIcon sx={{ color: '#EF4444', fontSize: '2rem' }} />
+            </Box>
+            <DialogTitle id="alert-dialog-title" sx={{ p: 0, fontWeight: 'bold', mb: 1 }}>
+            ¿Eliminar producto?
+            </DialogTitle>
+        </Box>
+        
+        <DialogContent sx={{ textAlign: 'center', px: 3 }}>
+          <DialogContentText id="alert-dialog-description">
+            Estás a punto de eliminar el producto <strong>&quot;{productToDelete?.name}&quot;</strong>.
+            <br /><br />
+            Esta acción marcará el producto como eliminado y lo <strong>desactivará</strong> de la tienda inmediatamente.
+            <br />
+            <Typography component="span" variant="caption" color="text.secondary">
+             (Esta acción no se puede deshacer)
+            </Typography>
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3, pt: 0, justifyContent: 'center', gap: 1.5 }}>
+          <Button 
+            onClick={handleCloseDeleteModal} 
+            variant="outlined" 
+            color="inherit"
+            disabled={isDeleting}
+            sx={{ flex: 1, textTransform: 'none', borderColor: '#E5E7EB', color: '#374151' }}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleConfirmDelete} 
+            variant="contained" 
+            color="error" 
+            autoFocus
+            disabled={isDeleting}
+            sx={{ 
+                flex: 1, 
+                textTransform: 'none', 
+                bgcolor: '#EF4444', 
+                '&:hover': { bgcolor: '#DC2626' } 
+            }}
+          >
+            {isDeleting ? 'Eliminando...' : 'Sí, eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
