@@ -2,7 +2,6 @@ import { compressImage, extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
 import { CreateProductRPCResult, ProductInput, ProductSearch } from '@shared/types';
 
-// Nuevo metodo para listar productos con variantes paginados y con filtros varios - video
 export const getFilteredProducts = async ({
   page = 1,
   brands = [],
@@ -21,22 +20,17 @@ export const getFilteredProducts = async ({
   const from = (page - 1) * itemsPerPage;
   const to = from + itemsPerPage - 1;
 
-  // consulta base
-  // mostrar solo los productos activos
   let query = supabase
     .from('products')
     .select('*, variants (*), categories(id, name, slug)', { count: 'exact' })
-    .eq('is_active', true) // solo productos activos
-    .eq('variants.is_active', true); // solo variantes activas (y productos que tengan al menos una variante activa)
-    //.order('created_at', { ascending: false })
-    //.range(from, to);
+    .eq('is_active', true)
+    .eq('is_deleted', false)
+    .eq('variants.is_active', true);
 
-  // logica de busqueda
   if (searchTerm) {
     query = query.ilike('name', `%${searchTerm}%`);
   }
 
-  // filtros
   if (brands.length > 0) {
     query = query.in('brand', brands);
   }
@@ -45,30 +39,23 @@ export const getFilteredProducts = async ({
     query = query.in('category_id', categoriesIds);
   }
 
-  // logica de ordenamiento
   const [sortColumn, sortDirection] = sortOrder.split('-');
 
-  // Valida que sea una columna real de la tabla products
   if (sortColumn === 'name' || sortColumn === 'created_at') {
     query = query.order(sortColumn, { ascending: sortDirection === 'asc' });
   } else {
-    // Por defecto: lo mas nuevo primero
     query = query.order('created_at', { ascending: false });
   }
 
-  // paginacion
   query = query.range(from, to);
 
-  // resolver la promesa
   const { data, error, count } = await query;
 
   if (error) {
     throw new Error('Error fetching filtered products');
   }
 
-  // Mapear productos con precio mínimo y máximo
   const products = data?.map((p) => {
-    // Obtener precios de las variantes
     const prices =
       p.variants
         ?.map((v: any) => v.price)
@@ -98,6 +85,7 @@ export const searchProductsAction = async (query: string): Promise<ProductSearch
     .from('products')
     .select('id, name, slug, images, variants(price, original_price, color_name, storage, finish)')
     .eq('is_active', true)
+    .eq('is_deleted', false)
     .eq('variants.is_active', true)
     .ilike('name', `%${query}%`)
     .limit(10);
@@ -113,6 +101,7 @@ export const getBrands = async (): Promise<string[]> => {
     .from('products')
     .select('brand, variants!inner(is_active)') // inner join para asegurar variantes activas
     .eq('is_active', true)
+    .eq('is_deleted', false)
     .eq('variants.is_active', true);
 
   if (error) {
@@ -132,6 +121,7 @@ export const getSaleProducts = async () => {
     .from('products')
     .select('*, variants!inner(*)') 
     .eq('is_active', true)
+    .eq('is_deleted', false)
     .eq('variants.is_active', true)
     .gt('variants.original_price', 0) 
     .order('created_at', { ascending: false })
@@ -163,6 +153,7 @@ export const getRecentProducts = async () => {
     .from('products')
     .select('*, variants (*)')
     .eq('is_active', true)
+    .eq('is_deleted', false)
     .eq('variants.is_active', true)
     .order('created_at', { ascending: false })
     .limit(8);
@@ -195,6 +186,7 @@ export const getRandomProducts = async () => {
     .from('products')
     .select('*, variants (*)')
     .eq('is_active', true)
+    .eq('is_deleted', false)
     .eq('variants.is_active', true)
     .limit(20);
 
@@ -232,6 +224,7 @@ export const getSimilarProducts = async (categoryId: string, excludeProductId: s
     .from('products')
     .select('*, variants (*)')
     .eq('is_active', true)
+    .eq('is_deleted', false)
     .eq('variants.is_active', true)
     .eq('category_id', categoryId)
     .neq('id', excludeProductId)
@@ -271,6 +264,7 @@ export const getProductBySlug = async (slug: string) => {
     .select('*, variants (*)')
     .eq('slug', slug)
     .eq('is_active', true)
+    .eq('is_deleted', false)
     .eq('variants.is_active', true)
     .single(); // seleccionar un solo registro
 
@@ -291,6 +285,7 @@ export const getProductBySlugAdmin = async (slug: string) => {
     .from('products')
     .select('*, variants (*)')
     .eq('slug', slug)
+    .eq('is_deleted', false)
     .eq('variants.is_active', true)
     .single(); // seleccionar un solo registro
 
@@ -340,6 +335,8 @@ export const getProducts = async ({
   const to = from + limit - 1;
 
   let query = supabase.from('products').select('*, variants(*)', { count: 'exact' });
+
+  query = query.eq('is_deleted', false);
 
   if (status === 'low_stock') {
     query = supabase
@@ -869,6 +866,25 @@ export const toggleProductStatus = async (
     throw new Error(
       'Error al actualizar el estado del producto. Vuelve a intentarlo.'
     );
+  }
+
+  return data;
+};
+
+export const softDeleteProduct = async (productId: string) => {
+  const { data, error } = await supabase
+    .from('products')
+    .update({ 
+      is_deleted: true, 
+      is_active: false
+    } as any) 
+    .eq('id', productId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error soft deleting product:', error);
+    throw new Error('Error al eliminar el producto.');
   }
 
   return data;
