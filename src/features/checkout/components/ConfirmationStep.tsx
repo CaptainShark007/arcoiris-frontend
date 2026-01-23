@@ -76,7 +76,7 @@ export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
   //const data = mockData; 
   // ============================================================
 
-  const DEFAULT_PHONE = "5493624105888";
+  const DEFAULT_PHONE = "5493624049548";
   
   const phoneNumber = partner?.phone 
     ? partner.phone.replace(/\D/g, '')

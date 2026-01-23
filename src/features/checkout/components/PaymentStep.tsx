@@ -6,6 +6,7 @@ import {
   Stack,
   Card,
   CardActionArea,
+  Alert,
 } from '@mui/material';
 import { RadioButtonChecked } from '@mui/icons-material';
 import { useState, useEffect, MutableRefObject, useCallback } from 'react';
@@ -339,6 +340,68 @@ export const PaymentStep = ({
           </Stack>
         </CardActionArea>
       </Card>
+      {/* Información de cuenta bancaria */}
+      <Box
+        sx={{
+          mb: 3,
+          p: 2.5,
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Typography variant='subtitle1' fontWeight='bold' gutterBottom>
+          Datos de cuenta bancaria
+        </Typography>
+        
+        <Stack spacing={1.5}>
+          <Box>
+            <Typography variant='body2' color='text.secondary' fontWeight={500}>
+              CBU
+            </Typography>
+            <Typography variant='body1' fontWeight='medium'>
+              00700071930004043852937
+            </Typography>
+          </Box>
+          
+          <Box>
+            <Typography variant='body2' color='text.secondary' fontWeight={500}>
+              Alias
+            </Typography>
+            <Typography variant='body1' fontWeight='medium'>
+              Arcoiris352
+            </Typography>
+          </Box>
+
+          <Box>
+            <Typography variant='body2' color='text.secondary' fontWeight={500}>
+              Titular
+            </Typography>
+            <Typography variant='body1' fontWeight='medium'>
+              Yedro Maria Sanchez - 27-33548974-3
+            </Typography>
+          </Box>
+
+          {/* Nota importante sobre comprobante */}
+          <Alert 
+            severity="info" 
+            sx={{ 
+              mt: 2,
+              '& .MuiAlert-icon': {
+                alignItems: 'center'
+              }
+            }}
+          >
+            <Typography variant='body2' fontWeight='bold' gutterBottom>
+              Nota
+            </Typography>
+            <Typography variant='body2'>
+              Si realizas el pago vía transferencia, por favor enviá el comprobante junto con tu número de orden a través de WhatsApp.
+            </Typography>
+          </Alert>
+        </Stack>
+      </Box>
 
       {/* Botones inferiores - solo en móvil */}
       <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 2, mt: 2 }}>
