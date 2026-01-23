@@ -9,7 +9,6 @@ import {
   ProductPage,
   RegisterPage,
   ShopPage,
-  CartPage,
   CheckoutPage,
   OrdersUserPage,
   OrderUserPage,
@@ -37,7 +36,6 @@ export default function Router() {
         <Route path='contacto' element={<ContactPage />} />
         <Route path='acceder' element={<LoginPage />} />
         <Route path='registrarse' element={<RegisterPage />} />
-        <Route path='carrito' element={<CartPage />} />
         <Route path='recuperar-contrasena' element={<ForgotPasswordPage />} />
         <Route path='restablecer-contrasena' element={<ResetPasswordPage />} />
 
