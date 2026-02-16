@@ -8,17 +8,15 @@ import {
   CardActionArea,
   Alert,
   CircularProgress,
-  Collapse,
-  IconButton,
 } from '@mui/material';
-import { RadioButtonChecked, CreditCard, Handshake, ExpandMore } from '@mui/icons-material';
+import { CreditCard, Handshake } from '@mui/icons-material';
 import { useState, useEffect, MutableRefObject, useCallback } from 'react';
 import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import { useMercadoPago } from '@/features/checkout/hooks/useMercadoPago';
 import toast from 'react-hot-toast';
-//import { enviarEmailOrden } from '@/services/emailService';
+import { enviarEmailOrden } from '@/services/emailService';
 import { useCustomer, useUsers } from '@shared/hooks';
 import { useReferral } from '@shared/hooks/useReferral';
 
@@ -39,13 +37,16 @@ export const PaymentStep = ({
   onConfirmOrderRef,
   isProcessingRef,
 }: PaymentStepProps) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const { session, isLoading } = useUsers();
   const userId = session?.user?.id;
   const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
   const { referralCode } = useReferral();
 
-  const [selected, setSelected] = useState<PaymentMethod>('acordar');
-  const [showMP, setShowMP] = useState(false);
+  const [selected, setSelected] = useState<PaymentMethod>('mercadopago');
 
   const { shippingInfo, shippingMethod, setOrderId, orderSummary } =
     useCheckoutStore();
@@ -59,7 +60,7 @@ export const PaymentStep = ({
       setOrderId(response.orderId);
       clearCart();
 
-      /* try {
+      try {
         await enviarEmailOrden({
           id: response.orderId,
           email: customer?.email || '',
@@ -85,7 +86,7 @@ export const PaymentStep = ({
           'Orden creada pero hubo un error al enviar el email de confirmación',
           { position: 'bottom-right' }
         );
-      } */
+      }
 
       onNext();
     },
@@ -320,6 +321,50 @@ export const PaymentStep = ({
         Método de pago
       </Typography>
 
+      {/* Opción Mercado Pago */}
+      <Card
+        variant='outlined'
+        sx={{
+          mb: 2,
+          borderColor: selected === 'mercadopago' ? '#009ee3' : 'divider',
+          boxShadow: selected === 'mercadopago' ? 4 : 0,
+          borderWidth: 2,
+          transition: '0.2s',
+          borderRadius: 2,
+        }}
+      >
+        <CardActionArea onClick={() => setSelected('mercadopago')}>
+          <Stack direction='row' alignItems='center' spacing={2} sx={{ p: 3 }}>
+            <Radio
+              checked={selected === 'mercadopago'}
+              color='primary'
+            />
+            <CreditCard sx={{ color: '#009ee3', fontSize: 28 }} />
+            <Box>
+              <Typography variant='h6' fontWeight='bold'>
+                Pago Online
+              </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                Pagá con tarjeta de crédito, débito, dinero en cuenta o en
+                efectivo.
+              </Typography>
+            </Box>
+          </Stack>
+        </CardActionArea>
+      </Card>
+
+      {selected === 'mercadopago' && (
+        <Alert
+          severity='info'
+          sx={{ mb: 3, '& .MuiAlert-icon': { alignItems: 'center' } }}
+        >
+          <Typography variant='body2'>
+            Al confirmar la orden, serás redirigido a Mercado Pago para
+            completar el pago de forma segura.
+          </Typography>
+        </Alert>
+      )}
+
       {/* Opción Acordar */}
       <Card
         variant='outlined'
@@ -337,8 +382,6 @@ export const PaymentStep = ({
             <Radio
               checked={selected === 'acordar'}
               color='primary'
-              icon={<RadioButtonChecked sx={{ opacity: 0.4 }} />}
-              checkedIcon={<RadioButtonChecked color='primary' />}
             />
             <Handshake sx={{ color: 'primary.main', fontSize: 28 }} />
             <Box>
@@ -428,85 +471,6 @@ export const PaymentStep = ({
           </Stack>
         </Box>
       )}
-
-      {/* Más opciones de pago */}
-      <Stack
-        direction='row'
-        alignItems='center'
-        justifyContent='center'
-        onClick={() => setShowMP(!showMP)}
-        sx={{
-          cursor: 'pointer',
-          mb: 2,
-          mt: 1,
-          py: 1,
-          '&:hover': { opacity: 0.7 },
-        }}
-      >
-        <Typography variant='body2' color='text.secondary'>
-          Más opciones de pago
-        </Typography>
-        <IconButton size='small' sx={{ ml: 0.5 }}>
-          <ExpandMore
-            sx={{
-              transform: showMP ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: '0.3s',
-              color: 'text.secondary',
-            }}
-          />
-        </IconButton>
-      </Stack>
-
-      <Collapse in={showMP}>
-        {/* Opción Mercado Pago */}
-        <Card
-          variant='outlined'
-          sx={{
-            mb: 2,
-            borderColor: selected === 'mercadopago' ? '#009ee3' : 'divider',
-            boxShadow: selected === 'mercadopago' ? 4 : 0,
-            borderWidth: 2,
-            transition: '0.2s',
-            borderRadius: 2,
-          }}
-        >
-          <CardActionArea onClick={() => setSelected('mercadopago')}>
-            <Stack direction='row' alignItems='center' spacing={2} sx={{ p: 3 }}>
-              <Radio
-                checked={selected === 'mercadopago'}
-                sx={{
-                  color: '#009ee3',
-                  '&.Mui-checked': { color: '#009ee3' },
-                }}
-                icon={<RadioButtonChecked sx={{ opacity: 0.4 }} />}
-                checkedIcon={<RadioButtonChecked />}
-              />
-              <CreditCard sx={{ color: '#009ee3', fontSize: 28 }} />
-              <Box>
-                <Typography variant='h6' fontWeight='bold'>
-                  Mercado Pago
-                </Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  Pagá con tarjeta de crédito, débito, dinero en cuenta o en
-                  efectivo.
-                </Typography>
-              </Box>
-            </Stack>
-          </CardActionArea>
-        </Card>
-
-        {selected === 'mercadopago' && (
-          <Alert
-            severity='info'
-            sx={{ mb: 3, '& .MuiAlert-icon': { alignItems: 'center' } }}
-          >
-            <Typography variant='body2'>
-              Al confirmar la orden, serás redirigido a Mercado Pago para
-              completar el pago de forma segura.
-            </Typography>
-          </Alert>
-        )}
-      </Collapse>
 
       {/* Botones inferiores - solo en móvil */}
       <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 2, mt: 2 }}>

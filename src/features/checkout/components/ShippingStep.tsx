@@ -16,6 +16,10 @@ interface ShippingStepProps {
 
 export const ShippingStep = ({ onNext, onBack, onValidateAndSaveRef }: ShippingStepProps) => {
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [form, setForm] = useState({
     addressLine1: '',
     addressLine2: '',

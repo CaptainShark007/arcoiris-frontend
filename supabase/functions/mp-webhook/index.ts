@@ -1,7 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const MP_ACCESS_TOKEN = Deno.env.get("MP_ACCESS_TOKEN")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,7 +7,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+  const MP_ACCESS_TOKEN = Deno.env.get("MP_ACCESS_TOKEN") ?? "";
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -85,14 +83,14 @@ serve(async (req) => {
     const paymentStatus = paymentStatusMap[paymentData.status] || "pending";
 
     const orderStatusMap: Record<string, string> = {
-      paid: "confirmada",
-      pending: "pendiente",
-      failed: "cancelada",
-      refunded: "reembolsada",
-      charged_back: "cancelada",
+      paid: "paid",
+      pending: "pending",
+      failed: "pending",
+      refunded: "pending",
+      charged_back: "pending",
     };
 
-    const orderStatus = orderStatusMap[paymentStatus] || "pendiente";
+    const orderStatus = orderStatusMap[paymentStatus] || "pending";
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",

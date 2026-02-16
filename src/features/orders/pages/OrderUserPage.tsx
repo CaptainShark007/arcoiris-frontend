@@ -20,11 +20,16 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import { useEffect } from 'react';
 
 const tableHeaders = ['Producto', 'Cantidad', 'Total'];
 
 // PAGINA DE UN SOLO PEDIDO DEL USUARIO IDENTIFICADO POR EL ID
 const OrderUserPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   const { id } = useParams<{ id: string }>();
   const { data: order, isLoading } = useOrder(Number(id!));
   const navigate = useNavigate();
