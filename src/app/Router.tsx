@@ -10,6 +10,7 @@ import {
   RegisterPage,
   ShopPage,
   CheckoutPage,
+  PaymentResultPage,
   OrdersUserPage,
   OrderUserPage,
   DashboardProductsPage,
@@ -49,6 +50,9 @@ export default function Router() {
 
         {/* Página de checkout */}
         <Route path='verificar' element={<CheckoutPage />} />
+
+        {/* Resultado de pago con Mercado Pago */}
+        <Route path='pago/resultado' element={<PaymentResultPage />} />
 
         {/* Página 404 */}
         <Route path='*' element={<Error404 />} />
