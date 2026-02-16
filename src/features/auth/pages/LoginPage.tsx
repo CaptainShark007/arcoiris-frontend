@@ -12,6 +12,10 @@ import { useUsers } from "@shared/hooks";
 import { Loader, SeoHead } from "@shared/components";
 
 const LoginPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [hasRedirected, setHasRedirected] = useState(false);

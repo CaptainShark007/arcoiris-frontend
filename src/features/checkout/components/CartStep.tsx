@@ -11,6 +11,10 @@ interface CartStepProps {
 }
 
 export const CartStep = ({ onNext }: CartStepProps) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   const navigate = useNavigate();
   const { session, isLoading } = useUsers();
   const [searchQuery, setSearchQuery] = useState('');
