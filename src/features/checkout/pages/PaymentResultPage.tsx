@@ -31,7 +31,7 @@ const statusConfig: Record<
     icon: <CheckCircle sx={{ fontSize: 80, color: 'success.main' }} />,
     title: '¡Pago aprobado!',
     description:
-      'Tu pago fue procesado exitosamente. Recibirás una confirmación por email.',
+      'Tu pago fue procesado exitosamente. Pronto nos contactaremos contigo.',
     color: 'success.main',
   },
   rejected: {
@@ -52,7 +52,7 @@ const statusConfig: Record<
     icon: <ErrorOutline sx={{ fontSize: 80, color: 'text.secondary' }} />,
     title: 'Estado desconocido',
     description:
-      'No pudimos determinar el estado de tu pago. Revisá tu email o contactanos.',
+      'No pudimos determinar el estado de tu pago. Te contactaremos pronto para más información.',
     color: 'text.secondary',
   },
 };

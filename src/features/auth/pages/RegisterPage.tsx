@@ -10,8 +10,13 @@ import { useRegister } from "../hooks";
 import { useFormWithSchema, useUsers } from "@shared/hooks";
 import { RegisterFormData, registerSchema } from "../schemas/registerSchema";
 import { Loader, SeoHead } from "@shared/components";
+import { useEffect } from "react";
 
 const RegisterPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   const {
     register,
     handleSubmit,

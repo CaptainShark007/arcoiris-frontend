@@ -26,7 +26,7 @@ import {
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
 import { formatPrice } from '@/helpers';
 import { useNavigate } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCurrentPartner } from '@shared/hooks';
 
 // ============================================================
@@ -45,6 +45,10 @@ interface ConfirmationStepProps {
 }
 
 export const ConfirmationStep = ({ onReset }: ConfirmationStepProps) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+    
   const navigate = useNavigate();
   const { orderId, clearCheckout } = useCheckoutStore();
 
