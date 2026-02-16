@@ -7,19 +7,22 @@ import {
   Card,
   CardActionArea,
   Alert,
+  CircularProgress,
+  Collapse,
+  IconButton,
 } from '@mui/material';
-import { RadioButtonChecked } from '@mui/icons-material';
+import { RadioButtonChecked, CreditCard, Handshake, ExpandMore } from '@mui/icons-material';
 import { useState, useEffect, MutableRefObject, useCallback } from 'react';
 import { useCreateOrder } from '@features/orders';
 import { useCartStore } from '@/storage/useCartStore';
 import { useCheckoutStore } from '@/storage/useCheckoutStore';
+import { useMercadoPago } from '@/features/checkout/hooks/useMercadoPago';
 import toast from 'react-hot-toast';
-// ============================================================
-// DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
-import { enviarEmailOrden } from '@/services/emailService';
+//import { enviarEmailOrden } from '@/services/emailService';
 import { useCustomer, useUsers } from '@shared/hooks';
 import { useReferral } from '@shared/hooks/useReferral';
-// ============================================================
+
+type PaymentMethod = 'acordar' | 'mercadopago';
 
 interface PaymentStepProps {
   onNext: () => void;
@@ -36,33 +39,27 @@ export const PaymentStep = ({
   onConfirmOrderRef,
   isProcessingRef,
 }: PaymentStepProps) => {
-  // ============================================================
-  // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
   const { session, isLoading } = useUsers();
   const userId = session?.user?.id;
   const { data: customer, isLoading: isLoadingCustomer } = useCustomer(userId);
   const { referralCode } = useReferral();
-  // ============================================================
 
-  const [selected, setSelected] = useState<'acordar'>('acordar');
+  const [selected, setSelected] = useState<PaymentMethod>('acordar');
+  const [showMP, setShowMP] = useState(false);
 
   const { shippingInfo, shippingMethod, setOrderId, orderSummary } =
     useCheckoutStore();
-  const { clearCart } = useCartStore();
+  const { clearCart, items: cartItems } = useCartStore();
+  const { createPreference, redirectToMercadoPago, isPending: isMPPending } =
+    useMercadoPago();
 
-  // Callbacks para manejar el éxito y error de la orden
-  const handleOrderSuccess = useCallback(
+  // Callback para éxito de la orden con método "acordar"
+  const handleOrderSuccessAcordar = useCallback(
     async (response: any) => {
-      // Guardar el ID de la orden
       setOrderId(response.orderId);
-
-      // Limpiar el carrito
       clearCart();
 
-      // ============================================================
-      // ENVÍO DE EMAIL
-      // ============================================================
-      try {
+      /* try {
         await enviarEmailOrden({
           id: response.orderId,
           email: customer?.email || '',
@@ -86,66 +83,104 @@ export const PaymentStep = ({
         console.error('Error al enviar email:', emailError);
         toast.error(
           'Orden creada pero hubo un error al enviar el email de confirmación',
-          {
-            position: 'bottom-right',
-          }
+          { position: 'bottom-right' }
         );
-      }
-      // ============================================================
-      // ENVÍO DE EMAIL
-      // ============================================================
+      } */
 
-      // Navegar al siguiente paso
       onNext();
     },
-    [onNext, setOrderId, clearCart, shippingMethod, orderSummary]
+    [onNext, setOrderId, clearCart, shippingMethod, orderSummary, customer, shippingInfo]
   );
 
-  // Manejo de error en la creación de la orden
+  // Callback para éxito de la orden con Mercado Pago
+  const handleOrderSuccessMP = useCallback(
+    async (response: any) => {
+      setOrderId(response.orderId);
+
+      // Crear preferencia en MP y redireccionar
+      toast.loading('Redirigiendo a Mercado Pago...', {
+        id: 'mp-redirect',
+        position: 'top-right',
+        duration: Infinity,
+      });
+
+      try {
+        const mpResponse = await createPreference({
+          orderId: response.orderId,
+          items: cartItems.map((item) => ({
+            title: item.name,
+            quantity: item.quantity,
+            unit_price: item.price,
+            picture_url: item.image || undefined,
+          })),
+          payer: {
+            name: customer?.full_name || 'Cliente',
+            email: customer?.email || session?.user?.email || '',
+          },
+        });
+
+        toast.dismiss('mp-redirect');
+
+        if (mpResponse.success) {
+          // Limpiar el carrito antes de redirigir
+          clearCart();
+          redirectToMercadoPago(mpResponse);
+        } else {
+          toast.error(
+            mpResponse.error || 'Error al crear la preferencia de pago',
+            { position: 'top-right' }
+          );
+        }
+      } catch (err) {
+        toast.dismiss('mp-redirect');
+        console.error('Error al crear preferencia MP:', err);
+        toast.error('Error al procesar el pago con Mercado Pago', {
+          position: 'top-right',
+        });
+      }
+    },
+    [setOrderId, createPreference, cartItems, customer, session, clearCart, redirectToMercadoPago]
+  );
+
   const handleOrderError = useCallback(async (error: Error) => {
     console.error('Error en la creación de la orden:', error);
   }, []);
 
-  const { mutate: createOrder, isPending } = useCreateOrder({
-    onSuccess: handleOrderSuccess,
+  const { mutate: createOrderAcordar, isPending: isPendingAcordar } =
+    useCreateOrder({
+      onSuccess: handleOrderSuccessAcordar,
+      onError: handleOrderError,
+    });
+
+  const { mutate: createOrderMP, isPending: isPendingMP } = useCreateOrder({
+    onSuccess: handleOrderSuccessMP,
     onError: handleOrderError,
   });
 
+  const isPending = isPendingAcordar || isPendingMP || isMPPending;
+
   // Función para confirmar la orden
   const handleConfirm = useCallback(async () => {
-
-    // ============================================================
-    // DESCOMENTAR CUANDO SE HABILITE ENVÍO DE EMAIL
     if (isLoadingCustomer) {
       toast.error('Por favor espera mientras se cargan tus datos', {
         position: 'top-right',
       });
       return;
     }
-    // ============================================================
 
-    // Validar que la información de envío esté completa
     if (!shippingInfo) {
       toast.error(
         'Por favor, completa la información de envío antes de continuar.',
-        {
-          position: 'top-right',
-        }
+        { position: 'top-right' }
       );
       return;
     }
 
-    // Validar que haya items en el carrito
     if (!orderSummary?.items || orderSummary.items.length === 0) {
-      toast.error('Tu carrito está vacío.', {
-        position: 'top-right',
-      });
+      toast.error('Tu carrito está vacío.', { position: 'top-right' });
       return;
     }
 
-    // ============================================================
-    // FUNCIONAMIENTO REAL CON SP
-    // ============================================================
     toast.loading('Procesando tu orden...', {
       id: 'order-processing',
       position: 'top-right',
@@ -170,47 +205,23 @@ export const PaymentStep = ({
       partnerCode: referralCode || null,
     };
 
-    createOrder(orderData);
+    if (selected === 'mercadopago') {
+      createOrderMP(orderData);
+    } else {
+      createOrderAcordar(orderData);
+    }
 
     setTimeout(() => {
       toast.dismiss('order-processing');
     }, 100);
-    // ============================================================
-    // FUNCIONAMIENTO REAL CON SP
-    // ============================================================
-
-    // ============================================================
-    // SIMULACIÓN
-    // ============================================================
-    /* toast.loading('Procesando tu orden...', {
-      id: 'order-processing',
-      position: 'bottom-right',
-      duration: 1500,
-    });
-
-    setTimeout(() => {
-      setOrderId(Math.floor(Math.random() * 100000));
-      clearCart();
-      
-      toast.success('¡Orden creada con éxito! (SIMULACIÓN)', {
-        id: 'order-processing',
-        position: 'bottom-right',
-      });
-
-      onNext();
-    }, 1500); */
-    // ============================================================
-    // SIMULACIÓN
-    // ============================================================
-
   }, [
     shippingInfo,
     orderSummary,
-    createOrder,
-    setOrderId,
-    clearCart,
-    onNext,
+    createOrderAcordar,
+    createOrderMP,
+    selected,
     isLoadingCustomer,
+    referralCode,
   ]);
 
   // Actualizar ref con la función de confirmar
@@ -309,10 +320,11 @@ export const PaymentStep = ({
         Método de pago
       </Typography>
 
+      {/* Opción Acordar */}
       <Card
         variant='outlined'
         sx={{
-          mb: 3,
+          mb: 2,
           borderColor: selected === 'acordar' ? 'primary.main' : 'divider',
           boxShadow: selected === 'acordar' ? 4 : 0,
           borderWidth: 2,
@@ -328,6 +340,7 @@ export const PaymentStep = ({
               icon={<RadioButtonChecked sx={{ opacity: 0.4 }} />}
               checkedIcon={<RadioButtonChecked color='primary' />}
             />
+            <Handshake sx={{ color: 'primary.main', fontSize: 28 }} />
             <Box>
               <Typography variant='h6' fontWeight='bold'>
                 Acordar
@@ -340,68 +353,160 @@ export const PaymentStep = ({
           </Stack>
         </CardActionArea>
       </Card>
-      {/* Información de cuenta bancaria */}
-      <Box
+
+      {/* Información de cuenta bancaria - solo si se selecciona Acordar */}
+      {selected === 'acordar' && (
+        <Box
+          sx={{
+            mb: 3,
+            p: 2.5,
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Typography variant='subtitle1' fontWeight='bold' gutterBottom>
+            Datos de cuenta bancaria
+          </Typography>
+
+          <Stack spacing={1.5}>
+            <Box>
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                fontWeight={500}
+              >
+                CBU
+              </Typography>
+              <Typography variant='body1' fontWeight='medium'>
+                00700071930004043852937
+              </Typography>
+            </Box>
+
+            <Box>
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                fontWeight={500}
+              >
+                Alias
+              </Typography>
+              <Typography variant='body1' fontWeight='medium'>
+                Arcoiris352
+              </Typography>
+            </Box>
+
+            <Box>
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                fontWeight={500}
+              >
+                Titular
+              </Typography>
+              <Typography variant='body1' fontWeight='medium'>
+                Yedro Maria Sanchez - 27-33548974-3
+              </Typography>
+            </Box>
+
+            <Alert
+              severity='info'
+              sx={{
+                mt: 2,
+                '& .MuiAlert-icon': { alignItems: 'center' },
+              }}
+            >
+              <Typography variant='body2' fontWeight='bold' gutterBottom>
+                Nota
+              </Typography>
+              <Typography variant='body2'>
+                Si realizas el pago vía transferencia, por favor enviá el
+                comprobante junto con tu número de orden a través de WhatsApp.
+              </Typography>
+            </Alert>
+          </Stack>
+        </Box>
+      )}
+
+      {/* Más opciones de pago */}
+      <Stack
+        direction='row'
+        alignItems='center'
+        justifyContent='center'
+        onClick={() => setShowMP(!showMP)}
         sx={{
-          mb: 3,
-          p: 2.5,
-          border: 1,
-          borderColor: 'divider',
-          borderRadius: 2,
-          bgcolor: 'background.paper',
+          cursor: 'pointer',
+          mb: 2,
+          mt: 1,
+          py: 1,
+          '&:hover': { opacity: 0.7 },
         }}
       >
-        <Typography variant='subtitle1' fontWeight='bold' gutterBottom>
-          Datos de cuenta bancaria
+        <Typography variant='body2' color='text.secondary'>
+          Más opciones de pago
         </Typography>
-        
-        <Stack spacing={1.5}>
-          <Box>
-            <Typography variant='body2' color='text.secondary' fontWeight={500}>
-              CBU
-            </Typography>
-            <Typography variant='body1' fontWeight='medium'>
-              00700071930004043852937
-            </Typography>
-          </Box>
-          
-          <Box>
-            <Typography variant='body2' color='text.secondary' fontWeight={500}>
-              Alias
-            </Typography>
-            <Typography variant='body1' fontWeight='medium'>
-              Arcoiris352
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography variant='body2' color='text.secondary' fontWeight={500}>
-              Titular
-            </Typography>
-            <Typography variant='body1' fontWeight='medium'>
-              Yedro Maria Sanchez - 27-33548974-3
-            </Typography>
-          </Box>
-
-          {/* Nota importante sobre comprobante */}
-          <Alert 
-            severity="info" 
-            sx={{ 
-              mt: 2,
-              '& .MuiAlert-icon': {
-                alignItems: 'center'
-              }
+        <IconButton size='small' sx={{ ml: 0.5 }}>
+          <ExpandMore
+            sx={{
+              transform: showMP ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: '0.3s',
+              color: 'text.secondary',
             }}
+          />
+        </IconButton>
+      </Stack>
+
+      <Collapse in={showMP}>
+        {/* Opción Mercado Pago */}
+        <Card
+          variant='outlined'
+          sx={{
+            mb: 2,
+            borderColor: selected === 'mercadopago' ? '#009ee3' : 'divider',
+            boxShadow: selected === 'mercadopago' ? 4 : 0,
+            borderWidth: 2,
+            transition: '0.2s',
+            borderRadius: 2,
+          }}
+        >
+          <CardActionArea onClick={() => setSelected('mercadopago')}>
+            <Stack direction='row' alignItems='center' spacing={2} sx={{ p: 3 }}>
+              <Radio
+                checked={selected === 'mercadopago'}
+                sx={{
+                  color: '#009ee3',
+                  '&.Mui-checked': { color: '#009ee3' },
+                }}
+                icon={<RadioButtonChecked sx={{ opacity: 0.4 }} />}
+                checkedIcon={<RadioButtonChecked />}
+              />
+              <CreditCard sx={{ color: '#009ee3', fontSize: 28 }} />
+              <Box>
+                <Typography variant='h6' fontWeight='bold'>
+                  Mercado Pago
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Pagá con tarjeta de crédito, débito, dinero en cuenta o en
+                  efectivo.
+                </Typography>
+              </Box>
+            </Stack>
+          </CardActionArea>
+        </Card>
+
+        {selected === 'mercadopago' && (
+          <Alert
+            severity='info'
+            sx={{ mb: 3, '& .MuiAlert-icon': { alignItems: 'center' } }}
           >
-            <Typography variant='body2' fontWeight='bold' gutterBottom>
-              Nota
-            </Typography>
             <Typography variant='body2'>
-              Si realizas el pago vía transferencia, por favor enviá el comprobante junto con tu número de orden a través de WhatsApp.
+              Al confirmar la orden, serás redirigido a Mercado Pago para
+              completar el pago de forma segura.
             </Typography>
           </Alert>
-        </Stack>
-      </Box>
+        )}
+      </Collapse>
 
       {/* Botones inferiores - solo en móvil */}
       <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 2, mt: 2 }}>
@@ -410,7 +515,6 @@ export const PaymentStep = ({
           onClick={onBack}
           fullWidth
           disabled={isPending || isLoading || isLoadingCustomer}
-          //disabled={isPending}
         >
           Volver
         </Button>
@@ -421,14 +525,23 @@ export const PaymentStep = ({
           disabled={isPending}
           sx={{
             position: 'relative',
+            ...(selected === 'mercadopago' && {
+              bgcolor: '#009ee3',
+              '&:hover': { bgcolor: '#007eb5' },
+            }),
           }}
         >
-          {isPending ? 'Procesando...' : isLoading || isLoadingCustomer ? 'Cargando datos...' : 'Confirmar orden'}
+          {isPending ? (
+            <CircularProgress size={24} color='inherit' />
+          ) : isLoading || isLoadingCustomer ? (
+            'Cargando datos...'
+          ) : selected === 'mercadopago' ? (
+            'Pagar con Mercado Pago'
+          ) : (
+            'Confirmar orden'
+          )}
         </Button>
       </Box>
     </Box>
   );
 };
-
-/* {isPending ? 'Procesando...' : 'Confirmar orden'} */
-/* {isPending ? 'Procesando...' : isLoading || isLoadingCustomer ? 'Cargando datos...' : 'Confirmar orden'} */
