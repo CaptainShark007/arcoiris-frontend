@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { ProductListPage } from '../components';
 import { useSearchParams } from 'react-router';
@@ -5,28 +6,62 @@ import { useDebounce, useFilteredProducts } from '../hooks';
 import { SeoHead } from '@shared/components';
 
 const ShopPage = () => {
-
-  const [ searchParams ] = useSearchParams();
-
-  const [page, setPage] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(8);
-
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('created_at-desc');
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [page]);
+  }, []);
 
-  // Resetear si cambion los filtros
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [page, setPage] = useState(() => Number(searchParams.get('page')) || 0);
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
+  const [sortOrder, setSortOrder] = useState(() => searchParams.get('sort') || 'created_at-desc');
+
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(() => {
+    const brands = searchParams.get('brands');
+    return brands ? brands.split(',') : [];
+  });
+
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+    const categories = searchParams.get('categories');
+    return categories ? categories.split(',') : [];
+  });
+
+  const [itemsPerPage, setItemsPerPage] = useState(8);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // 1. Sincronizar estado hacia la URL
   useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (page > 0) params.set('page', page.toString());
+    if (searchTerm) params.set('search', searchTerm);
+    if (sortOrder !== 'created_at-desc') params.set('sort', sortOrder);
+    if (selectedBrands.length > 0) params.set('brands', selectedBrands.join(','));
+    if (selectedCategories.length > 0) params.set('categories', selectedCategories.join(','));
+
+    // replace: true evita llenar el historial del navegador
+    setSearchParams(params, { replace: true });
+  }, [page, searchTerm, sortOrder, selectedBrands, selectedCategories, setSearchParams]);
+
+  const handleSetSearchTerm = (value: React.SetStateAction<string>) => {
+    setSearchTerm(value);
     setPage(0);
-  }, [selectedBrands, selectedCategories, debouncedSearchTerm, sortOrder]);
+  };
+
+  const handleSetSortOrder = (value: React.SetStateAction<string>) => {
+    setSortOrder(value);
+    setPage(0);
+  };
+
+  const handleSetSelectedBrands = (value: React.SetStateAction<string[]>) => {
+    setSelectedBrands(value);
+    setPage(0);
+  };
+
+  const handleSetSelectedCategories = (value: React.SetStateAction<string[]>) => {
+    setSelectedCategories(value);
+    setPage(0);
+  };
 
   useEffect(() => {
     const categoryId = searchParams.get('categoryId');
@@ -46,7 +81,6 @@ const ShopPage = () => {
     }
 
     const formattedTerm = term.charAt(0).toUpperCase() + term.slice(1);
-
     return `Resultados para ${formattedTerm}`;
   }, [debouncedSearchTerm, selectedCategories]);
 
@@ -69,7 +103,7 @@ const ShopPage = () => {
         title={pageTitle}
         description={
           debouncedSearchTerm 
-            ? `Resultados de búsqueda para ${debouncedSearchTerm} en Arcoiris Shop.` 
+            ? `Resultados de búsqueda para ${debouncedSearchTerm}.` 
             : "Explora nuestra tienda - Encuentra los mejores productos en Arcoiris"
         }
       />
@@ -81,16 +115,14 @@ const ShopPage = () => {
         itemsPerPage={itemsPerPage}
         setItemsPerPage={setItemsPerPage}
         totalProducts={totalProducts}
-        // props de filtros
         selectedBrands={selectedBrands}
-        setSelectedBrands={setSelectedBrands}
+        setSelectedBrands={handleSetSelectedBrands}
         selectedCategories={selectedCategories}
-        setSelectedCategories={setSelectedCategories}
-        // props de busqueda y orden
+        setSelectedCategories={handleSetSelectedCategories}
         searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
+        setSearchTerm={handleSetSearchTerm}
         sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
+        setSortOrder={handleSetSortOrder}
       />
     </>
   );
