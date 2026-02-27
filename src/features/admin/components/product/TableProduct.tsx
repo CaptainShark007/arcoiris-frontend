@@ -37,7 +37,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom'; // <-- IMPORTANTE: useSearchParams
 import { CellTableProduct } from './CellTableProduct';
 import { formatDate, formatPrice } from '@/helpers';
 import { Loader } from '@shared/components';
@@ -75,15 +75,41 @@ export const TableProduct = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<
-    'all' | 'active' | 'inactive' | 'low_stock'
-  >('all');
-  const [categoryIdFilter, setCategoryIdFilter] = useState<string>('all');
-  const [sortFilter, setSortFilter] = useState<
-    'newest' | 'oldest' | 'name_asc' | 'name_desc'
-  >('newest');
+  // --- 1. Sincronización con la URL ---
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(() => searchParams.get('search') || '');
+  
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'low_stock'>(
+    () => (searchParams.get('status') as any) || 'all'
+  );
+  
+  const [categoryIdFilter, setCategoryIdFilter] = useState<string>(
+    () => searchParams.get('category') || 'all'
+  );
+  
+  const [sortFilter, setSortFilter] = useState<'newest' | 'oldest' | 'name_asc' | 'name_desc'>(
+    () => (searchParams.get('sort') as any) || 'newest'
+  );
+
+  const [page, setPage] = useState(() => Number(searchParams.get('page')) || 0);
+  const [rowsPerPage, setRowsPerPage] = useState(() => Number(searchParams.get('limit')) || 10);
+
+  // Efecto para actualizar la URL cuando cambian los filtros
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    if (page > 0) params.set('page', page.toString());
+    if (rowsPerPage !== 10) params.set('limit', rowsPerPage.toString());
+    if (debouncedSearch) params.set('search', debouncedSearch);
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (categoryIdFilter !== 'all') params.set('category', categoryIdFilter);
+    if (sortFilter !== 'newest') params.set('sort', sortFilter);
+
+    setSearchParams(params, { replace: true });
+  }, [page, rowsPerPage, debouncedSearch, statusFilter, categoryIdFilter, sortFilter, setSearchParams]);
+
 
   // --- ESTADOS PARA EL MODAL DE ELIMINACIÓN ---
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -92,13 +118,17 @@ export const TableProduct = () => {
   // Hook de borrado
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
 
+  // Se eliminó el reseteo automático de página dentro del debouncer para evitar bugs
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-      setPage(0);
+      // Solo reseteamos a la página 0 si el término de búsqueda cambió respecto a la URL
+      if (searchTerm !== searchParams.get('search') && searchTerm !== '') {
+          setPage(0);
+      }
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, searchParams]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -107,13 +137,12 @@ export const TableProduct = () => {
   const handleClearSearch = () => {
     setSearchTerm('');
     setDebouncedSearch('');
+    setPage(0);
   };
 
   const [selectedVariants, setSelectedVariants] = useState<{
     [key: string]: number;
   }>({});
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { products, isLoading, totalProducts } = useProducts({
     page: page + 1,
