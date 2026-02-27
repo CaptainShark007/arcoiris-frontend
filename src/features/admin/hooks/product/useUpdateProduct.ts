@@ -16,7 +16,7 @@ export const useUpdateProduct = (productId: string) => {
       toast.success('Producto actualizado con éxito', {
         position: 'top-right',
       });
-      navigate('/panel/productos');
+      navigate(-1);
     },
     onError: (error: Error) => {
       console.error('Error al actualizar producto:', error);
