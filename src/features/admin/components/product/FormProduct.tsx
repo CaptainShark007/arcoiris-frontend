@@ -123,10 +123,14 @@ export const FormProduct = ({ titleForm }: Props) => {
   const watchName = watch('name');
 
   useEffect(() => {
+    // Si 'slug' de useParams existe, esta en modo edición. 
+    // Por seguridad (y SEO), NO se auto-genera el slug al cambiar el nombre.
+    if (slug) return; 
+
     if (!watchName) return;
     const generatedSlug = generateSlug(watchName);
     setValue('slug', generatedSlug, { shouldValidate: true });
-  }, [watchName, setValue]);
+  }, [watchName, setValue, slug]); // <-- agregamos 'slug' a las dependencias
 
   if (isPending || isUpdatePending || isLoading) return <Loader />;
 
