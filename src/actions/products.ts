@@ -675,6 +675,7 @@ export const validateProductUpdateInput = async (
     .from('products')
     .select('id')
     .eq('slug', input.slug.trim())
+    .eq('is_deleted', false) // solo productos no eliminados
     .single();
 
   if (slugError && slugError.code !== 'PGRST116') {
@@ -682,7 +683,7 @@ export const validateProductUpdateInput = async (
     errors.push('Error al validar el slug del producto.');
   }
 
-  if (existingSlug && existingSlug.id !== productId) {
+  if (existingSlug && String(existingSlug.id).trim() !== String(productId).trim()) {
     errors.push('El slug ya está siendo utilizado por otro producto.');
   }
 
