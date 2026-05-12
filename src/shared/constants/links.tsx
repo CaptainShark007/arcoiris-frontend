@@ -1,7 +1,6 @@
 import InventoryIcon from '@mui/icons-material/Inventory';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HandshakeIcon from '@mui/icons-material/Handshake';
-import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
 
 export const dashboardLinks = [
 	{
