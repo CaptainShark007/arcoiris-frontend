@@ -18,3 +18,11 @@ export * from './category/CategoryFormModal';
 
 // Orders
 export * from './order/TableOrdersAdmin';
+
+// POS
+export * from './pos/products/PosProductGrid';
+export * from './pos/products/PosProductCard';
+export * from './pos/products/PosVariantModal';
+export * from './pos/cart/PosCart';
+export * from './pos/cart/PosCartItem';
+export * from './pos/cart/PosCartSummary';

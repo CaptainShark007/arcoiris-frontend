@@ -19,3 +19,6 @@ export * from './order/useOrderAdmin';
 
 // partners
 export * from './partner/usePartners';
+
+// pos
+export * from './pos/usePosStore';

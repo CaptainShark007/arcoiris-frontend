@@ -10,6 +10,9 @@ export const OrdersUserPage = lazy(() => import('../features/orders/pages/Orders
 export const OrderUserPage = lazy(() => import('../features/orders/pages/OrderUserPage'));
 export const CheckoutPage = lazy(() => import('../features/checkout/pages/CheckoutPage'));
 export const PaymentResultPage = lazy(() => import('../features/checkout/pages/PaymentResultPage'));
+
+export const DashboardPage = lazy(() => import('../features/admin/pages/DashboardPage'));
+export const DashboardPosPage = lazy(() => import('../features/admin/pages/DashboardPosPage'));
 export const DashboardProductsPage = lazy(() => import('../features/admin/pages/DashboardProductsPage'));
 export const DashboardNewProductPage = lazy(() => import('../features/admin/pages/DashboardNewProductPage'));
 export const DashboardProductSlugPage = lazy(() => import('../features/admin/pages/DashboardProductSlugPage'));
@@ -17,6 +20,7 @@ export const DashboardOrdersPage = lazy(() => import('../features/admin/pages/Da
 export const DashboardOrderPage = lazy(() => import('../features/admin/pages/DashboardOrderPage'));
 export const DashboardPartnersPage = lazy(() => import('../features/admin/pages/DashboardPartnersPage'));
 export const DashboardBannerPage = lazy(() => import('../features/admin/pages/DashboardBannerPage'));
+
 export const ForgotPasswordPage = lazy(() => import('../features/auth/pages/ForgotPasswordPage'));
 export const ResetPasswordPage = lazy(() => import('../features/auth/pages/ResetPasswordPage'));
 export const FormEditUserPage = lazy(() => import('../features/orders/pages/FormEditCustomerPage'));

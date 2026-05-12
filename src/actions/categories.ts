@@ -250,6 +250,19 @@ export const countProductsByCategory = async (
   return count || 0;
 };
 
+// Lookup liviano para el POS — solo id y nombre
+export const getCategoriesLookup = async (): Promise<{ id: string; name: string }[]> => {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('id, name')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true });
+
+  if (error) throw new Error('Error al obtener categorías');
+
+  return data || [];
+};
+
 // Generar slug automaticamente
 export const generateCategorySlug = (name: string): string => {
   return name
