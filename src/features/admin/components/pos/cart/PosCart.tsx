@@ -3,14 +3,12 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import DeleteSweepOutlinedIcon from '@mui/icons-material/DeleteSweepOutlined';
 import { PosCartItem } from './PosCartItem';
 import { PosCartSummary } from './PosCartSummary';
-import { CartItem, PaymentMethod } from '@features/admin/hooks/pos/usePosStore';
+import { CartItem } from '@features/admin/hooks/pos/usePosStore';
 
 interface PosCartProps {
   cart: CartItem[];
   totalItems: number;
   totalAmount: number;
-  paymentMethod: PaymentMethod;
-  onPaymentMethodChange: (method: PaymentMethod) => void;
   onUpdateQuantity: (variantId: string, quantity: number) => void;
   onRemove: (variantId: string) => void;
   onClear: () => void;
@@ -22,8 +20,6 @@ export const PosCart = ({
   cart,
   totalItems,
   totalAmount,
-  paymentMethod,
-  onPaymentMethodChange,
   onUpdateQuantity,
   onRemove,
   onClear,
@@ -137,8 +133,6 @@ export const PosCart = ({
         <PosCartSummary
           totalItems={totalItems}
           totalAmount={totalAmount}
-          paymentMethod={paymentMethod}
-          onPaymentMethodChange={onPaymentMethodChange}
           onConfirm={onConfirm}
           confirming={confirming}
           disabled={isEmpty}

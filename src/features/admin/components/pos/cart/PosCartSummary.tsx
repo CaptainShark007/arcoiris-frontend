@@ -1,32 +1,17 @@
-//import React from 'react';
 import { Box, Typography, Button, Divider } from '@mui/material';
-//import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
-//import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
-//import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
-//import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
-import { PaymentMethod } from '@features/admin/hooks/pos/usePosStore';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 
 interface PosCartSummaryProps {
   totalItems: number;
   totalAmount: number;
-  paymentMethod: PaymentMethod;
-  onPaymentMethodChange: (method: PaymentMethod) => void;
   onConfirm: () => void;
   confirming: boolean;
   disabled: boolean;
 }
 
-/* const PAYMENT_OPTIONS: { value: PaymentMethod; label: string; icon: React.ReactNode }[] = [
-  { value: 'efectivo', label: 'Efectivo', icon: <PaymentsOutlinedIcon fontSize="small" /> },
-  { value: 'transferencia', label: 'Transferencia', icon: <AccountBalanceOutlinedIcon fontSize="small" /> },
-  { value: 'tarjeta', label: 'Tarjeta', icon: <CreditCardOutlinedIcon fontSize="small" /> },
-]; */
-
 export const PosCartSummary = ({
   totalItems,
   totalAmount,
-  //paymentMethod,
-  //onPaymentMethodChange,
   onConfirm,
   confirming,
   disabled,
@@ -58,61 +43,13 @@ export const PosCartSummary = ({
 
       <Divider />
 
-      {/* <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={600} gutterBottom display="block">
-          MÉTODO DE PAGO
-        </Typography>
-        <ToggleButtonGroup
-          value={paymentMethod}
-          exclusive
-          onChange={(_, val) => val && onPaymentMethodChange(val)}
-          fullWidth
-          size="small"
-          sx={{
-            gap: 0.5,
-            '& .MuiToggleButtonGroup-grouped': {
-              border: '1px solid !important',
-              borderColor: 'grey.300 !important',
-              borderRadius: '8px !important',
-              flex: 1,
-              flexDirection: 'column',
-              gap: 0.3,
-              py: 0.8,
-              fontSize: '0.65rem',
-              fontWeight: 600,
-              textTransform: 'none',
-              color: 'text.secondary',
-              transition: 'all 150ms ease',
-              '&.Mui-selected': {
-                backgroundColor: 'primary.main',
-                borderColor: 'primary.main !important',
-                color: 'white',
-                '&:hover': { backgroundColor: 'primary.dark' },
-              },
-              '&:hover:not(.Mui-selected)': {
-                borderColor: 'primary.main !important',
-                color: 'primary.main',
-                backgroundColor: 'primary.50',
-              },
-            },
-          }}
-        >
-          {PAYMENT_OPTIONS.map((opt) => (
-            <ToggleButton key={opt.value} value={opt.value}>
-              {opt.icon}
-              {opt.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-      </Box> */}
-
       <Button
         variant="contained"
         size="large"
         fullWidth
         disabled={disabled || confirming}
         onClick={onConfirm}
-        //startIcon={<ShoppingCartCheckoutIcon />}
+        startIcon={<ShoppingCartCheckoutIcon />}
         sx={{
           borderRadius: 1,
           fontWeight: 700,
@@ -123,7 +60,7 @@ export const PosCartSummary = ({
           '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.15)' },
         }}
       >
-        {confirming ? 'Procesando...' : 'Pago'}
+        {confirming ? 'Procesando...' : 'Confirmar Venta'}
       </Button>
     </Box>
   );

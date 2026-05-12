@@ -1,4 +1,3 @@
-// src/pages/DashboardPosPage.tsx
 import { Box, Typography, IconButton, Tooltip } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router';
@@ -21,8 +20,6 @@ const DashboardPosPage = () => {
     clearCart,
     totalItems,
     totalAmount,
-    paymentMethod,
-    setPaymentMethod,
     confirmSale,
     confirmingOrder,
     categoryId,
@@ -111,8 +108,6 @@ const DashboardPosPage = () => {
             cart={cart}
             totalItems={totalItems}
             totalAmount={totalAmount}
-            paymentMethod={paymentMethod}
-            onPaymentMethodChange={setPaymentMethod}
             onUpdateQuantity={updateQuantity}
             onRemove={removeFromCart}
             onClear={clearCart}

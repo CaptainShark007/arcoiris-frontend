@@ -15,11 +15,8 @@ export interface CartItem {
   quantity: number;
 }
 
-export type PaymentMethod = 'efectivo' | 'transferencia' | 'tarjeta';
-
 export const usePosStore = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('efectivo');
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
@@ -120,11 +117,9 @@ export const usePosStore = () => {
           },
         })),
         totalAmount,
-        paymentMethod,
       }),
     onSuccess: () => {
       clearCart();
-      setPaymentMethod('efectivo');
     },
   });
 
@@ -149,9 +144,6 @@ export const usePosStore = () => {
     // Totales
     totalItems,
     totalAmount,
-    // Pago
-    paymentMethod,
-    setPaymentMethod,
     // Confirmar
     confirmSale,
     confirmingOrder,

@@ -32,7 +32,6 @@ export interface CreatePosOrderInput {
     };
   }[];
   totalAmount: number;
-  paymentMethod: 'efectivo' | 'transferencia' | 'tarjeta';
 }
 
 const POS_PAGE_SIZE = 40;
@@ -94,7 +93,7 @@ export const createPosOrder = async (input: CreatePosOrderInput) => {
       address_id: null,
       total_amount: input.totalAmount,
       status: 'completed',
-      payment_method: input.paymentMethod,
+      payment_method: 'efectivo',
       payment_status: 'paid',
       sale_channel: 'pos',
     })
