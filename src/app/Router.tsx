@@ -21,12 +21,10 @@ import {
   DashboardProductSlugPage,
   DashboardOrderPage,
   DashboardPartnersPage,
-  DashboardBannerPage,
   ForgotPasswordPage,
   ResetPasswordPage,
   FormEditUserPage,
   DashboardPosPage,
-  DashboardPage,
 } from './lazy';
 
 export default function Router() {
@@ -63,14 +61,13 @@ export default function Router() {
 
       {/* Paginas del administrador */}
       <Route path='panel' element={<DashboardLayout />}>
-        <Route index element={<DashboardPage />} />
+        <Route index element={<Navigate to='productos' replace />} />
         <Route path='productos' element={<DashboardProductsPage />} />
         <Route path='productos/nuevo' element={<DashboardNewProductPage />} />
         <Route path='productos/editar/:slug' element={<DashboardProductSlugPage />} />
         <Route path='pedidos' element={<DashboardOrdersPage />} />
         <Route path='pedidos/:id' element={<DashboardOrderPage />} />
         <Route path='socios' element={<DashboardPartnersPage />} />
-        <Route path='banners' element={<DashboardBannerPage />} />
       </Route>
 
       {/* POS - layout sin sidebar */}

@@ -4,4 +4,3 @@ export * from './DashboardProductSlugPage';
 export * from './DashboardOrdersPage';
 export * from './DashboardOrderPage';
 export * from './DashboardPartnersPage';
-export * from './DashboardBannerPage';

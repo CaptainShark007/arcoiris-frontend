@@ -1,10 +1,11 @@
-import { Box, Button, Link as MuiLink, Drawer, IconButton } from '@mui/material';
+import { Box, Button, Drawer, IconButton } from '@mui/material';
 import { Link, NavLink } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import LogoutIcon from '@mui/icons-material/Logout';
 import CloseIcon from '@mui/icons-material/Close';
-//import logo from '../../../../public/logo_comercio_v2.png';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import { dashboardLinks } from '@shared/constants/links';
 import { useAuthStateChange, useLogout } from '@features/auth/hooks';
 import { useSidebar } from '@/shared/contexts/SidebarContext';
@@ -78,35 +79,37 @@ export const Sidebar = () => {
         <ChevronLeftIcon />
       </IconButton>
 
-      {/* Logo */}
-      <MuiLink
+      {/* Botón Punto de Venta (arriba) */}
+      <Button
+        fullWidth
+        variant="contained"
         component={Link}
-        to="/"
-        onClick={handleNavigation}
+        to="/panel/punto-de-venta"
         sx={{
+          backgroundColor: '#000000',
+          color: '#ffffff',
+          py: 1.25,
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          textTransform: 'none',
+          gap: 1,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          textDecoration: 'none',
-          color: 'inherit',
-          gap: 1,
-          width: '80px',
-          height: '80px',
-          flexShrink: 0,
+          justifyContent: { xs: 'center', lg: isOpen ? 'flex-start' : 'center' },
+          px: { xs: 1, lg: isOpen ? 2 : 1 },
+          transition: 'all 300ms ease',
           mt: { xs: 2, lg: 0 },
+          '&:hover': {
+            backgroundColor: '#333333',
+          },
         }}
+        onClick={handleNavigation}
       >
-        <img 
-          //src={logo} 
-          src='/logo_comercio_v2.png'
-          alt="Logo" 
-          style={{ 
-            height: '80px',
-            width: '80px',
-            objectFit: 'contain'
-          }} 
-        />
-      </MuiLink>
+        <Box sx={{ display: { xs: 'block', lg: isOpen ? 'block' : 'none' }, flexGrow: 1, textAlign: 'left' }}>
+          Punto de Venta
+        </Box>
+        <ArrowForwardIcon />
+      </Button>
 
       {/* Links de navegación */}
       <Box
@@ -154,6 +157,40 @@ export const Sidebar = () => {
           </Box>
         ))}
       </Box>
+
+      {/* Botón Salir del Panel */}
+      <Button
+        fullWidth
+        variant="outlined"
+        component={Link}
+        to="/"
+        sx={{
+          color: 'white',
+          borderColor: 'rgba(255, 255, 255, 0.5)',
+          py: 1.25,
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          textTransform: 'none',
+          gap: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: { xs: 'center', lg: isOpen ? 'flex-start' : 'center' },
+          px: { xs: 1, lg: isOpen ? 2 : 1 },
+          transition: 'all 300ms ease',
+          mt: 'auto',
+          mb: 1, // small bottom margin before logout
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            borderColor: 'white',
+          },
+        }}
+        onClick={handleNavigation}
+      >
+        <StorefrontIcon sx={{ display: { xs: 'none', lg: isOpen ? 'none' : 'block' } }} />
+        <Box sx={{ display: { xs: 'block', lg: isOpen ? 'block' : 'none' } }}>
+          Salir del Panel
+        </Box>
+      </Button>
 
       {/* Botón logout */}
       <Button
