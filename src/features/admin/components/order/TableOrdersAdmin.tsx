@@ -26,6 +26,7 @@ const statusOptions = [
   { value: 'paid', label: 'Pagado' },
   { value: 'shipped', label: 'Enviado' },
   { value: 'delivered', label: 'Entregado' },
+  { value: 'completed', label: 'Completado' },
 ];
 
 interface Props {
@@ -182,33 +183,57 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
               </TableCell>
               {/* Cliente */}
               <TableCell sx={{ p: 2 }}>
-                <Box
-                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
-                >
-                  <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                    {order.customers?.full_name}
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                    {[order.customers?.email, order.customers?.phone]
-                      .filter(Boolean)
-                      .join(' | ')}
-                  </Typography>
-                </Box>
+                {order.sale_channel === 'pos' ? (
+                  <Chip
+                    label="Venta POS"
+                    size="small"
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                      backgroundColor: '#f0fdf4',
+                      color: '#16a34a',
+                      border: '1px solid #86efac',
+                    }}
+                  />
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                      {order.customers?.full_name}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                      {[order.customers?.email, order.customers?.phone]
+                        .filter(Boolean)
+                        .join(' | ')}
+                    </Typography>
+                  </Box>
+                )}
               </TableCell>
 
-              {/* Referido */}
+              {/* Canal */}
               <TableCell sx={{ p: 2 }}>
-                {order.partners ? (
+                {order.sale_channel === 'pos' ? (
+                  <Chip
+                    label="POS"
+                    size="small"
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '0.7rem',
+                      backgroundColor: '#f0fdf4',
+                      color: '#16a34a',
+                      border: '1px solid #86efac',
+                    }}
+                  />
+                ) : order.partners ? (
                   <Chip
                     label={order.partners.code}
-                    size='small'
-                    color='info'
-                    variant='outlined'
+                    size="small"
+                    color="info"
+                    variant="outlined"
                     title={`Socio: ${order.partners.name}`}
                     sx={{ fontWeight: 'bold' }}
                   />
                 ) : (
-                  <Typography variant='caption' color='text.disabled'>
+                  <Typography variant="caption" color="text.disabled">
                     Directo
                   </Typography>
                 )}

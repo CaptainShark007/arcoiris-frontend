@@ -30,7 +30,10 @@ const DashboardOrderPage = () => {
   if (isLoading || !order) {
     return (
       <>
-        <SeoHead title="Cargando pedido..." description="Cargando los detalles del pedido en el panel de administración" />
+        <SeoHead
+          title='Cargando pedido...'
+          description='Cargando los detalles del pedido en el panel de administración'
+        />
         <Loader />
       </>
     );
@@ -38,11 +41,26 @@ const DashboardOrderPage = () => {
 
   // Vista móvil para items del pedido
   const MobileOrderItems = () => (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2  }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {order.orderItems.map((item, index) => (
-        <Card key={index} sx={{ p: 2, border: '1px solid #e5e7eb', borderRadius: 1, boxShadow: 'none' }}>
+        <Card
+          key={index}
+          sx={{
+            p: 2,
+            border: '1px solid #e5e7eb',
+            borderRadius: 1,
+            boxShadow: 'none',
+          }}
+        >
           {/* Producto */}
-          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', mb: 1.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1.5,
+              alignItems: 'flex-start',
+              mb: 1.5,
+            }}
+          >
             <Box
               component='img'
               src={item.productImage}
@@ -56,11 +74,15 @@ const DashboardOrderPage = () => {
               }}
             />
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', mb: 0.5 }}>
+              <Typography
+                sx={{ fontWeight: 600, fontSize: '0.875rem', mb: 0.5 }}
+              >
                 {item.productName}
               </Typography>
               <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', mb: 1 }}>
-                {[item.color_name, item.storage, item.finish].filter(Boolean).join(' • ')}
+                {[item.color_name, item.storage, item.finish]
+                  .filter(Boolean)
+                  .join(' • ')}
               </Typography>
               <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                 {formatPrice(item.price)}
@@ -69,13 +91,15 @@ const DashboardOrderPage = () => {
           </Box>
 
           {/* Cantidad y Total */}
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            pt: 1,
-            borderTop: '1px solid #f1f5f9'
-          }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              pt: 1,
+              borderTop: '1px solid #f1f5f9',
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
                 Cantidad:
@@ -142,12 +166,16 @@ const DashboardOrderPage = () => {
                       borderRadius: 1,
                     }}
                   />
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                  >
                     <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                       {item.productName}
                     </Typography>
                     <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                      {[item.color_name, item.storage, item.finish].filter(Boolean).join(' • ')}
+                      {[item.color_name, item.storage, item.finish]
+                        .filter(Boolean)
+                        .join(' • ')}
                     </Typography>
                     <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                       {formatPrice(item.price)}
@@ -155,10 +183,24 @@ const DashboardOrderPage = () => {
                   </Box>
                 </Box>
               </TableCell>
-              <TableCell sx={{ p: 2, textAlign: 'center', fontWeight: 600, fontSize: '0.875rem' }}>
+              <TableCell
+                sx={{
+                  p: 2,
+                  textAlign: 'center',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                }}
+              >
                 {item.quantity}
               </TableCell>
-              <TableCell sx={{ p: 2, textAlign: 'center', fontWeight: 600, fontSize: '0.875rem' }}>
+              <TableCell
+                sx={{
+                  p: 2,
+                  textAlign: 'center',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                }}
+              >
                 {formatPrice(item.price * item.quantity)}
               </TableCell>
             </TableRow>
@@ -169,14 +211,16 @@ const DashboardOrderPage = () => {
   );
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: 3,
-      px: { xs: 1, sm: 0 }, // ← Padding responsive
-    }}>
-      <SeoHead 
-        title={`Pedido n${id}`} 
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 3,
+        px: { xs: 1, sm: 0 }, // ← Padding responsive
+      }}
+    >
+      <SeoHead
+        title={`Pedido n${id}`}
         description={`Detalles del pedido n${id} en el panel de administración`}
       />
       {/* Header */}
@@ -201,14 +245,23 @@ const DashboardOrderPage = () => {
         </IconButton>
 
         <Box sx={{ textAlign: 'center', flex: 1, minWidth: 0 }}>
-          <Typography variant='h4' sx={{ 
-            fontWeight: 'bold', 
-            mb: 0.5,
-            fontSize: { xs: '1.5rem', sm: '2rem' } 
-          }}>
+          <Typography
+            variant='h4'
+            sx={{
+              fontWeight: 'bold',
+              mb: 0.5,
+              fontSize: { xs: '1.5rem', sm: '2rem' },
+            }}
+          >
             Pedido #{id}
           </Typography>
-          <Typography variant='body2' sx={{ color: '#6b7280', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+          <Typography
+            variant='body2'
+            sx={{
+              color: '#6b7280',
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            }}
+          >
             {formatDateLong(order.created_at)}
           </Typography>
         </Box>
@@ -239,45 +292,97 @@ const DashboardOrderPage = () => {
         }}
       >
         {/* Resumen */}
-        <Card sx={{ 
-          p: { xs: 1.5, sm: 2.5 }, 
-          bgcolor: '#F9FAFB', 
-          boxShadow: 'none', 
-          border: '1px solid #E5E7EB',
-          height: 'fit-content',
-        }}>
-          <Typography variant='h6' sx={{ 
-            fontWeight: 'bold', 
-            mb: 2,
-            fontSize: { xs: '1rem', sm: '1.25rem' }
-          }}>
+        <Card
+          sx={{
+            p: { xs: 1.5, sm: 2.5 },
+            bgcolor: '#F9FAFB',
+            boxShadow: 'none',
+            border: '1px solid #E5E7EB',
+            height: 'fit-content',
+          }}
+        >
+          <Typography
+            variant='h6'
+            sx={{
+              fontWeight: 'bold',
+              mb: 2,
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+            }}
+          >
             Resumen del Pedido
           </Typography>
-          
+
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', pb: 1.5, borderBottom: '1px solid #e5e7eb' }}>
-              <Typography sx={{ color: '#6b7280', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                pb: 1.5,
+                borderBottom: '1px solid #e5e7eb',
+              }}
+            >
+              <Typography
+                sx={{
+                  color: '#6b7280',
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                }}
+              >
                 Subtotal
               </Typography>
-              <Typography sx={{ fontWeight: 600, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+              <Typography
+                sx={{
+                  fontWeight: 600,
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                }}
+              >
                 {formatPrice(order.totalAmount)}
               </Typography>
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', pb: 1.5, borderBottom: '1px solid #e5e7eb' }}>
-              <Typography sx={{ color: '#6b7280', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                pb: 1.5,
+                borderBottom: '1px solid #e5e7eb',
+              }}
+            >
+              <Typography
+                sx={{
+                  color: '#6b7280',
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                }}
+              >
                 Envío (Standard)
               </Typography>
-              <Typography sx={{ fontWeight: 600, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+              <Typography
+                sx={{
+                  fontWeight: 600,
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                }}
+              >
                 {formatPrice(0)}
               </Typography>
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 1 }}>
-              <Typography sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '0.875rem' } }}>
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', pt: 1 }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: '0.9rem', sm: '0.875rem' },
+                }}
+              >
                 Total
               </Typography>
-              <Typography sx={{ fontWeight: 700, fontSize: { xs: '0.9rem', sm: '1rem' }, color: '#0007d7ff' }}>
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
+                  color: '#0007d7ff',
+                }}
+              >
                 {formatPrice(order.totalAmount)}
               </Typography>
             </Box>
@@ -285,49 +390,89 @@ const DashboardOrderPage = () => {
         </Card>
 
         {/* Tarjeta de Canal de Venta / Socio */}
-        <Card sx={{ 
-          p: { xs: 1.5, sm: 2.5 }, 
-          bgcolor: '#F9FAFB', 
-          boxShadow: 'none', 
-          border: '1px solid #E5E7EB',
-          height: 'fit-content',
-        }}>
-          <Typography variant='h6' sx={{ 
-            fontWeight: 'bold', 
-            mb: 2,
-            fontSize: { xs: '1rem', sm: '1.25rem' },
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1
-          }}>
+        <Card
+          sx={{
+            p: { xs: 1.5, sm: 2.5 },
+            bgcolor: '#F9FAFB',
+            boxShadow: 'none',
+            border: '1px solid #E5E7EB',
+            height: 'fit-content',
+          }}
+        >
+          <Typography
+            variant='h6'
+            sx={{
+              fontWeight: 'bold',
+              mb: 2,
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
             Canal de Venta
           </Typography>
-          
+
           {order.partner ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: '#eff6ff', borderRadius: 1, border: '1px solid #bfdbfe' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  p: 1.5,
+                  bgcolor: '#eff6ff',
+                  borderRadius: 1,
+                  border: '1px solid #bfdbfe',
+                }}
+              >
                 <PersonIcon sx={{ color: '#2563eb' }} />
                 <Box>
-                  <Typography sx={{ fontWeight: 600, color: '#1e3a8a', fontSize: '0.9rem' }}>
+                  <Typography
+                    sx={{
+                      fontWeight: 600,
+                      color: '#1e3a8a',
+                      fontSize: '0.9rem',
+                    }}
+                  >
                     Socio: {order.partner.name}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: '#3b82f6', fontWeight: 500 }}>
+                  <Typography
+                    variant='caption'
+                    sx={{ color: '#3b82f6', fontWeight: 500 }}
+                  >
                     Código: {order.partner.code}
                   </Typography>
                 </Box>
               </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+              <Typography
+                variant='caption'
+                color='text.secondary'
+                sx={{ mt: 0.5 }}
+              >
                 Esta venta fue generada a través de un link de referido.
               </Typography>
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: 'white', borderRadius: 1, border: '1px solid #e5e7eb' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                p: 1.5,
+                bgcolor: 'white',
+                borderRadius: 1,
+                border: '1px solid #e5e7eb',
+              }}
+            >
               <StoreIcon sx={{ color: '#6b7280' }} />
               <Box>
-                <Typography sx={{ fontWeight: 600, color: '#374151', fontSize: '0.9rem' }}>
+                <Typography
+                  sx={{ fontWeight: 600, color: '#374151', fontSize: '0.9rem' }}
+                >
                   Venta Directa
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='caption' color='text.secondary'>
                   Orgánica / Sin referido
                 </Typography>
               </Box>
@@ -335,58 +480,221 @@ const DashboardOrderPage = () => {
           )}
         </Card>
 
-        {/* Dirección */}
-        <Card sx={{ 
-          p: { xs: 1.5, sm: 2.5 }, 
-          bgcolor: '#F9FAFB', 
-          boxShadow: 'none', 
-          border: '1px solid #E5E7EB',
-          height: 'fit-content',
-        }}>
-          <Typography variant='h6' sx={{ 
-            fontWeight: 'bold', 
-            mb: 2,
-            fontSize: { xs: '1rem', sm: '1.25rem' }
-          }}>
-            Dirección de Envío
+        {/* Tarjeta Canal de Venta — reemplazar la existente */}
+        <Card
+          sx={{
+            p: { xs: 1.5, sm: 2.5 },
+            bgcolor: '#F9FAFB',
+            boxShadow: 'none',
+            border: '1px solid #E5E7EB',
+            height: 'fit-content',
+          }}
+        >
+          <Typography
+            variant='h6'
+            sx={{
+              fontWeight: 'bold',
+              mb: 2,
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+            }}
+          >
+            Canal de Venta
           </Typography>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box>
-              <Typography sx={{ fontWeight: 600, fontSize: { xs: '0.8rem', sm: '0.875rem' }, mb: 0.5 }}>
-                Cliente:
-              </Typography>
-              <Typography sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, color: '#1e293b' }}>
-                {order.customer.full_name}
-              </Typography>
-            </Box>
-
-            <Box>
-              <Typography sx={{ fontWeight: 600, fontSize: { xs: '0.8rem', sm: '0.875rem' }, mb: 0.5 }}>
-                Dirección:
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                <Typography sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, color: '#6b7280' }}>
-                  {order.address.addressLine1}
+          {order.sale_channel === 'pos' ? (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                p: 1.5,
+                bgcolor: '#f0fdf4',
+                borderRadius: 1,
+                border: '1px solid #86efac',
+              }}
+            >
+              <StoreIcon sx={{ color: '#16a34a' }} />
+              <Box>
+                <Typography
+                  sx={{ fontWeight: 600, color: '#15803d', fontSize: '0.9rem' }}
+                >
+                  Punto de Venta
                 </Typography>
-                {order.address.addressLine2 && (
-                  <Typography sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, color: '#6b7280' }}>
-                    {order.address.addressLine2}
-                  </Typography>
-                )}
-                <Typography sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, color: '#6b7280' }}>
-                  {order.address.city}, {order.address.state}
-                </Typography>
-                <Typography sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, color: '#6b7280' }}>
-                  {order.address.postalCode}
-                </Typography>
-                <Typography sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' }, color: '#6b7280' }}>
-                  {order.address.country}
+                <Typography variant='caption' color='text.secondary'>
+                  Venta presencial registrada por el administrador
                 </Typography>
               </Box>
             </Box>
-          </Box>
+          ) : order.partner ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  p: 1.5,
+                  bgcolor: '#eff6ff',
+                  borderRadius: 1,
+                  border: '1px solid #bfdbfe',
+                }}
+              >
+                <PersonIcon sx={{ color: '#2563eb' }} />
+                <Box>
+                  <Typography
+                    sx={{
+                      fontWeight: 600,
+                      color: '#1e3a8a',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    Socio: {order.partner.name}
+                  </Typography>
+                  <Typography
+                    variant='caption'
+                    sx={{ color: '#3b82f6', fontWeight: 500 }}
+                  >
+                    Código: {order.partner.code}
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography
+                variant='caption'
+                color='text.secondary'
+                sx={{ mt: 0.5 }}
+              >
+                Esta venta fue generada a través de un link de referido.
+              </Typography>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                p: 1.5,
+                bgcolor: 'white',
+                borderRadius: 1,
+                border: '1px solid #e5e7eb',
+              }}
+            >
+              <StoreIcon sx={{ color: '#6b7280' }} />
+              <Box>
+                <Typography
+                  sx={{ fontWeight: 600, color: '#374151', fontSize: '0.9rem' }}
+                >
+                  Venta Directa
+                </Typography>
+                <Typography variant='caption' color='text.secondary'>
+                  Orgánica / Sin referido
+                </Typography>
+              </Box>
+            </Box>
+          )}
         </Card>
+
+        {/* Dirección — mostrar solo si no es POS */}
+        {order.sale_channel !== 'pos' && order.address && (
+          <Card
+            sx={{
+              p: { xs: 1.5, sm: 2.5 },
+              bgcolor: '#F9FAFB',
+              boxShadow: 'none',
+              border: '1px solid #E5E7EB',
+              height: 'fit-content',
+            }}
+          >
+            <Typography
+              variant='h6'
+              sx={{
+                fontWeight: 'bold',
+                mb: 2,
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+              }}
+            >
+              Dirección de Envío
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    mb: 0.5,
+                  }}
+                >
+                  Cliente:
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    color: '#1e293b',
+                  }}
+                >
+                  {order.customer?.full_name}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    mb: 0.5,
+                  }}
+                >
+                  Dirección:
+                </Typography>
+                <Box
+                  sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                      color: '#6b7280',
+                    }}
+                  >
+                    {order.address.addressLine1}
+                  </Typography>
+                  {order.address.addressLine2 && (
+                    <Typography
+                      sx={{
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        color: '#6b7280',
+                      }}
+                    >
+                      {order.address.addressLine2}
+                    </Typography>
+                  )}
+                  <Typography
+                    sx={{
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                      color: '#6b7280',
+                    }}
+                  >
+                    {order.address.city}, {order.address.state}
+                  </Typography>
+                  {order.address.postalCode && (
+                    <Typography
+                      sx={{
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        color: '#6b7280',
+                      }}
+                    >
+                      {order.address.postalCode}
+                    </Typography>
+                  )}
+                  <Typography
+                    sx={{
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                      color: '#6b7280',
+                    }}
+                  >
+                    {order.address.country}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Card>
+        )}
       </Box>
     </Box>
   );

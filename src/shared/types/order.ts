@@ -38,6 +38,7 @@ export interface OrderWithCustomer {
 	status: string;
 	total_amount: number;
 	created_at: string;
+  sale_channel: string | null;
 	customers: {
 		full_name: string;
 		email: string;
@@ -60,29 +61,35 @@ export interface ProductSnapshot {
   frozen_at: string;
 }
 
-// Actualiza o crea esta interfaz para el detalle de la orden
 export interface OrderDetail {
   id: number;
   created_at: string;
   status: string;
-  totalAmount: number; // Mapeado de total_amount
+  totalAmount: number;
+  sale_channel: string | null;  // ← agregar
   customer: {
     full_name: string;
     email: string;
-  };
+  } | null;                     // ← hacer nullable
   address: {
     addressLine1: string;
     addressLine2: string | null;
     city: string;
     state: string;
-    postalCode: string | null; // Mapeado de postal_code
+    postalCode: string | null;
     country: string;
-  };
+  } | null;                     // ← hacer nullable
+  partner: {
+    name: string;
+    code: string;
+  } | null;
   orderItems: {
-    id: string;
     quantity: number;
     price: number;
-    // IMPORTANTE: Ahora usamos esto en lugar de joins planos
-    product_snapshot: ProductSnapshot; 
+    color_name: string | null;
+    storage: string | null;
+    productName: string;
+    productImage: string;
+    finish: string | null;
   }[];
 }
