@@ -36,6 +36,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import AddCircleIcon from '@mui/icons-material/AddCircle'; // <-- Importación agregada
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { Loader } from '@shared/components';
 import { useCategories } from '@features/shop/hooks/products/useCategories';
@@ -386,11 +387,35 @@ export const TableProduct = () => {
           overflow: 'visible',
         }}
       >
-        {/* Encabezado Principal */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        {/* Encabezado Principal y Botón Nuevo Producto */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
           <Typography variant="h6" fontWeight="700" color="#111827">
             Gestión de Productos
           </Typography>
+          
+          <Button
+            component={RouterLink}
+            to="/panel/productos/nuevo"
+            variant="contained"
+            startIcon={<AddCircleIcon />}
+            sx={{
+              backgroundColor: '#0007d7ff',
+              py: { xs: 1, sm: 1 },
+              px: { xs: 2, sm: 2.5 },
+              fontSize: { xs: '0.8rem', md: '0.875rem' },
+              fontWeight: 600,
+              textTransform: 'none',
+              boxShadow: 'none',
+              borderRadius: 1,
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: '#0005a0ff',
+                boxShadow: '0px 4px 12px rgba(0, 7, 215, 0.2)',
+              },
+            }}
+          >
+            Nuevo Producto
+          </Button>
         </Box>
 
         {/* Filtros */}
@@ -403,7 +428,7 @@ export const TableProduct = () => {
             sx={{ 
               flex: 1, 
               width: { xs: '100%', lg: 'auto' }, 
-              '& .MuiOutlinedInput-root': { borderRadius: 2 } 
+              '& .MuiOutlinedInput-root': { borderRadius: 1 } 
             }}
             slotProps={{
               input: {
