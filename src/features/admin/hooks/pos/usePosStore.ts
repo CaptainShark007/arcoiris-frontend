@@ -1,9 +1,6 @@
-// src/hooks/usePosStore.ts
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { getPosProducts, createPosOrder, PosProduct, PosVariant } from '@/actions/pos';
 import { useQuery, useMutation } from '@tanstack/react-query';
-
-// ── Tipos ──────────────────────────────────────────────────────────────────
 
 export interface CartItem {
   variantId: string;
@@ -20,29 +17,46 @@ export interface CartItem {
 
 export type PaymentMethod = 'efectivo' | 'transferencia' | 'tarjeta';
 
-// ── Hook ───────────────────────────────────────────────────────────────────
-
 export const usePosStore = () => {
-  const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('efectivo');
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
-  // ── Productos ────────────────────────────────────────────────────────────
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const { data: products = [], isLoading: loadingProducts } = useQuery({
-    queryKey: ['pos-products', search, categoryId],
-    queryFn: () => getPosProducts(search, categoryId),
-    staleTime: 1000 * 60 * 2, // 2 minutos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+  }, []);
+
+  const handleCategoryChange = useCallback((id: string | null) => {
+    setCategoryId(id);
+    setPage(1);
+  }, []);
+
+  const { data: posData, isLoading, isFetching } = useQuery({
+    queryKey: ['pos-products', debouncedSearch, categoryId, page],
+    queryFn: () => getPosProducts(debouncedSearch, categoryId, page),
+    staleTime: 1000 * 60 * 2,
+    placeholderData: (previousData) => previousData,
   });
 
-  // ── Carrito ──────────────────────────────────────────────────────────────
+  const products = posData?.data || [];
+  const totalProducts = posData?.count || 0;
 
   const addToCart = useCallback((product: PosProduct, variant: PosVariant) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.variantId === variant.id);
 
-      // Si ya está en el carrito, incrementar cantidad respetando el stock
       if (existing) {
         return prev.map((item) =>
           item.variantId === variant.id
@@ -51,7 +65,6 @@ export const usePosStore = () => {
         );
       }
 
-      // Si no está, agregar con cantidad 1
       return [
         ...prev,
         {
@@ -88,12 +101,8 @@ export const usePosStore = () => {
 
   const clearCart = useCallback(() => setCart([]), []);
 
-  // ── Totales ──────────────────────────────────────────────────────────────
-
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
   const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-
-  // ── Confirmar venta ──────────────────────────────────────────────────────
 
   const { mutate: confirmSale, isPending: confirmingOrder } = useMutation({
     mutationFn: () =>
@@ -122,10 +131,15 @@ export const usePosStore = () => {
   return {
     // Búsqueda
     search,
-    setSearch,
+    setSearch: handleSearchChange,
     // Productos
     products,
-    loadingProducts,
+    loadingProducts: isLoading,
+    fetchingProducts: isFetching,
+    totalProducts,
+    // Paginación
+    page,
+    setPage,
     // Carrito
     cart,
     addToCart,
@@ -143,6 +157,6 @@ export const usePosStore = () => {
     confirmingOrder,
     // Categorías
     categoryId,
-    setCategoryId,
+    setCategoryId: handleCategoryChange,
   };
 };

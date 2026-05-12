@@ -7,6 +7,8 @@ import {
   Typography,
   Skeleton,
   CircularProgress,
+  IconButton,
+  Button,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import InventoryIcon from '@mui/icons-material/Inventory2Outlined';
@@ -14,6 +16,7 @@ import { PosProduct, PosVariant } from '@/actions/pos';
 import { PosProductCard } from './PosProductCard';
 import { PosVariantModal } from './PosVariantModal';
 import { PosCategoryTabs } from './PosCategoryTabs';
+import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 
 interface PosProductGridProps {
   products: PosProduct[];
@@ -23,6 +26,10 @@ interface PosProductGridProps {
   onAddToCart: (product: PosProduct, variant: PosVariant) => void;
   categoryId: string | null;
   onCategoryChange: (id: string | null) => void;
+  page: number;
+  totalProducts: number;
+  onPageChange: (page: number) => void;
+  fetching: boolean;
 }
 
 export const PosProductGrid = ({
@@ -33,6 +40,10 @@ export const PosProductGrid = ({
   onAddToCart,
   categoryId,
   onCategoryChange,
+  page,
+  totalProducts,
+  onPageChange,
+  fetching,
 }: PosProductGridProps) => {
   const [modalProduct, setModalProduct] = useState<PosProduct | null>(null);
 
@@ -60,7 +71,7 @@ export const PosProductGrid = ({
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              {loading ? (
+              {fetching ? (
                 <CircularProgress size={16} color="inherit" />
               ) : (
                 <SearchIcon fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -112,22 +123,67 @@ export const PosProductGrid = ({
             </Typography>
           </Box>
         ) : (
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: 'repeat(2, 1fr)',
-                sm: 'repeat(4, 1fr)',
-                md: 'repeat(6, 1fr)',
-                lg: 'repeat(8, 1fr)',
-              },
-              gap: 1.5,
-            }}
-          >
-            {products.map((product) => (
-              <PosProductCard key={product.id} product={product} onSelect={handleProductSelect} />
-            ))}
-          </Box>
+          <>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'repeat(2, 1fr)',
+                  sm: 'repeat(4, 1fr)',
+                  md: 'repeat(6, 1fr)',
+                  lg: 'repeat(8, 1fr)',
+                },
+                gap: 1.5,
+                opacity: fetching ? 0.6 : 1,
+                transition: 'opacity 200ms ease',
+              }}
+            >
+              {products.map((product) => (
+                <PosProductCard key={product.id} product={product} onSelect={handleProductSelect} />
+              ))}
+            </Box>
+            
+            {totalProducts > 40 && (
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, pt: 2, pb: 1 }}>
+                <IconButton
+                  size="small"
+                  onClick={() => onPageChange(page - 1)}
+                  disabled={page === 1}
+                  sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                >
+                  <KeyboardArrowLeft fontSize="small" />
+                </IconButton>
+
+                {Array.from({ length: Math.ceil(totalProducts / 40) }, (_, i) => i + 1).map((p) => (
+                  <Button
+                    key={p}
+                    size="small"
+                    variant={p === page ? 'contained' : 'outlined'}
+                    color={p === page ? 'primary' : 'inherit'}
+                    onClick={() => onPageChange(p)}
+                    sx={{
+                      minWidth: 32,
+                      height: 32,
+                      p: 0,
+                      borderColor: p === page ? 'primary.main' : 'divider',
+                      color: p === page ? 'white' : 'text.primary',
+                    }}
+                  >
+                    {p}
+                  </Button>
+                ))}
+
+                <IconButton
+                  size="small"
+                  onClick={() => onPageChange(page + 1)}
+                  disabled={page >= Math.ceil(totalProducts / 40)}
+                  sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+                >
+                  <KeyboardArrowRight fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
+          </>
         )}
       </Box>
 

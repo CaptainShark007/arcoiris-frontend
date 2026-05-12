@@ -35,19 +35,25 @@ export interface CreatePosOrderInput {
   paymentMethod: 'efectivo' | 'transferencia' | 'tarjeta';
 }
 
+const POS_PAGE_SIZE = 40;
+
 export const getPosProducts = async (
   search: string = '',
-  categoryId: string | null = null
-): Promise<PosProduct[]> => {
+  categoryId: string | null = null,
+  page: number = 1
+): Promise<{ data: PosProduct[]; count: number }> => {
+  const from = (page - 1) * POS_PAGE_SIZE;
+  const to = from + POS_PAGE_SIZE - 1;
+
   let query = supabase
     .from('products')
-    .select('id, name, images, variants!inner(id, price, stock, color_name, storage, finish, color)')
+    .select('id, name, images, variants!inner(id, price, stock, color_name, storage, finish, color)', { count: 'exact' })
     .eq('is_active', true)
     .eq('is_deleted', false)
     .eq('variants.is_active', true)
     .gt('variants.stock', 0)
     .order('name', { ascending: true })
-    .limit(50);
+    .range(from, to);
 
   if (search.trim().length >= 2) {
     query = query.ilike('name', `%${search.trim()}%`);
@@ -57,17 +63,19 @@ export const getPosProducts = async (
     query = query.eq('category_id', categoryId);
   }
 
-  const { data, error } = await query;
-
+  const { data, error, count } = await query;
   if (error) throw new Error('Error al obtener productos para el POS');
 
-  return (data || []).map((p) => ({
-    id: p.id,
-    name: p.name,
-    image: p.images?.[0] ?? '/assets/images/img-default.png',
-    hasVariants: p.variants.length > 1,  // más de una variante = mostrar modal
-    variants: p.variants,
-  }));
+  return {
+    data: (data || []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      image: p.images?.[0] ?? '/assets/images/img-default.png',
+      hasVariants: p.variants.length > 1,
+      variants: p.variants,
+    })),
+    count: count || 0,
+  };
 };
 
 // Registrar la venta del POS

@@ -27,6 +27,10 @@ const DashboardPosPage = () => {
     confirmingOrder,
     categoryId,
     setCategoryId,
+    page,
+    setPage,
+    totalProducts,
+    fetchingProducts,
   } = usePosStore();
 
   const handleConfirm = () => {
@@ -94,6 +98,10 @@ const DashboardPosPage = () => {
             onAddToCart={addToCart}
             categoryId={categoryId}
             onCategoryChange={setCategoryId}
+            page={page}
+            totalProducts={totalProducts}
+            onPageChange={setPage}
+            fetching={fetchingProducts}
           />
         </Box>
 
