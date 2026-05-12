@@ -25,6 +25,8 @@ import {
   ResetPasswordPage,
   FormEditUserPage,
   DashboardPosPage,
+  DashboardCategoriesPage,
+  DashboardInventoriesPage,
 } from './lazy';
 
 export default function Router() {
@@ -65,6 +67,8 @@ export default function Router() {
         <Route path='productos' element={<DashboardProductsPage />} />
         <Route path='productos/nuevo' element={<DashboardNewProductPage />} />
         <Route path='productos/editar/:slug' element={<DashboardProductSlugPage />} />
+        <Route path='inventario' element={<DashboardInventoriesPage />} />
+        <Route path='categorias' element={<DashboardCategoriesPage />} />
         <Route path='pedidos' element={<DashboardOrdersPage />} />
         <Route path='pedidos/:id' element={<DashboardOrderPage />} />
         <Route path='socios' element={<DashboardPartnersPage />} />
