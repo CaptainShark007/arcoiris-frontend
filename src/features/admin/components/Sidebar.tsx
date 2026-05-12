@@ -140,16 +140,13 @@ export const Sidebar = () => {
               py: '9px',
               borderRadius: '10px',
               cursor: 'pointer',
-              color: 'white',
+              color: 'black',
               textDecoration: 'none',
-              backgroundColor: 'rgba(255,255,255,0.18)',
+              backgroundColor: 'rgba(255,255,255,0.9)',
               mb: 1,
               transition: 'background 200ms ease',
               overflow: 'hidden',
               whiteSpace: 'nowrap',
-              '&:hover': {
-                backgroundColor: 'rgba(255,255,255,0.26)',
-              },
             }}
           >
             <Box sx={iconSx}>

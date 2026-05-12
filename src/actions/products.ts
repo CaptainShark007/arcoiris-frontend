@@ -334,61 +334,71 @@ export const getProducts = async ({
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  let query = supabase.from('products').select('*, variants(*)', { count: 'exact' });
+  const BASE_SELECT = `
+    id,
+    name,
+    is_active,
+    images,
+    category:categories(id, name),
+    variants(stock)
+  `;
 
-  query = query.eq('is_deleted', false);
+  const LOW_STOCK_SELECT = `
+    id,
+    name,
+    is_active,
+    images,
+    category:categories(id, name),
+    variants!inner(stock)
+  `;
+
+  const selectFields = status === 'low_stock' ? LOW_STOCK_SELECT : BASE_SELECT;
+
+  let query = supabase
+    .from('products')
+    .select(selectFields, { count: 'exact' })
+    .eq('is_deleted', false);
 
   if (status === 'low_stock') {
-    query = supabase
-      .from('products')
-      .select('*, variants!inner(*)', { count: 'exact' })
+    query = query
       .eq('variants.is_active', true)
-      .lte('variants.stock', 5); 
-  } 
-  else if (status !== 'all') {
-    const isActive = status === 'active';
-    query = query.eq('is_active', isActive);
-    query = query.eq('variants.is_active', true); 
+      .lte('variants.stock', 5);
+  } else if (status !== 'all') {
+    query = query
+      .eq('is_active', status === 'active')
+      .eq('variants.is_active', true);
   } else {
     query = query.eq('variants.is_active', true);
   }
 
-  if (search) {
-    query = query.ilike('name', `%${search}%`);
-  }
+  if (search) query = query.ilike('name', `%${search}%`);
 
   if (categoryId && categoryId !== 'all') {
-    if (categoryId === 'uncategorized') {
-      query = query.is('category_id', null);
-    } else {
-      query = query.eq('category_id', categoryId);
-    }
+    query = categoryId === 'uncategorized'
+      ? query.is('category_id', null)
+      : query.eq('category_id', categoryId);
   }
 
   switch (sortBy) {
-    case 'oldest':
-      query = query.order('created_at', { ascending: true });
-      break;
-    case 'name_asc':
-      query = query.order('name', { ascending: true });
-      break;
-    case 'name_desc':
-      query = query.order('name', { ascending: false });
-      break;
-    case 'newest':
-    default:
-      query = query.order('created_at', { ascending: false });
-      break;
+    case 'oldest':    query = query.order('created_at', { ascending: true });  break;
+    case 'name_asc':  query = query.order('name', { ascending: true });         break;
+    case 'name_desc': query = query.order('name', { ascending: false });        break;
+    default:          query = query.order('created_at', { ascending: false });  break;
   }
-   
+
   const { data, error, count } = await query.range(from, to);
+  if (error) throw new Error(error.message);
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  // Transformar: primera imagen + stock total de variantes activas
+  const products = data?.map(({ images, variants, ...rest }) => ({
+    ...rest,
+    thumbnail: Array.isArray(images) ? images[0] ?? null : null,
+    totalStock: variants?.reduce((sum: number, v: { stock: number }) => sum + (v.stock ?? 0), 0) ?? 0,
+    variantCount: variants?.length ?? 0,
+  }));
 
-  return { products: data, count };
-}
+  return { products, count };
+};
 
 // metodo para actualizar la categoria de un producto
 export const updateProductCategory = async (

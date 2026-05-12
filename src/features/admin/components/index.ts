@@ -3,13 +3,13 @@ export * from './Sidebar';
 // Products
 export * from './product/TableProduct';
 export * from './product/CellTableProduct';
-export * from './product/FormProduct';
-export * from './product/SectionFormProduct';
-export * from './product/InputForm';
-export * from './product/FeaturesInput';
-export * from './product/VariantsInput';
-export * from './product/UploaderImages';
-export * from './product/Editor';
+export * from './product/form-product/FormProduct';
+export * from './product/form-product/SectionFormProduct';
+export * from './product/form-product/InputForm';
+export * from './product/form-product/FeaturesInput';
+export * from './product/form-product/VariantsInput';
+export * from './product/form-product/UploaderImages';
+export * from './product/form-product/Editor';
 export * from './product/ProductStockStatus';
 
 // Categories

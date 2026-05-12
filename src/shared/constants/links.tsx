@@ -2,13 +2,14 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import CategoryIcon from '@mui/icons-material/Category';
+import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
 
 export const dashboardLinks = [
 	{
 		id: 3,
 		title: 'Productos',
 		href: '/panel/productos',
-		icon: <InventoryIcon />,
+		icon: <IndeterminateCheckBoxIcon />,
 	},
 	{
 		id: 4,
