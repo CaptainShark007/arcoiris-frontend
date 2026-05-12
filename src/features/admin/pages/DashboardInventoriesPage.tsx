@@ -1,11 +1,12 @@
-import UnderConstruction from "@shared/components/UnderConstruction";
+import { Box } from '@mui/material';
+import { TableInventory } from '../components/inventory/TableInventory';
 
 const DashboardInventoriesPage = () => {
   return (
-        <>
-            <UnderConstruction title="Gestión de Inventario" subtitle="Pagina en construcción"/>
-        </>
-    );
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      <TableInventory />
+    </Box>
+  );
 };
 
 export default DashboardInventoriesPage;
