@@ -485,21 +485,21 @@ export const TableProduct = () => {
         </Stack>
 
         {isMobile ? renderMobileView() : renderDesktopView()}
-      </Card>
 
-      {totalProducts > 0 && (
-        <Box sx={{ px: { xs: 1, sm: 2 }, display: 'flex', justifyContent: 'center' }}>
-          <CustomPagination
-            page={page}
-            totalPages={Math.ceil(totalProducts / rowsPerPage)}
-            totalItems={totalProducts}
-            rowsPerPage={rowsPerPage}
-            onPageChange={setPage}
-            onRowsPerPageChange={(n) => { setRowsPerPage(n); setPage(0); }}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-          />
-        </Box>
-      )}
+        {totalProducts > 0 && (
+          <Box sx={{ borderTop: 1, borderColor: 'divider' }}>
+            <CustomPagination
+              page={page}
+              totalPages={Math.ceil(totalProducts / rowsPerPage)}
+              totalItems={totalProducts}
+              rowsPerPage={rowsPerPage}
+              onPageChange={setPage}
+              onRowsPerPageChange={(n) => { setRowsPerPage(n); setPage(0); }}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+            />
+          </Box>
+        )}
+      </Card>
 
       {/* Modal eliminar */}
       <Dialog open={deleteModalOpen} onClose={handleCloseDeleteModal} PaperProps={{ sx: { borderRadius: 1, maxWidth: 400, p: 1 } }}>

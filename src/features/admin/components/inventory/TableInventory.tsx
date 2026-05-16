@@ -13,7 +13,8 @@ import {
   InputAdornment,
   Stack,
   IconButton,
-  Chip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
@@ -25,6 +26,8 @@ import { useInventory } from '../../hooks/inventory/useInventory';
 const DEFAULT_IMAGE = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
 
 export const TableInventory = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
@@ -47,7 +50,6 @@ export const TableInventory = () => {
     if (page > 0) params.set('page', String(page));
     if (rowsPerPage !== 10) params.set('limit', String(rowsPerPage));
     if (debouncedSearch) params.set('search', debouncedSearch);
-    
     setSearchParams(params, { replace: true });
   }, [page, rowsPerPage, debouncedSearch, setSearchParams]);
 
@@ -76,133 +78,270 @@ export const TableInventory = () => {
     setImageErrors(prev => ({ ...prev, [id]: true }));
   };
 
-  return (
-    <Box sx={{ width: '100%', mb: 4 }}>
-      {/* HEADER & CONTROLS */}
-      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold' }}>
-          Inventario
-        </Typography>
+  const StatusChip = ({ isActive }: { isActive: boolean | null }) => (
+    <Box
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        px: 1.5,
+        py: 0.5,
+        borderRadius: 1,
+        fontSize: '0.75rem',
+        fontWeight: 700,
+        bgcolor: isActive ? '#DCFCE7' : '#E5E7EB',
+        color: isActive ? '#14532D' : '#1F2937',
+        border: '1px solid',
+        borderColor: isActive ? '#22C55E' : '#9CA3AF',
+      }}
+    >
+      {isActive ? 'Activo' : 'Inactivo'}
+    </Box>
+  );
 
-        <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', md: 'auto' } }}>
-          <TextField
-            placeholder="Buscar por producto..."
-            size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
-              endAdornment: searchTerm ? (
-                <IconButton size="small" onClick={() => { setSearchTerm(''); setDebouncedSearch(''); setPage(0); }}>
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              ) : null
-            }}
-            sx={{ width: { xs: '100%', sm: 300 }, bgcolor: 'background.paper', borderRadius: 1 }}
-          />
-        </Stack>
+  const StockChip = ({ stock }: { stock: number }) => {
+    const isMedium = stock > 0 && stock <= 10;
+    const isHigh = stock > 10;
+
+    return (
+      <Box
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          px: 1.5,
+          py: 0.5,
+          borderRadius: 1,
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          bgcolor: isHigh ? '#DCFCE7' : isMedium ? '#FEF3C7' : '#FEE2E2',
+          color: isHigh ? '#14532D' : isMedium ? '#92400E' : '#991B1B',
+          border: '1px solid',
+          borderColor: isHigh ? '#22C55E' : isMedium ? '#F59E0B' : '#EF4444',
+        }}
+      >
+        {stock} unidades
+      </Box>
+    );
+  };
+
+  const renderDesktopView = () => (
+    <TableContainer sx={{ borderRadius: 1, overflow: 'auto', border: '1px solid #F3F4F6' }}>
+      <Table sx={{ minWidth: 700 }}>
+        <TableHead sx={{ bgcolor: '#F9FAFB' }}>
+          <TableRow>
+            {['Producto / Variante', 'Estado', 'Precio', 'Stock', ''].map((h, i) => (
+              <TableCell 
+                key={i} 
+                align={i === 4 ? 'right' : 'left'} 
+                sx={{ 
+                  color: '#6B7280',
+                  fontSize: '0.75rem', 
+                  fontWeight: 600, 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '0.05em',
+                  borderBottom: '1px solid #E5E7EB',
+                  py: 2
+                }}
+              >
+                {h}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {!variants.length ? (
+            <TableRow>
+              <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                    No se encontraron variantes en el inventario
+                  </Typography>
+                  <Typography variant="body2" color="text.disabled">
+                    Intenta cambiar los filtros o el término de búsqueda.
+                  </Typography>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ) : (
+            variants.map((v) => (
+              <TableRow 
+                key={v.id} 
+                sx={{ 
+                  transition: 'background-color 0.2s',
+                  '&:hover': { bgcolor: '#F8FAFC' },
+                  '&:last-child td, &:last-child th': { border: 0 }
+                }}
+              >
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box
+                      component="img"
+                      src={imageErrors[v.id] || !v.thumbnail ? DEFAULT_IMAGE : v.thumbnail}
+                      loading="lazy"
+                      onError={() => handleImageError(v.id)}
+                      sx={{ 
+                        width: 48, 
+                        height: 48, 
+                        borderRadius: 1, 
+                        objectFit: 'contain', 
+                        display: 'block', 
+                        flexShrink: 0,
+                        border: '1px solid #E5E7EB',
+                        bgcolor: '#FFFFFF',
+                        p: 0.5 
+                      }}
+                    />
+                    <Box>
+                      <Typography variant="body2" fontWeight={600} color="#111827">
+                        {v.product_name}
+                      </Typography>
+                      <Typography variant="caption" color="#6B7280" display="block" mt={0.5}>
+                        {constructVariantName(v)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </TableCell>
+
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                  <StatusChip isActive={v.is_active} />
+                </TableCell>
+
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                  {v.original_price && v.original_price > v.price ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                      <Typography variant="caption" sx={{ textDecoration: 'line-through', color: '#9CA3AF' }}>
+                        {formatPrice(v.original_price)}
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600} color="#111827">
+                        {formatPrice(v.price)}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" fontWeight={600} color="#111827">
+                      {formatPrice(v.price)}
+                    </Typography>
+                  )}
+                </TableCell>
+
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                  <StockChip stock={v.stock} />
+                </TableCell>
+
+                {/* <TableCell align="right" sx={{ py: 1.5, paddingRight: 3, borderBottom: '1px solid #F3F4F6' }}>
+                  <Typography variant="body2" color="#6B7280">
+                    —
+                  </Typography>
+                </TableCell> */}
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
+  const renderMobileView = () => {
+    if (!variants.length)
+      return (
+        <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+          <Typography>No se encontraron variantes en el inventario</Typography>
+        </Box>
+      );
+
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
+        {variants.map((v) => (
+          <Card key={v.id} sx={{ p: 2, border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', borderRadius: 1 }}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+              <Box
+                component="img"
+                src={imageErrors[v.id] || !v.thumbnail ? DEFAULT_IMAGE : v.thumbnail}
+                sx={{ width: 56, height: 56, borderRadius: 1, objectFit: 'contain', flexShrink: 0, border: '1px solid #E5E7EB', p: 0.5, bgcolor: '#FFFFFF' }}
+              />
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="subtitle2" fontWeight={600} color="#111827" noWrap>
+                  {v.product_name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {constructVariantName(v)}
+                </Typography>
+              </Box>
+              <StatusChip isActive={v.is_active} />
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1, borderTop: '1px dashed #E5E7EB' }}>
+              <Box>
+                <StockChip stock={v.stock} />
+              </Box>
+              <Typography variant="body2" fontWeight={600}>
+                {formatPrice(v.price)}
+              </Typography>
+            </Box>
+          </Card>
+        ))}
+      </Box>
+    );
+  };
+
+  if (isLoading) return <Loader />;
+
+  return (
+    <Card
+      sx={{
+        p: { xs: 2, sm: 3 },
+        bgcolor: '#FFFFFF',
+        mb: 3,
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
+        border: '1px solid #E5E7EB',
+        borderRadius: 1,
+        overflow: 'visible',
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
+        <Typography variant="h6" fontWeight="700" color="#111827">
+          Gestión de Inventarios
+        </Typography>
       </Box>
 
-      {/* DATA TABLE */}
-      <Card sx={{ borderRadius: 2, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
-        {isLoading ? (
-          <Box sx={{ p: 5, display: 'flex', justifyContent: 'center' }}>
-            <Loader />
-          </Box>
-        ) : variants.length === 0 ? (
-          <Box sx={{ p: 5, textAlign: 'center' }}>
-            <Typography variant="body1" color="text.secondary">
-              No se encontraron variantes en el inventario.
-            </Typography>
-          </Box>
-        ) : (
-          <TableContainer>
-            <Table sx={{ minWidth: 800 }}>
-              <TableHead>
-                <TableRow sx={{ bgcolor: 'grey.50' }}>
-                  <TableCell>Producto / Variante</TableCell>
-                  <TableCell>Estado</TableCell>
-                  <TableCell align="right">Precio</TableCell>
-                  <TableCell align="center">Stock</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {variants.map((v) => (
-                  <TableRow key={v.id} hover>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box
-                          component="img"
-                          src={imageErrors[v.id] || !v.thumbnail ? DEFAULT_IMAGE : v.thumbnail}
-                          onError={() => handleImageError(v.id)}
-                          sx={{ width: 44, height: 44, borderRadius: 1, objectFit: 'cover' }}
-                        />
-                        <Box>
-                          <Typography variant="body2" fontWeight="medium">
-                            {v.product_name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {constructVariantName(v)}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </TableCell>
-                    
-                    <TableCell>
-                      <Chip
-                        label={v.is_active ? 'Activo' : 'Inactivo'}
-                        size="small"
-                        color={v.is_active ? 'success' : 'default'}
-                        variant={v.is_active ? 'filled' : 'outlined'}
-                      />
-                    </TableCell>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }} alignItems="center">
+        <TextField
+          placeholder="Buscar variante..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          size="small"
+          sx={{ 
+            flex: 1, 
+            width: { xs: '100%', sm: 300 }, 
+            '& .MuiOutlinedInput-root': { borderRadius: 1 } 
+          }}
+          slotProps={{
+            input: {
+              startAdornment: <InputAdornment position="start"><SearchIcon color="action" fontSize="small" /></InputAdornment>,
+              endAdornment: searchTerm && (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => { setSearchTerm(''); setDebouncedSearch(''); setPage(0); }}>
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+      </Stack>
 
-                    <TableCell align="right">
-                      {v.original_price && v.original_price > v.price ? (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                          <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.secondary' }}>
-                            {formatPrice(v.original_price)}
-                          </Typography>
-                          <Typography variant="body2" color="error.main" fontWeight="bold">
-                            {formatPrice(v.price)}
-                          </Typography>
-                        </Box>
-                      ) : (
-                        <Typography variant="body2">
-                          {formatPrice(v.price)}
-                        </Typography>
-                      )}
-                    </TableCell>
+      {isMobile ? renderMobileView() : renderDesktopView()}
 
-                    <TableCell align="center">
-                      <Chip 
-                        label={v.stock} 
-                        size="small"
-                        color={v.stock > 10 ? 'success' : v.stock > 0 ? 'warning' : 'error'}
-                        sx={{ fontWeight: 'bold' }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-
-        {!isLoading && totalItems > 0 && (
-          <Box sx={{ borderTop: 1, borderColor: 'divider' }}>
-            <CustomPagination
-              page={page}
-              totalPages={Math.ceil(totalItems / rowsPerPage)}
-              totalItems={totalItems}
-              rowsPerPage={rowsPerPage}
-              onPageChange={setPage}
-              onRowsPerPageChange={(n) => { setRowsPerPage(n); setPage(0); }}
-              rowsPerPageOptions={[5, 10, 25, 50]}
-            />
-          </Box>
-        )}
-      </Card>
-    </Box>
+      {totalItems > 0 && (
+        <Box sx={{ borderTop: 1, borderColor: 'divider' }}>
+          <CustomPagination
+            page={page}
+            totalPages={Math.ceil(totalItems / rowsPerPage)}
+            totalItems={totalItems}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setPage}
+            onRowsPerPageChange={(n) => { setRowsPerPage(n); setPage(0); }}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+          />
+        </Box>
+      )}
+    </Card>
   );
 };
