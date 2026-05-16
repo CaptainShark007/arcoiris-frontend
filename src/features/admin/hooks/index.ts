@@ -9,8 +9,10 @@ export * from './product/useGetProductBySlugAdmin';
 export * from './category/useAllCategories';
 export * from './category/useCreateCategory';
 export * from './category/useUpdateCategory';
+export * from './category/useUpdateCategory';
 export * from './category/useDeleteCategory';
 export * from './category/useCountProductsByCategory';
+export * from './category/useGetCategoryById';
 
 // orders
 export * from './order/useAllOrders';

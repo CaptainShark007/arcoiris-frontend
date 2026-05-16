@@ -272,3 +272,18 @@ export const generateCategorySlug = (name: string): string => {
     .replace(/[^\w-]/g, '') // Elimina caracteres no alfanuméricos excepto guiones
     .replace(/-+/g, '-'); // Reemplaza múltiples guiones por uno solo
 };
+
+// Obtener categoría por ID
+export const getCategoryById = async (id: string) => {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    throw new Error('Error al obtener categoría');
+  }
+
+  return data;
+};
