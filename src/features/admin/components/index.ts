@@ -11,6 +11,7 @@ export * from './product/form-product/VariantsInput';
 export * from './product/form-product/UploaderImages';
 export * from './product/form-product/Editor';
 export * from './product/ProductStockStatus';
+export * from './product/ProductDetailModal';
 
 // Categories
 export * from './category/CategoriesModal';

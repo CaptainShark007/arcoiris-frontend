@@ -296,6 +296,23 @@ export const getProductBySlugAdmin = async (slug: string) => {
   return data;
 };
 
+// metodo para buscar el producto por su ID - usado en modal de detalle para admin/cajero
+export const getProductById = async (productId: string) => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants (*), categories(id, name, slug)')
+    .eq('id', productId)
+    .eq('is_deleted', false)
+    .eq('variants.is_active', true)
+    .single();
+
+  if (error) {
+    throw new Error('Error fetching product by ID');
+  }
+
+  return data;
+};
+
 // metodo para obtener las variantes de un producto
 // ver donde se usa
 export const getProductVariants = async (productId: string) => {

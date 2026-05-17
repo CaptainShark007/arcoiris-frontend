@@ -5,6 +5,7 @@ export * from './product/useUpdateProduct';
 export * from './product/useUpdateProductCategory';
 export * from './product/useToggleProduct';
 export * from './product/useGetProductBySlugAdmin';
+export * from './product/useGetProductById';
 // categories
 export * from './category/useAllCategories';
 export * from './category/useCreateCategory';

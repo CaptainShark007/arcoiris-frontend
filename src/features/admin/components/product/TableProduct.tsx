@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -37,6 +37,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import BlockIcon from '@mui/icons-material/Block';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import AddCircleIcon from '@mui/icons-material/AddCircle'; // <-- Importación agregada
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { Loader } from '@shared/components';
 import { useCategories } from '@features/shop/hooks/products/useCategories';
@@ -45,6 +46,7 @@ import {
   useToggleProduct,
   useDeleteProduct,
 } from '@features/admin/hooks';
+import { ProductDetailModal } from './ProductDetailModal';
 import CustomPagination from '@shared/components/CustomPagination';
 import Menu from '@mui/material/Menu';
 
@@ -66,6 +68,8 @@ export const TableProduct = () => {
 
   const [deleteModalOpen, setDeleteModalOpen]   = useState(false);
   const [productToDelete, setProductToDelete]   = useState<{ id: string; name: string } | null>(null);
+  const [detailModalOpen, setDetailModalOpen]   = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
   const { mutate: toggleProduct } = useToggleProduct();
@@ -128,11 +132,37 @@ export const TableProduct = () => {
   const ActionButtons = ({ product }: { product: any }) => {
     const [anchor, setAnchor] = useState<null | HTMLElement>(null);
 
+    const handleOpenDetail = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setSelectedProductId(product.id);
+      setDetailModalOpen(true);
+      setAnchor(null);
+    };
+
+    const handleEdit = (e: React.MouseEvent) => {
+      e.stopPropagation();
+    };
+
+    const handleToggle = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      toggleProduct({ productId: product.id, isActive: !product.is_active });
+      setAnchor(null);
+    };
+
+    const handleDelete = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleOpenDeleteModal(product.id, product.name);
+      setAnchor(null);
+    };
+
     return (
       <>
         <IconButton
           size="small"
-          onClick={(e) => setAnchor(e.currentTarget)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setAnchor(e.currentTarget);
+          }}
           sx={{ 
             color: 'text.secondary',
             '&:hover': { bgcolor: '#F3F4F6', color: 'text.primary' } 
@@ -150,9 +180,17 @@ export const TableProduct = () => {
           slotProps={{ paper: { sx: { minWidth: 180, borderRadius: 2, mt: 0.5, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' } } }}
         >
           <MenuItem
+            onClick={handleOpenDetail}
+            sx={{ gap: 1.5, fontSize: '0.875rem', py: 1.2 }}
+          >
+            <VisibilityIcon fontSize="small" sx={{ color: '#7C3AED' }} />
+            Ver detalle
+          </MenuItem>
+
+          <MenuItem
             component={RouterLink}
             to={`/panel/productos/editar/${product.slug}`}
-            onClick={() => setAnchor(null)}
+            onClick={handleEdit}
             sx={{ gap: 1.5, fontSize: '0.875rem', py: 1.2 }}
           >
             <EditIcon fontSize="small" sx={{ color: '#2563EB' }} />
@@ -160,10 +198,7 @@ export const TableProduct = () => {
           </MenuItem>
 
           <MenuItem 
-            onClick={() => { 
-              toggleProduct({ productId: product.id, isActive: !product.is_active }); 
-              setAnchor(null); 
-            }}
+            onClick={handleToggle}
             sx={{ gap: 1.5, fontSize: '0.875rem', py: 1.2 }}
           >
             {product.is_active ? (
@@ -180,7 +215,7 @@ export const TableProduct = () => {
           </MenuItem>
 
           <MenuItem
-            onClick={() => { handleOpenDeleteModal(product.id, product.name); setAnchor(null); }}
+            onClick={handleDelete}
             sx={{ gap: 1.5, fontSize: '0.875rem', color: '#DC2626', py: 1.2 }}
           >
             <DeleteIcon fontSize="small" />
@@ -254,7 +289,11 @@ export const TableProduct = () => {
           ) : (
             products.map((product) => (
               <TableRow 
-                key={product.id} 
+                key={product.id}
+                onClick={() => {
+                  setSelectedProductId(product.id);
+                  setDetailModalOpen(true);
+                }}
                 sx={{ 
                   transition: 'background-color 0.2s',
                   '&:hover': { bgcolor: '#f1f1f1' },
@@ -531,6 +570,15 @@ export const TableProduct = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ProductDetailModal
+        productId={selectedProductId}
+        open={detailModalOpen}
+        onClose={() => {
+          setDetailModalOpen(false);
+          setTimeout(() => setSelectedProductId(null), 200);
+        }}
+      />
     </>
   );
 };
