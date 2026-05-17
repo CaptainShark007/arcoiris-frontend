@@ -160,7 +160,10 @@ export const TableProduct = () => {
           </MenuItem>
 
           <MenuItem 
-            onClick={() => { toggleProduct(product.id); setAnchor(null); }} 
+            onClick={() => { 
+              toggleProduct({ productId: product.id, isActive: !product.is_active }); 
+              setAnchor(null); 
+            }}
             sx={{ gap: 1.5, fontSize: '0.875rem', py: 1.2 }}
           >
             {product.is_active ? (
@@ -254,13 +257,14 @@ export const TableProduct = () => {
                 key={product.id} 
                 sx={{ 
                   transition: 'background-color 0.2s',
-                  '&:hover': { bgcolor: '#F8FAFC' },
-                  '&:last-child td, &:last-child th': { border: 0 }
+                  '&:hover': { bgcolor: '#f1f1f1' },
+                  '&:last-child td, &:last-child th': { border: 0 },
+                  cursor: 'pointer',
                 }}
               >
                 
                 {/* Imagen y Nombre */}
-                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #e3e3e4' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box
                       component="img"
@@ -286,12 +290,12 @@ export const TableProduct = () => {
                 </TableCell>
 
                 {/* Estado */}
-                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #e3e3e4' }}>
                   <StatusChip isActive={product.is_active} />
                 </TableCell>
 
                 {/* Inventario */}
-                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #e3e3e4' }}>
                   <Box>
                     <Typography variant="body2" fontWeight={600} color="#374151">
                       {product.totalStock} en existencia
@@ -303,7 +307,7 @@ export const TableProduct = () => {
                 </TableCell>
 
                 {/* Categoría */}
-                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #e3e3e4' }}>
                   <Chip
                     label={product.category?.name ?? 'Sin categoría'}
                     variant="outlined"
@@ -319,7 +323,7 @@ export const TableProduct = () => {
                 </TableCell>
 
                 {/* Acciones */}
-                <TableCell align="right" sx={{ py: 1.5, width: 80, paddingRight: 3, borderBottom: '1px solid #F3F4F6' }}>
+                <TableCell align="right" sx={{ py: 1.5, width: 80, paddingRight: 3, borderBottom: '1px solid #e3e3e4' }}>
                   <ActionButtons product={product} />
                 </TableCell>
 

@@ -71,7 +71,7 @@ export const TableInventory = () => {
     if (v.storage) parts.push(v.storage);
     if (v.finish) parts.push(v.finish);
     
-    return parts.length > 0 ? parts.join(' - ') : 'Única variante';
+    return parts.length > 0 ? parts.join(' • ') : 'Producto simple';
   };
 
   const handleImageError = (id: string) => {
@@ -128,7 +128,7 @@ export const TableInventory = () => {
       <Table sx={{ minWidth: 700 }}>
         <TableHead sx={{ bgcolor: '#F9FAFB' }}>
           <TableRow>
-            {['Producto / Variante', 'Estado', 'Precio', 'Stock', ''].map((h, i) => (
+            {['Producto / Variante', 'Estado', 'Precio', 'Existencia'].map((h, i) => (
               <TableCell 
                 key={i} 
                 align={i === 4 ? 'right' : 'left'} 
@@ -167,11 +167,11 @@ export const TableInventory = () => {
                 key={v.id} 
                 sx={{ 
                   transition: 'background-color 0.2s',
-                  '&:hover': { bgcolor: '#F8FAFC' },
+                  //'&:hover': { bgcolor: '#F8FAFC' },
                   '&:last-child td, &:last-child th': { border: 0 }
                 }}
               >
-                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #e3e3e4' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box
                       component="img"
@@ -194,35 +194,50 @@ export const TableInventory = () => {
                       <Typography variant="body2" fontWeight={600} color="#111827">
                         {v.product_name}
                       </Typography>
-                      <Typography variant="caption" color="#6B7280" display="block" mt={0.5}>
-                        {constructVariantName(v)}
-                      </Typography>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        bgcolor: '#F3F4F6', 
+                        px: 1, 
+                        borderRadius: 1, 
+                        width: 'fit-content'
+                      }}>
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary" 
+                          display="block" 
+                          mt={0.5} 
+                          fontWeight={'bold'}
+                        >
+                          {constructVariantName(v)}
+                        </Typography>
+                      </Box>
                     </Box>
                   </Box>
                 </TableCell>
 
-                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #e3e3e4' }}>
                   <StatusChip isActive={v.is_active} />
                 </TableCell>
 
-                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #e3e3e4' }}>
                   {v.original_price && v.original_price > v.price ? (
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                      <Typography variant="caption" sx={{ textDecoration: 'line-through', color: '#9CA3AF' }}>
+                      <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'text.secondary' }}>
                         {formatPrice(v.original_price)}
                       </Typography>
-                      <Typography variant="body2" fontWeight={600} color="#111827">
+                      <Typography variant="body2" fontWeight={800} color="#111827">
                         {formatPrice(v.price)}
                       </Typography>
                     </Box>
                   ) : (
-                    <Typography variant="body2" fontWeight={600} color="#111827">
+                    <Typography variant="body2" fontWeight={800} color="#111827">
                       {formatPrice(v.price)}
                     </Typography>
                   )}
                 </TableCell>
 
-                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
+                <TableCell sx={{ py: 1.5, borderBottom: '1px solid #e3e3e4' }}>
                   <StockChip stock={v.stock} />
                 </TableCell>
 

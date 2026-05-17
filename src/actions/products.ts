@@ -339,6 +339,7 @@ export const getProducts = async ({
     name,
     is_active,
     images,
+    slug,
     category:categories(id, name),
     variants(stock)
   `;
@@ -348,6 +349,7 @@ export const getProducts = async ({
     name,
     is_active,
     images,
+    slug,
     category:categories(id, name),
     variants!inner(stock)
   `;

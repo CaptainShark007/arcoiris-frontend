@@ -1,7 +1,7 @@
 import { Box, Typography, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import CloseIcon from '@mui/icons-material/Close';
 import { CartItem } from '@features/admin/hooks/pos/usePosStore';
 import { useState } from 'react';
 
@@ -11,8 +11,13 @@ interface PosCartItemProps {
   onRemove: (variantId: string) => void;
 }
 
-export const PosCartItem = ({ item, onUpdateQuantity, onRemove }: PosCartItemProps) => {
+export const PosCartItem = ({
+  item,
+  onUpdateQuantity,
+  onRemove,
+}: PosCartItemProps) => {
   const subtotal = item.price * item.quantity;
+  const [imageError, setImageError] = useState(false);
 
   const getVariantLabel = (): string => {
     const parts = [item.color_name, item.storage, item.finish].filter(Boolean);
@@ -21,67 +26,108 @@ export const PosCartItem = ({ item, onUpdateQuantity, onRemove }: PosCartItemPro
 
   const variantLabel = getVariantLabel();
 
-  const [imageError, setImageError] = useState(false);
-
-  const imageSrc = imageError || !item.image
-    ? 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
-    : item.image;
+  const imageSrc =
+    imageError || !item.image
+      ? 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
+      : item.image;
 
   return (
     <Box
       sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        py: 1.2,
+        display: 'grid',
+        gridTemplateColumns: '52px 1fr auto',
+        gridTemplateRows: 'auto auto',
+        columnGap: 1.5,
+        py: 1.5,
         borderBottom: '1px solid',
-        borderColor: 'grey.100',
+        borderColor: 'grey.300',
         '&:last-child': { borderBottom: 'none' },
       }}
     >
+      {/* Imagen — ocupa las 2 filas */}
       <Box
-        component="img"
+        component='img'
         src={imageSrc}
         alt={item.productName}
         onError={() => setImageError(true)}
         sx={{
-          width: 44,
-          height: 44,
+          gridColumn: 1,
+          gridRow: '1 / 3',
+          width: 52,
+          height: 52,
           objectFit: 'contain',
           borderRadius: 1,
-          backgroundColor: '#f5f5f5',
-          flexShrink: 0,
+          bgcolor: '#f5f5f5',
+          border: '1px solid',
+          borderColor: 'grey.50',
           p: 0.3,
+          alignSelf: 'center',
         }}
       />
 
-      <Box sx={{ flex: 1, minWidth: 0 }}>
+      {/* Info */}
+      <Box sx={{ gridColumn: 2, gridRow: 1, minWidth: 0 }}>
         <Typography
-          variant="body2"
+          variant='body2'
           fontWeight={600}
-          fontSize="0.78rem"
-          noWrap
-          title={item.productName}
+          fontSize='0.78rem'
+          sx={{ wordBreak: 'break-word', lineHeight: 1.3 }}
         >
           {item.productName}
         </Typography>
         {variantLabel && (
-          <Typography variant="caption" color="text.secondary" fontSize="0.68rem">
+          <Typography
+            variant='caption'
+            color='text.secondary'
+            fontSize='0.68rem'
+            display='block'
+          >
             {variantLabel}
           </Typography>
         )}
-        <Typography variant="caption" color="primary.main" fontWeight={700} display="block">
+        <Typography
+          variant='caption'
+          color='primary.main'
+          fontWeight={700}
+          display='block'
+        >
           ${subtotal.toLocaleString('es-AR')}
         </Typography>
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, flexShrink: 0 }}>
+      {/* Botón eliminar — arriba a la derecha */}
+      <IconButton
+        size='small'
+        onClick={() => onRemove(item.variantId)}
+        sx={{
+          gridColumn: 3,
+          gridRow: 1,
+          alignSelf: 'flex-start',
+          color: 'grey.400',
+          '&:hover': { color: 'error.main' },
+          p: 0.3,
+        }}
+      >
+        <CloseIcon sx={{ fontSize: 16 }} />
+      </IconButton>
+
+      {/* Controles de cantidad — fila 2, columnas 2-3 */}
+      <Box
+        sx={{
+          gridColumn: '2 / 4',
+          gridRow: 2,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          mt: 1,
+        }}
+      >
         <IconButton
-          size="small"
+          size='small'
           onClick={() => onUpdateQuantity(item.variantId, item.quantity - 1)}
           sx={{
-            width: 24,
-            height: 24,
+            width: 26,
+            height: 26,
             border: '1px solid',
             borderColor: 'grey.300',
             borderRadius: 1,
@@ -90,22 +136,20 @@ export const PosCartItem = ({ item, onUpdateQuantity, onRemove }: PosCartItemPro
         >
           <RemoveIcon sx={{ fontSize: 14 }} />
         </IconButton>
-
         <Typography
-          variant="body2"
+          variant='body2'
           fontWeight={700}
-          fontSize="0.82rem"
+          fontSize='0.82rem'
           sx={{ minWidth: 22, textAlign: 'center' }}
         >
           {item.quantity}
         </Typography>
-
         <IconButton
-          size="small"
+          size='small'
           onClick={() => onUpdateQuantity(item.variantId, item.quantity + 1)}
           sx={{
-            width: 24,
-            height: 24,
+            width: 26,
+            height: 26,
             border: '1px solid',
             borderColor: 'grey.300',
             borderRadius: 1,
@@ -115,18 +159,6 @@ export const PosCartItem = ({ item, onUpdateQuantity, onRemove }: PosCartItemPro
           <AddIcon sx={{ fontSize: 14 }} />
         </IconButton>
       </Box>
-
-      <IconButton
-        size="small"
-        onClick={() => onRemove(item.variantId)}
-        sx={{
-          color: 'grey.400',
-          flexShrink: 0,
-          '&:hover': { color: 'error.main' },
-        }}
-      >
-        <DeleteOutlineIcon fontSize="small" />
-      </IconButton>
     </Box>
   );
 };
