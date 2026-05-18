@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FieldErrors, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import CancelIcon from '@mui/icons-material/Cancel';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import CollectionsIcon from '@mui/icons-material/Collections';
 import { Box, Button, Typography, Alert } from '@mui/material';
 import { ProductFormValues } from '@features/admin/schema/productSchema';
 
@@ -19,52 +21,41 @@ const MAX_IMAGES = 3;
 
 export const UploaderImages = ({ setValue, watch, errors }: UploaderProps) => {
   const [images, setImages] = useState<ImagePreview[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const formImages = watch('images');
 
   useEffect(() => {
     if (formImages && formImages.length > 0 && images.length === 0) {
       const existingImages = formImages.map((img: File | string) => {
         if (img instanceof File) {
-          return {
-            file: img,
-            previewUrl: URL.createObjectURL(img),
-          };
+          return { file: img, previewUrl: URL.createObjectURL(img) };
         }
-        return {
-          previewUrl: img as string,
-        };
+        return { previewUrl: img as string };
       });
       setImages(existingImages);
     }
-  }, [formImages, images.length, setValue]);
+  }, [formImages, images.length]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newImages = Array.from(e.target.files).map((file) => ({
-        file,
-        previewUrl: URL.createObjectURL(file),
-      }));
+  const processFiles = (files: File[]) => {
+    const canAdd = MAX_IMAGES - images.length;
+    if (canAdd <= 0) return;
 
-      const totalImages = images.length + newImages.length;
+    const newImages = files.slice(0, canAdd).map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
 
-      if (totalImages > MAX_IMAGES) {
-        const canAdd = MAX_IMAGES - images.length;
-        const updatedImages = [...images, ...newImages.slice(0, canAdd)];
-        setImages(updatedImages);
-        setValue(
-          'images',
-          updatedImages.map((img) => img.file || img.previewUrl)
-        );
-        return;
-      }
+    const updatedImages = [...images, ...newImages];
+    setImages(updatedImages);
+    setValue(
+      'images',
+      updatedImages.map((img) => img.file || img.previewUrl)
+    );
+  };
 
-      const updatedImages = [...images, ...newImages];
-      setImages(updatedImages);
-      setValue(
-        'images',
-        updatedImages.map((img) => img.file || img.previewUrl)
-      );
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) processFiles(Array.from(e.target.files));
   };
 
   const handleRemoveImage = (index: number) => {
@@ -76,222 +67,265 @@ export const UploaderImages = ({ setValue, watch, errors }: UploaderProps) => {
     );
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (images.length < MAX_IMAGES) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files).filter((f) =>
+      ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(f.type)
+    );
+    if (files.length > 0) processFiles(files);
+  };
+
   const canAddMore = images.length < MAX_IMAGES;
-  const imagesRemaining = MAX_IMAGES - images.length;
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: { xs: 1, sm: 1.25 },
-      }}
-    >
-      {/* Feedback informativo */}
-      <Alert
-        severity="info"
-        sx={{
-          mb: 1.5,
-          py: 0,
-          backgroundColor: '#eff6ff',
-          color: '#1e3a8a',
-          '& .MuiAlert-message': { padding: '8px 0', width: '100%' },
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', lineHeight: 1.4 }}>
-            <strong>Requisitos:</strong> Formatos permitidos JPEG, JPG, PNG o WEBP. Minimo de 1 imagen y máximo de {MAX_IMAGES} imágenes.
-          </Typography>
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', lineHeight: 1.4 }}>
-            <strong>Nota:</strong> Se recomienda que el nombre de las imágenes no contenga caracteres especiales.
-          </Typography>
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', lineHeight: 1.4 }}>
-            <strong>Nota:</strong> La primera imagen seleccionada será la <strong>PRINCIPAL</strong> (Portada) del producto.
-          </Typography>
-        </Box>
-      </Alert>
-      {/* Estado de imágenes */}
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Box
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         sx={{
+          border: `2px dashed ${
+            isDragging
+              ? '#0007d7ff'
+              : errors.images
+              ? '#ef4444'
+              : '#d1d5db'
+          }`,
+          borderRadius: '8px',
+          backgroundColor: isDragging ? '#eff6ff' : '#fafafa',
+          transition: 'all 200ms ease',
+          minHeight: images.length === 0 ? '140px' : 'auto',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 0.75,
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
-        <Typography
-          variant='body2'
-          sx={{ color: '#6b7280', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}
-        >
-          Imágenes: <strong>{images.length}</strong> / {MAX_IMAGES}
-        </Typography>
-        {!canAddMore && (
-          <Typography
-            variant='body2'
+        {images.length > 0 && (
+          <Box
             sx={{
-              color: '#ef4444',
-              fontSize: { xs: '0.6rem', sm: '0.7rem' },
-              fontWeight: 500,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '1px',
+              backgroundColor: '#e5e7eb',
             }}
           >
+            {images.map((image, index) => (
+              <Box
+                key={index}
+                sx={{
+                  position: 'relative',
+                  aspectRatio: '1',
+                  backgroundColor: 'white',
+                  overflow: 'hidden',
+                }}
+              >
+                {index === 0 && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 6,
+                      left: 6,
+                      backgroundColor: '#0007d7ff',
+                      color: 'white',
+                      fontSize: '0.6rem',
+                      fontWeight: 700,
+                      px: 0.75,
+                      py: 0.25,
+                      borderRadius: '4px',
+                      zIndex: 1,
+                      letterSpacing: '0.03em',
+                    }}
+                  >
+                    PRINCIPAL
+                  </Box>
+                )}
+
+                <Box
+                  component="img"
+                  src={image.previewUrl}
+                  alt={`Preview ${index + 1}`}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    p: 1,
+                  }}
+                />
+
+                <Box
+                  onClick={() => handleRemoveImage(index)}
+                  sx={{
+                    position: 'absolute',
+                    top: 6,
+                    right: 6,
+                    width: 22,
+                    height: 22,
+                    borderRadius: '50%',
+                    backgroundColor: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                    zIndex: 1,
+                    transition: 'transform 150ms',
+                    '&:hover': { transform: 'scale(1.1)' },
+                  }}
+                >
+                  <CancelIcon sx={{ fontSize: '1rem', color: '#ef4444' }} />
+                </Box>
+              </Box>
+            ))}
+
+            {canAddMore && (
+              <Box
+                onClick={() => inputRef.current?.click()}
+                sx={{
+                  aspectRatio: '1',
+                  backgroundColor: 'white',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 0.5,
+                  cursor: 'pointer',
+                  transition: 'background-color 150ms',
+                  '&:hover': { backgroundColor: '#f3f4f6' },
+                }}
+              >
+                <CollectionsIcon sx={{ fontSize: '1.5rem', color: '#9ca3af' }} />
+                <Typography sx={{ fontSize: '0.65rem', color: '#9ca3af', fontWeight: 500 }}>
+                  Añadir
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        )}
+        
+        {images.length === 0 && (
+          <Box
+            onClick={() => inputRef.current?.click()}
+            sx={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              p: 3,
+              cursor: 'pointer',
+            }}
+          >
+            <UploadFileIcon
+              sx={{
+                fontSize: '2rem',
+                color: isDragging ? '#0007d7ff' : '#9ca3af',
+                transition: 'color 200ms',
+              }}
+            />
+
+            <Typography
+              sx={{ fontSize: '0.8rem', color: '#6b7280', textAlign: 'center', lineHeight: 1.4 }}
+            >
+              Arrastrá imágenes aquí o{' '}
+              <Box
+                component="span"
+                sx={{
+                  color: '#0007d7ff',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
+                seleccioná archivos
+              </Box>
+            </Typography>
+
+            <Typography sx={{ fontSize: '0.7rem', color: '#9ca3af' }}>
+              JPEG, PNG o WEBP · Máximo {MAX_IMAGES} imágenes
+            </Typography>
+          </Box>
+        )}
+
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 0,
+            borderTop: images.length > 0 ? '1px solid #e5e7eb' : 'none',
+          }}
+        >
+          {images.length > 0 && (
+            <>
+              <Button
+                onClick={() => inputRef.current?.click()}
+                disabled={!canAddMore}
+                sx={{
+                  flex: 1,
+                  textTransform: 'none',
+                  fontSize: '0.75rem',
+                  color: canAddMore ? '#374151' : '#9ca3af',
+                  borderRadius: 0,
+                  py: 1,
+                  borderRight: '1px solid #e5e7eb',
+                  '&:hover': { backgroundColor: '#f9fafb' },
+                }}
+              >
+                Subir nuevo
+              </Button>
+              <Button
+                disabled
+                sx={{
+                  flex: 1,
+                  textTransform: 'none',
+                  fontSize: '0.75rem',
+                  color: '#9ca3af',
+                  borderRadius: 0,
+                  py: 1,
+                }}
+              >
+                Seleccionar existente
+              </Button>
+            </>
+          )}
+        </Box>
+      </Box>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/jpg,image/png,image/webp"
+        multiple
+        hidden
+        onChange={handleInputChange}
+      />
+
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography sx={{ fontSize: '0.7rem', color: '#9ca3af' }}>
+          {images.length} / {MAX_IMAGES} imágenes · La primera será la portada
+        </Typography>
+        {images.length === MAX_IMAGES && (
+          <Typography sx={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600 }}>
             Máximo alcanzado
           </Typography>
         )}
       </Box>
 
-      {/* Barra de progreso */}
-      <Box
-        sx={{
-          width: '100%',
-          height: '4px',
-          backgroundColor: '#e5e7eb',
-          borderRadius: '2px',
-          overflow: 'hidden',
-        }}
-      >
-        <Box
-          sx={{
-            height: '100%',
-            width: `${(images.length / MAX_IMAGES) * 100}%`,
-            backgroundColor:
-              images.length === MAX_IMAGES ? '#10b981' : '#0007d7ff',
-            transition: 'width 300ms ease',
-          }}
-        />
-      </Box>
-
-      {/* Botón seleccionar */}
-      <Button
-        component='label'
-        variant='outlined'
-        disabled={!canAddMore}
-        fullWidth
-        sx={{
-          py: { xs: 0.75, sm: 1 },
-          textTransform: 'none',
-          fontSize: { xs: '0.75rem', sm: '0.8rem' },
-          opacity: canAddMore ? 1 : 0.5,
-          cursor: canAddMore ? 'pointer' : 'not-allowed',
-        }}
-      >
-        {canAddMore
-          ? `Seleccionar imágenes (${imagesRemaining} disponibles)`
-          : 'Máximo alcanzado'}
-        <input
-          type='file'
-          accept='image/*'
-          multiple
-          hidden
-          onChange={handleImageChange}
-          disabled={!canAddMore}
-        />
-      </Button>
-
-      {/* Galería */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: 'repeat(2, 1fr)',
-            sm: 'repeat(3, 1fr)',
-          },
-          gap: { xs: 0.75, sm: 1 },
-          p: { xs: 0.5, sm: 0.75 },
-          maxWidth: '100%',
-        }}
-      >
-        {images.map((image, index) => (
-          <Box
-            key={index}
-            sx={{
-              position: 'relative',
-              aspectRatio: '1',
-              maxWidth: '100%',
-              overflow: 'hidden',
-            }}
-          >
-            {index === 0 && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  backgroundColor: '#0007d7ff', // Tu color primario
-                  color: 'white',
-                  fontSize: '0.65rem',
-                  fontWeight: 'bold',
-                  padding: '2px 8px',
-                  borderBottomRightRadius: '8px',
-                  zIndex: 1,
-                  pointerEvents: 'none', // Para que no moleste al click
-                }}
-              >
-                PRINCIPAL
-              </Box>
-            )}
-            <Box
-              component='img'
-              src={image.previewUrl}
-              alt={`Preview ${index}`}
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                borderRadius: 1,
-                border: '1px solid #e5e7eb',
-                p: 0.25,
-                maxWidth: '100%',
-                maxHeight: '100%',
-              }}
-            />
-            <Button
-              onClick={() => handleRemoveImage(index)}
-              sx={{
-                position: 'absolute',
-                top: 6,
-                right: 6,
-                minWidth: 'auto',
-                p: 0,
-                backgroundColor: 'white',
-                borderRadius: '50%',
-                width: '24px',
-                height: '24px',
-                '&:hover': {
-                  transform: 'scale(1.1)',
-                  backgroundColor: 'grey.100',
-                },
-              }}
-            >
-              <CancelIcon
-                sx={{
-                  color: '#ef4444',
-                  fontSize: { xs: '1rem', sm: '1.2rem' },
-                }}
-              />
-            </Button>
-          </Box>
-        ))}
-      </Box>
-
-      {/* Errores */}
       {errors.images && (
-        <Alert
-          severity='error'
-          sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }}
-        >
+        <Alert severity="error" sx={{ fontSize: '0.7rem', py: 0 }}>
           {errors.images.message}
         </Alert>
       )}
-
-      {/* {images.length === 0 && !errors.images && (
-        <Typography
-          variant='body2'
-          sx={{ color: '#9ca3af', fontSize: { xs: '0.65rem', sm: '0.7rem' } }}
-        >
-          El nombre de la imagen no debe contener caracteres especiales.
-        </Typography>
-      )} */}
     </Box>
   );
 };

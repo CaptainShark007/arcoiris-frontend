@@ -283,7 +283,7 @@ export const getProductBySlug = async (slug: string) => {
 export const getProductBySlugAdmin = async (slug: string) => {
   const { data, error } = await supabase
     .from('products')
-    .select('*, variants (*)')
+    .select('*, variants (*), category:categories(id, name)')
     .eq('slug', slug)
     .eq('is_deleted', false)
     .eq('variants.is_active', true)
@@ -452,8 +452,8 @@ const validateProductInput = async (input: ProductInput): Promise<string[]> => {
   if (!input.name?.trim())
     errors.push('El nombre del producto es obligatorio.');
   if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
-  if (!input.brand?.trim())
-    errors.push('La marca del producto es obligatoria.');
+  /* if (!input.brand?.trim())
+    errors.push('La marca del producto es obligatoria.'); */
   if (!input.images?.length)
     errors.push('Al menos una imagen del producto es obligatoria.');
   if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');
@@ -691,8 +691,8 @@ export const validateProductUpdateInput = async (
   if (!input.name?.trim())
     errors.push('El nombre del producto es obligatorio.');
   if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
-  if (!input.brand?.trim())
-    errors.push('La marca del producto es obligatoria.');
+  /* if (!input.brand?.trim())
+    errors.push('La marca del producto es obligatoria.'); */
   if (!input.images?.length)
     errors.push('Al menos una imagen del producto es obligatoria.');
   if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');

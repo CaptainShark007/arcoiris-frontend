@@ -1,3 +1,4 @@
+// FormProduct.tsx
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
@@ -18,6 +19,7 @@ import {
   useGetProductBySlugAdmin,
   useUpdateProduct,
 } from '@features/admin/hooks';
+import { useAllCategories } from '@features/admin/hooks/category/useAllCategories';
 import {
   ProductFormValues,
   productSchema,
@@ -40,24 +42,22 @@ export const FormProduct = ({ titleForm }: Props) => {
   });
 
   const { slug } = useParams<{ slug: string }>();
-  //const { product, isLoading } = useProduct(slug);
   const { product, isLoading } = useGetProductBySlugAdmin(slug);
 
   const { mutate: createProduct, isPending } = useCreateProduct();
   const { mutate: updateProduct, isPending: isUpdatePending } =
     useUpdateProduct(product?.id || '');
 
+  const { categories } = useAllCategories();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (product && !isLoading) {
       setValue('name', product.name);
       setValue('slug', product.slug);
-      setValue('brand', product.brand);
-      setValue(
-        'features',
-        product.features.map((f) => ({ value: f }))
-      );
+      setValue('brand', product.brand ?? '');
+      setValue('category_id', product.category_id ?? '');
+      setValue('features', product.features.map((f) => ({ value: f })));
       setValue('description', product.description as JSONContent);
       setValue('images', product.images);
       setValue(
@@ -66,10 +66,10 @@ export const FormProduct = ({ titleForm }: Props) => {
           id: v.id,
           stock: Number(v.stock),
           price: Number(v.price),
-          // Si existe y es mayor a 0, lo convertimos a Número. Si no, enviamos null.
-          original_price: (v.original_price && Number(v.original_price) > 0) 
-            ? Number(v.original_price) 
-            : null,
+          original_price:
+            v.original_price && Number(v.original_price) > 0
+              ? Number(v.original_price)
+              : null,
           storage: v.storage || '',
           color: v.color || '',
           colorName: v.color_name || '',
@@ -85,16 +85,13 @@ export const FormProduct = ({ titleForm }: Props) => {
         const price = Number(v.price);
         const rawOriginalPrice = v.original_price ? Number(v.original_price) : 0;
         let finalOriginalPrice: number | null = null;
-
-        if (rawOriginalPrice > price) {
-          finalOriginalPrice = rawOriginalPrice;
-        }
+        if (rawOriginalPrice > price) finalOriginalPrice = rawOriginalPrice;
 
         return {
           id: v.id,
           stock: Number(v.stock),
-          price: price,
-          original_price: finalOriginalPrice, 
+          price,
+          original_price: finalOriginalPrice,
           storage: normalizeText(v.storage),
           color: v.color,
           color_name: normalizeText(v.colorName),
@@ -104,7 +101,8 @@ export const FormProduct = ({ titleForm }: Props) => {
 
     const productPayload = {
       name: data.name.trim(),
-      brand: data.brand.trim(),
+      brand: data.brand?.trim() ?? '',
+      category_id: data.category_id,
       slug: data.slug,
       description: data.description,
       features: data.features?.map((f) => f.value.trim()) ?? [],
@@ -123,16 +121,51 @@ export const FormProduct = ({ titleForm }: Props) => {
   const watchName = watch('name');
 
   useEffect(() => {
-    // Si 'slug' de useParams existe, esta en modo edición. 
-    // Por seguridad (y SEO), NO se auto-genera el slug al cambiar el nombre.
-    if (slug) return; 
-
+    if (slug) return;
     if (!watchName) return;
-    const generatedSlug = generateSlug(watchName);
-    setValue('slug', generatedSlug, { shouldValidate: true });
-  }, [watchName, setValue, slug]); // <-- agregamos 'slug' a las dependencias
+    setValue('slug', generateSlug(watchName), { shouldValidate: true });
+  }, [watchName, setValue, slug]);
 
   if (isPending || isUpdatePending || isLoading) return <Loader />;
+
+  // Botones de acción reutilizables
+  const ActionButtons = () => (
+    <Box
+      sx={{
+        display: 'flex',
+        gap: { xs: 1, sm: 1.5 },
+        justifyContent: 'flex-end',
+        flexWrap: { xs: 'wrap', sm: 'nowrap' },
+      }}
+    >
+      <Button
+        variant="outlined"
+        onClick={() => navigate(-1)}
+        sx={{
+          flex: { xs: 1, sm: 'none' },
+          textTransform: 'none',
+          fontSize: { xs: '0.8rem', sm: '0.875rem' },
+          py: { xs: 0.75, sm: 1 },
+        }}
+      >
+        Cancelar
+      </Button>
+      <Button
+        variant="contained"
+        type="submit"
+        sx={{
+          flex: { xs: 1, sm: 'none' },
+          backgroundColor: '#0007d7ff',
+          textTransform: 'none',
+          fontSize: { xs: '0.8rem', sm: '0.875rem' },
+          py: { xs: 0.75, sm: 1 },
+          '&:hover': { backgroundColor: '#0005a0ff' },
+        }}
+      >
+        Guardar Producto
+      </Button>
+    </Box>
+  );
 
   return (
     <Box
@@ -156,13 +189,8 @@ export const FormProduct = ({ titleForm }: Props) => {
           gap: 1.5,
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: { xs: 0.75, sm: 1 },
-          }}
-        >
+        {/* Título + botones de accion */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1 } }}>
           <IconButton
             onClick={() => navigate(-1)}
             sx={{
@@ -174,7 +202,7 @@ export const FormProduct = ({ titleForm }: Props) => {
             <ArrowBackIosIcon sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }} />
           </IconButton>
           <Typography
-            variant='h6'
+            variant="h6"
             sx={{
               fontWeight: 'bold',
               textTransform: 'capitalize',
@@ -184,110 +212,117 @@ export const FormProduct = ({ titleForm }: Props) => {
             {titleForm}
           </Typography>
         </Box>
+
+        <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+          <ActionButtons />
+        </Box>
       </Box>
 
-      {/* Form Grid */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Box
-          //component="form"
-          //onSubmit={onSubmit}
           sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: '1fr',
-              md: '1fr',
-              lg: '2fr 1fr',
-            },
+            display: 'flex',
+            flexDirection: 'column',
             gap: { xs: 1.5, sm: 2, md: 2.5 },
-            alignContent: 'start',
             width: '100%',
-            maxWidth: '100%',
-            overflow: 'hidden',
           }}
         >
-          {/* Detalles del Producto */}
-          <SectionFormProduct titleSection='Detalles del Producto'>
+          {/* Info basica */}
+          <SectionFormProduct titleSection="Información básica">
             <InputForm
-              type='text'
-              placeholder='Ej: Esmalte Sintético'
-              label='nombre*'
-              name='name'
+              type="text"
+              placeholder="Ej: Esmalte Sintético"
+              label="Titulo*"
+              name="name"
               register={register}
               errors={errors}
               required
             />
-            <FeaturesInput control={control} errors={errors} />
-          </SectionFormProduct>
 
-          {/* Datos adicionales */}
-          <SectionFormProduct>
-            <InputForm
-              type='text'
-              label='Slug* (generado automáticamente)'
-              name='slug'
-              placeholder='Ej: esmalte-sintetico'
-              register={register}
-              errors={errors}
-            />
-            <InputForm
-              type='text'
-              label='Marca*'
-              name='brand'
-              placeholder='Ej: DaMa'
-              register={register}
-              errors={errors}
-              required
-            />
-          </SectionFormProduct>
-
-          {/* Variantes */}
-          <Box sx={{ gridColumn: { xs: 'span', sm: 'span', lg: '1 / -1' } }}>
-            <SectionFormProduct titleSection='Variantes del Producto'>
-              <VariantsInput
-                control={control}
-                errors={errors}
-                register={register}
-                setValue={setValue}
-              />
-            </SectionFormProduct>
-          </Box>
-
-          {/* Imágenes */}
-          <Box sx={{ gridColumn: { xs: 'span', sm: 'span', lg: '1 / -1' } }}>
-            <SectionFormProduct titleSection='Imágenes del producto'>
-              <UploaderImages
-                errors={errors}
-                setValue={setValue}
-                watch={watch}
-              />
-            </SectionFormProduct>
-          </Box>
-
-          {/* Descripción */}
-          <Box sx={{ gridColumn: { xs: 'span', sm: 'span', lg: '1 / -1' } }}>
-            <SectionFormProduct titleSection='Descripción del producto'>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 0.3, sm: 0.5 }, mt: 1 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 'bold',
+                  textTransform: 'capitalize',
+                  fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                }}
+              >
+                Descripción*:
+              </Typography>
               <Editor
                 setValue={setValue}
                 errors={errors}
                 initialContent={product?.description as JSONContent | undefined}
               />
-            </SectionFormProduct>
-          </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 0.3, sm: 0.5 }, mt: 1, mb: 1 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 'bold',
+                  textTransform: 'capitalize',
+                  fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                }}
+              >
+                Imágenes*:
+              </Typography>
+              <UploaderImages errors={errors} setValue={setValue} watch={watch} />
+            </Box>
+
+            <InputForm
+              type="text"
+              label="Categoría*"
+              name="category_id"
+              placeholder="Selecciona una categoría"
+              register={register}
+              errors={errors}
+              required
+              options={categories.map((cat) => ({ value: cat.id, label: cat.name }))}
+              watch={watch}
+              setValue={setValue}
+            />
+          </SectionFormProduct>
+
+          {/* ── Sección 2: Marca y Características ── */}
+          <SectionFormProduct titleSection="Marca y Características">
+            <InputForm
+              type="text"
+              label="Marca"
+              name="brand"
+              placeholder="Ej: DaMa"
+              register={register}
+              errors={errors}
+            />
+            <Box sx={{ mt: 1, mb: 1 }}>
+              <FeaturesInput control={control} errors={errors} />
+            </Box>
+          </SectionFormProduct>
+
+          {/* ── Sección 4: Variantes ── */}
+          <SectionFormProduct titleSection="Variantes del Producto">
+            <VariantsInput
+              control={control}
+              errors={errors}
+              register={register}
+              setValue={setValue}
+            />
+          </SectionFormProduct>
         </Box>
 
-        {/* Action Buttons */}
+        {/* Botones abajo — siempre visibles */}
         <Box
           sx={{
             display: 'flex',
             gap: { xs: 1, sm: 1.5 },
             justifyContent: { xs: 'stretch', sm: 'flex-end' },
             flexWrap: { xs: 'wrap', sm: 'nowrap' },
-            mt: { xs: 1, sm: 1.5 },
+            mt: { xs: 1.5, sm: 2 },
           }}
         >
           <Button
-            variant='outlined'
+            variant="outlined"
             onClick={() => navigate(-1)}
             sx={{
               flex: { xs: 1, sm: 'none' },
@@ -299,17 +334,15 @@ export const FormProduct = ({ titleForm }: Props) => {
             Cancelar
           </Button>
           <Button
-            variant='contained'
-            type='submit'
+            variant="contained"
+            type="submit"
             sx={{
               flex: { xs: 1, sm: 'none' },
               backgroundColor: '#0007d7ff',
               textTransform: 'none',
               fontSize: { xs: '0.8rem', sm: '0.875rem' },
               py: { xs: 0.75, sm: 1 },
-              '&:hover': {
-                backgroundColor: '#0005a0ff',
-              },
+              '&:hover': { backgroundColor: '#0005a0ff' },
             }}
           >
             Guardar Producto
