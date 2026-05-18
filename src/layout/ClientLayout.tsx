@@ -1,4 +1,3 @@
-import React from "react";
 import { Loader, SeoHead } from "@shared/components";
 import { useUsers } from "@shared/hooks";
 import { NavLink, Outlet } from "react-router";

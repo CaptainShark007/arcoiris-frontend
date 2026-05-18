@@ -2,6 +2,8 @@ import { Error404 } from '@shared/components/Error404';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import { ClientLayout } from '../layout/ClientLayout';
+import { DashboardLayout } from '@layout/DashboardLayout';
+import { PosLayout } from '@layout/PosLayout';
 import {
   ContactPage,
   HomePage,
@@ -19,12 +21,13 @@ import {
   DashboardProductSlugPage,
   DashboardOrderPage,
   DashboardPartnersPage,
-  DashboardBannerPage,
   ForgotPasswordPage,
   ResetPasswordPage,
   FormEditUserPage,
+  DashboardPosPage,
+  DashboardCategoriesPage,
+  DashboardInventoriesPage,
 } from './lazy';
-import { DashboardLayout } from '@layout/DashboardLayout';
 
 export default function Router() {
   return (
@@ -63,14 +66,17 @@ export default function Router() {
         <Route index element={<Navigate to='productos' replace />} />
         <Route path='productos' element={<DashboardProductsPage />} />
         <Route path='productos/nuevo' element={<DashboardNewProductPage />} />
-        <Route
-          path='productos/editar/:slug'
-          element={<DashboardProductSlugPage />}
-        />
+        <Route path='productos/editar/:slug' element={<DashboardProductSlugPage />} />
+        <Route path='inventario' element={<DashboardInventoriesPage />} />
+        <Route path='categorias' element={<DashboardCategoriesPage />} />
         <Route path='pedidos' element={<DashboardOrdersPage />} />
         <Route path='pedidos/:id' element={<DashboardOrderPage />} />
         <Route path='socios' element={<DashboardPartnersPage />} />
-        <Route path='banners' element={<DashboardBannerPage />} />
+      </Route>
+
+      {/* POS - layout sin sidebar */}
+      <Route path='panel' element={<PosLayout />}>
+        <Route path='punto-de-venta' element={<DashboardPosPage />} />
       </Route>
     </Routes>
   );

@@ -1,31 +1,38 @@
 import InventoryIcon from '@mui/icons-material/Inventory';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HandshakeIcon from '@mui/icons-material/Handshake';
-import ViewCarouselIcon from '@mui/icons-material/ViewCarousel';
+import CategoryIcon from '@mui/icons-material/Category';
+import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
 
 export const dashboardLinks = [
 	{
-		id: 1,
+		id: 3,
 		title: 'Productos',
 		href: '/panel/productos',
+		icon: <IndeterminateCheckBoxIcon />,
+	},
+	{
+		id: 4,
+		title: 'Inventario',
+		href: '/panel/inventario',
 		icon: <InventoryIcon />,
 	},
 	{
-		id: 2,
+		id: 5,
+		title: 'Categorias',
+		href: '/panel/categorias',
+		icon: <CategoryIcon />,
+	},
+	{
+		id: 6,
 		title: 'Pedidos',
 		href: '/panel/pedidos',
 		icon: <ShoppingCartIcon />,
 	},
 	{
-		id: 3,
+		id: 7,
 		title: 'Socios',
 		href: '/panel/socios',
 		icon: <HandshakeIcon />,
-	},
-	{
-		id: 4,
-		title: 'Banners',
-		href: '/panel/banners',
-		icon: <ViewCarouselIcon />,
 	}
 ];

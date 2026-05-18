@@ -1,13 +1,13 @@
 import { Box } from '@mui/material';
-import { TableProduct } from '../components';
+import { TableInventory } from '../components/inventory/TableInventory';
 import { SeoHead } from '@shared/components';
 
-const DashboardProductsPage = () => {
+const DashboardInventoriesPage = () => {
   return (
     <>
       <SeoHead 
-        title="Panel de Productos" 
-        description="Gestión de productos en el panel de administración"
+        title="Panel de Inventarios" 
+        description="Gestión de inventarios en el panel de administración"
       />
       <Box
         sx={{
@@ -15,7 +15,7 @@ const DashboardProductsPage = () => {
           flexDirection: 'column',
           width: '100%',
           bgcolor: '#f3f4f6',
-          height: '100%', 
+          height: '100%',
         }}
       >
         <Box
@@ -26,11 +26,11 @@ const DashboardProductsPage = () => {
             overflow: 'auto',
           }}
         >
-          <TableProduct />
+          <TableInventory />
         </Box>
       </Box>
     </>
   );
 };
 
-export default DashboardProductsPage;
+export default DashboardInventoriesPage;

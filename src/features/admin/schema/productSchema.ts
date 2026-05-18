@@ -31,8 +31,12 @@ export const productSchema = yup.object().shape({
 		.typeError('El nombre debe ser un texto'),
 	brand: yup
 		.string()
-		.required('La marca del producto es obligatoria')
+		.optional()
 		.typeError('La marca debe ser un texto'),
+	category_id: yup
+		.string()
+		.required('La categoría del producto es obligatoria')
+		.typeError('La categoría debe ser seleccionada'),
 	slug: yup
 		.string()
 		.required('El slug del producto es obligatorio')

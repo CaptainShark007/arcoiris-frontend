@@ -283,7 +283,7 @@ export const getProductBySlug = async (slug: string) => {
 export const getProductBySlugAdmin = async (slug: string) => {
   const { data, error } = await supabase
     .from('products')
-    .select('*, variants (*)')
+    .select('*, variants (*), category:categories(id, name)')
     .eq('slug', slug)
     .eq('is_deleted', false)
     .eq('variants.is_active', true)
@@ -291,6 +291,23 @@ export const getProductBySlugAdmin = async (slug: string) => {
 
   if (error) {
     throw new Error('Error fetching product by slug');
+  }
+
+  return data;
+};
+
+// metodo para buscar el producto por su ID - usado en modal de detalle para admin/cajero
+export const getProductById = async (productId: string) => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, variants (*), categories(id, name, slug)')
+    .eq('id', productId)
+    .eq('is_deleted', false)
+    .eq('variants.is_active', true)
+    .single();
+
+  if (error) {
+    throw new Error('Error fetching product by ID');
   }
 
   return data;
@@ -334,61 +351,73 @@ export const getProducts = async ({
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  let query = supabase.from('products').select('*, variants(*)', { count: 'exact' });
+  const BASE_SELECT = `
+    id,
+    name,
+    is_active,
+    images,
+    slug,
+    category:categories(id, name),
+    variants(stock)
+  `;
 
-  query = query.eq('is_deleted', false);
+  const LOW_STOCK_SELECT = `
+    id,
+    name,
+    is_active,
+    images,
+    slug,
+    category:categories(id, name),
+    variants!inner(stock)
+  `;
+
+  const selectFields = status === 'low_stock' ? LOW_STOCK_SELECT : BASE_SELECT;
+
+  let query = supabase
+    .from('products')
+    .select(selectFields, { count: 'exact' })
+    .eq('is_deleted', false);
 
   if (status === 'low_stock') {
-    query = supabase
-      .from('products')
-      .select('*, variants!inner(*)', { count: 'exact' })
+    query = query
       .eq('variants.is_active', true)
-      .lte('variants.stock', 5); 
-  } 
-  else if (status !== 'all') {
-    const isActive = status === 'active';
-    query = query.eq('is_active', isActive);
-    query = query.eq('variants.is_active', true); 
+      .lte('variants.stock', 5);
+  } else if (status !== 'all') {
+    query = query
+      .eq('is_active', status === 'active')
+      .eq('variants.is_active', true);
   } else {
     query = query.eq('variants.is_active', true);
   }
 
-  if (search) {
-    query = query.ilike('name', `%${search}%`);
-  }
+  if (search) query = query.ilike('name', `%${search}%`);
 
   if (categoryId && categoryId !== 'all') {
-    if (categoryId === 'uncategorized') {
-      query = query.is('category_id', null);
-    } else {
-      query = query.eq('category_id', categoryId);
-    }
+    query = categoryId === 'uncategorized'
+      ? query.is('category_id', null)
+      : query.eq('category_id', categoryId);
   }
 
   switch (sortBy) {
-    case 'oldest':
-      query = query.order('created_at', { ascending: true });
-      break;
-    case 'name_asc':
-      query = query.order('name', { ascending: true });
-      break;
-    case 'name_desc':
-      query = query.order('name', { ascending: false });
-      break;
-    case 'newest':
-    default:
-      query = query.order('created_at', { ascending: false });
-      break;
+    case 'oldest':    query = query.order('created_at', { ascending: true });  break;
+    case 'name_asc':  query = query.order('name', { ascending: true });         break;
+    case 'name_desc': query = query.order('name', { ascending: false });        break;
+    default:          query = query.order('created_at', { ascending: false });  break;
   }
-   
+
   const { data, error, count } = await query.range(from, to);
+  if (error) throw new Error(error.message);
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  // Transformar: primera imagen + stock total de variantes activas
+  const products = data?.map(({ images, variants, ...rest }) => ({
+    ...rest,
+    thumbnail: Array.isArray(images) ? images[0] ?? null : null,
+    totalStock: variants?.reduce((sum: number, v: { stock: number }) => sum + (v.stock ?? 0), 0) ?? 0,
+    variantCount: variants?.length ?? 0,
+  }));
 
-  return { products: data, count };
-}
+  return { products, count };
+};
 
 // metodo para actualizar la categoria de un producto
 export const updateProductCategory = async (
@@ -423,8 +452,8 @@ const validateProductInput = async (input: ProductInput): Promise<string[]> => {
   if (!input.name?.trim())
     errors.push('El nombre del producto es obligatorio.');
   if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
-  if (!input.brand?.trim())
-    errors.push('La marca del producto es obligatoria.');
+  /* if (!input.brand?.trim())
+    errors.push('La marca del producto es obligatoria.'); */
   if (!input.images?.length)
     errors.push('Al menos una imagen del producto es obligatoria.');
   if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');
@@ -482,6 +511,7 @@ export const createProduct = async (productInput: ProductInput) => {
         p_name: productInput.name.trim(),
         p_brand: productInput.brand.trim(),
         p_slug: productInput.slug.trim(),
+        p_category_id: productInput.category_id || null,
         p_features: productInput.features || [],
         p_description: productInput.description
           ? JSON.parse(JSON.stringify(productInput.description))
@@ -662,8 +692,8 @@ export const validateProductUpdateInput = async (
   if (!input.name?.trim())
     errors.push('El nombre del producto es obligatorio.');
   if (!input.slug?.trim()) errors.push('El slug del producto es obligatorio.');
-  if (!input.brand?.trim())
-    errors.push('La marca del producto es obligatoria.');
+  /* if (!input.brand?.trim())
+    errors.push('La marca del producto es obligatoria.'); */
   if (!input.images?.length)
     errors.push('Al menos una imagen del producto es obligatoria.');
   if (input.images?.length > 3) errors.push('Máximo 3 imágenes por producto.');
@@ -809,6 +839,7 @@ export const updateProduct = async (
         p_name: productInput.name.trim(),
         p_brand: productInput.brand.trim(),
         p_slug: productInput.slug.trim(),
+        p_category_id: productInput.category_id,
         p_features: productInput.features || [],
         p_description: productInput.description
           ? JSON.parse(JSON.stringify(productInput.description))

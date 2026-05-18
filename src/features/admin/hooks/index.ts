@@ -5,12 +5,15 @@ export * from './product/useUpdateProduct';
 export * from './product/useUpdateProductCategory';
 export * from './product/useToggleProduct';
 export * from './product/useGetProductBySlugAdmin';
+export * from './product/useGetProductById';
 // categories
 export * from './category/useAllCategories';
 export * from './category/useCreateCategory';
 export * from './category/useUpdateCategory';
+export * from './category/useUpdateCategory';
 export * from './category/useDeleteCategory';
 export * from './category/useCountProductsByCategory';
+export * from './category/useGetCategoryById';
 
 // orders
 export * from './order/useAllOrders';
@@ -19,3 +22,6 @@ export * from './order/useOrderAdmin';
 
 // partners
 export * from './partner/usePartners';
+
+// pos
+export * from './pos/usePosStore';

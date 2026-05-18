@@ -1,13 +1,13 @@
 import { Box } from '@mui/material';
-import { TableProduct } from '../components';
+import { TableCategory } from '../components/category/TableCategory';
 import { SeoHead } from '@shared/components';
 
-const DashboardProductsPage = () => {
+const DashboardCategoriesPage = () => {
   return (
     <>
-      <SeoHead 
-        title="Panel de Productos" 
-        description="Gestión de productos en el panel de administración"
+      <SeoHead
+        title="Panel de Categorías"
+        description="Gestión de categorías en el panel de administración"
       />
       <Box
         sx={{
@@ -15,7 +15,7 @@ const DashboardProductsPage = () => {
           flexDirection: 'column',
           width: '100%',
           bgcolor: '#f3f4f6',
-          height: '100%', 
+          height: '100%',
         }}
       >
         <Box
@@ -26,11 +26,11 @@ const DashboardProductsPage = () => {
             overflow: 'auto',
           }}
         >
-          <TableProduct />
+          <TableCategory />
         </Box>
       </Box>
     </>
   );
 };
 
-export default DashboardProductsPage;
+export default DashboardCategoriesPage;

@@ -201,7 +201,7 @@ export const getAllOrders = async (
   let query = supabase
     .from('orders')
     .select(
-      'id, total_amount, status, created_at, customers(full_name, email, phone), partners(name, code)',
+      'id, total_amount, status, created_at, sale_channel, customers(full_name, email, phone), partners(name, code)',
       { count: 'exact' }
     );
 
@@ -255,15 +255,16 @@ export const getOrderByIdAdmin = async (id: number) => {
     .eq('id', id)
     .single();
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 
   return {
-    customer: {
-      email: order?.customers?.email,
-      full_name: order.customers?.full_name,
-    },
+    sale_channel: order.sale_channel,
+    customer: order.customers
+      ? {
+          email: order.customers.email,
+          full_name: order.customers.full_name,
+        }
+      : null,
     partner: order.partners
       ? {
           name: order.partners.name,
@@ -273,14 +274,16 @@ export const getOrderByIdAdmin = async (id: number) => {
     totalAmount: order.total_amount,
     status: order.status,
     created_at: order.created_at,
-    address: {
-      addressLine1: order.addresses?.address_line1,
-      addressLine2: order.addresses?.address_line2,
-      city: order.addresses?.city,
-      state: order.addresses?.state,
-      postalCode: order.addresses?.postal_code,
-      country: order.addresses?.country,
-    },
+    address: order.addresses
+      ? {
+          addressLine1: order.addresses.address_line1,
+          addressLine2: order.addresses.address_line2,
+          city: order.addresses.city,
+          state: order.addresses.state,
+          postalCode: order.addresses.postal_code,
+          country: order.addresses.country,
+        }
+      : null,
     orderItems: order.order_items.map((item: any) => ({
       quantity: item.quantity,
       price: item.price,

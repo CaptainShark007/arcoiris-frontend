@@ -40,7 +40,7 @@ export const FeaturesInput = ({ control, errors }: FeaturesProps) => {
           fontSize: { xs: '0.65rem', sm: '0.75rem' },
         }}
       >
-        Características (Opcional):
+        Características:
       </Typography>
 
       {fields.length > 0 && (

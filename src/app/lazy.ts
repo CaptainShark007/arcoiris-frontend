@@ -10,13 +10,17 @@ export const OrdersUserPage = lazy(() => import('../features/orders/pages/Orders
 export const OrderUserPage = lazy(() => import('../features/orders/pages/OrderUserPage'));
 export const CheckoutPage = lazy(() => import('../features/checkout/pages/CheckoutPage'));
 export const PaymentResultPage = lazy(() => import('../features/checkout/pages/PaymentResultPage'));
-export const DashboardProductsPage = lazy(() => import('../features/admin/pages/DashboardProductsPage'));
+
+export const DashboardCategoriesPage = lazy(() => import('../features/admin/pages/DashboardCategoriesPage'));
+export const DashboardInventoriesPage = lazy(() => import('../features/admin/pages/DashboardInventoriesPage'));
 export const DashboardNewProductPage = lazy(() => import('../features/admin/pages/DashboardNewProductPage'));
-export const DashboardProductSlugPage = lazy(() => import('../features/admin/pages/DashboardProductSlugPage'));
-export const DashboardOrdersPage = lazy(() => import('../features/admin/pages/DashboardOrdersPage'));
 export const DashboardOrderPage = lazy(() => import('../features/admin/pages/DashboardOrderPage'));
+export const DashboardOrdersPage = lazy(() => import('../features/admin/pages/DashboardOrdersPage'));
 export const DashboardPartnersPage = lazy(() => import('../features/admin/pages/DashboardPartnersPage'));
-export const DashboardBannerPage = lazy(() => import('../features/admin/pages/DashboardBannerPage'));
+export const DashboardPosPage = lazy(() => import('../features/admin/pages/DashboardPosPage'));
+export const DashboardProductSlugPage = lazy(() => import('../features/admin/pages/DashboardProductSlugPage'));
+export const DashboardProductsPage = lazy(() => import('../features/admin/pages/DashboardProductsPage'));
+
 export const ForgotPasswordPage = lazy(() => import('../features/auth/pages/ForgotPasswordPage'));
 export const ResetPasswordPage = lazy(() => import('../features/auth/pages/ResetPasswordPage'));
 export const FormEditUserPage = lazy(() => import('../features/orders/pages/FormEditCustomerPage'));
