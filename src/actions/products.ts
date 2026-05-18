@@ -511,6 +511,7 @@ export const createProduct = async (productInput: ProductInput) => {
         p_name: productInput.name.trim(),
         p_brand: productInput.brand.trim(),
         p_slug: productInput.slug.trim(),
+        p_category_id: productInput.category_id || null,
         p_features: productInput.features || [],
         p_description: productInput.description
           ? JSON.parse(JSON.stringify(productInput.description))
@@ -838,6 +839,7 @@ export const updateProduct = async (
         p_name: productInput.name.trim(),
         p_brand: productInput.brand.trim(),
         p_slug: productInput.slug.trim(),
+        p_category_id: productInput.category_id,
         p_features: productInput.features || [],
         p_description: productInput.description
           ? JSON.parse(JSON.stringify(productInput.description))

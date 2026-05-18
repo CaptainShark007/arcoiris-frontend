@@ -94,6 +94,7 @@ export interface ProductInput {
 	name: string;
 	brand: string;
 	slug: string;
+	category_id: string; 
 	features: string[];
 	description: JSONContent;
 	images: File[];
