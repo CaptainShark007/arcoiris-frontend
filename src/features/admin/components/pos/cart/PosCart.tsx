@@ -37,7 +37,7 @@ export const PosCart = ({
         backgroundColor: 'white',
         borderRadius: 1,
         border: '1px solid',
-        borderColor: 'grey.200',
+        borderColor: 'grey.400',
         overflow: 'hidden',
       }}
     >
@@ -46,11 +46,11 @@ export const PosCart = ({
           px: 2,
           py: 1.5,
           borderBottom: '1px solid',
-          borderColor: 'grey.100',
+          borderColor: 'grey.300',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: 'grey.50',
+          backgroundColor: 'grey.100',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

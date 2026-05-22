@@ -40,14 +40,22 @@ export const PosCategoryTabs = ({ selected, onChange }: PosCategoryTabsProps) =>
           fontSize: '0.78rem',
           fontWeight: 600,
           textTransform: 'none',
-          color: 'text.secondary',
+          color: 'text.primary',
           transition: 'all 150ms ease',
           border: '1px solid',
-          borderColor: 'grey.300',
+          borderColor: 'grey.400',
+          '&:hover': {
+            backgroundColor: '#e3f2fd',
+            color: 'primary.main',
+            borderColor: 'primary.main',
+          },
           '&.Mui-selected': {
             backgroundColor: 'primary.main',
             borderColor: 'primary.main',
             color: 'white',
+            '&:hover': {
+              backgroundColor: 'primary.dark',
+            },
           },
         },
       }}

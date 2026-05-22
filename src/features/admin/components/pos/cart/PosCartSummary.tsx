@@ -20,7 +20,7 @@ export const PosCartSummary = ({
     <Box
       sx={{
         borderTop: '1px solid',
-        borderColor: 'grey.200',
+        borderColor: 'grey.300',
         pt: 2,
         display: 'flex',
         flexDirection: 'column',

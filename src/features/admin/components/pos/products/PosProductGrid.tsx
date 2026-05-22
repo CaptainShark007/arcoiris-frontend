@@ -74,11 +74,11 @@ export const PosProductGrid = ({
               {fetching ? (
                 <CircularProgress size={16} color="inherit" />
               ) : (
-                <SearchIcon fontSize="small" sx={{ color: 'text.secondary' }} />
+                <SearchIcon fontSize="small" sx={{ color: 'text.primary' }} />
               )}
             </InputAdornment>
           ),
-          sx: { borderRadius: 1, backgroundColor: 'white'},
+          sx: { borderRadius: 1, backgroundColor: 'white', border: '1px solid', borderColor: 'grey.400' },
         }}
       />
 
@@ -92,9 +92,9 @@ export const PosProductGrid = ({
               display: 'grid',
               gridTemplateColumns: {
                 xs: 'repeat(2, 1fr)',
-                sm: 'repeat(4, 1fr)',
-                md: 'repeat(6, 1fr)',
-                lg: 'repeat(8, 1fr)',
+                sm: 'repeat(3, 1fr)',
+                md: 'repeat(5, 1fr)',
+                lg: 'repeat(6, 1fr)',
               },
               gap: 1.5,
             }}
@@ -129,9 +129,9 @@ export const PosProductGrid = ({
                 display: 'grid',
                 gridTemplateColumns: {
                   xs: 'repeat(2, 1fr)',
-                  sm: 'repeat(4, 1fr)',
-                  md: 'repeat(6, 1fr)',
-                  lg: 'repeat(8, 1fr)',
+                  sm: 'repeat(3, 1fr)',
+                  md: 'repeat(5, 1fr)',
+                  lg: 'repeat(6, 1fr)',
                 },
                 gap: 1.5,
                 opacity: fetching ? 0.6 : 1,
