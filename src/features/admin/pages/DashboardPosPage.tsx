@@ -59,7 +59,7 @@ const DashboardPosPage = () => {
           px: 2,
           py: 1.2,
           borderBottom: '1px solid',
-          borderColor: 'grey.200',
+          borderColor: 'grey.300',
           backgroundColor: 'white',
           flexShrink: 0,
         }}

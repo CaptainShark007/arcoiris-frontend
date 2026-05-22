@@ -40,7 +40,7 @@ export const PosCartItem = ({
         columnGap: 1.5,
         py: 1.5,
         borderBottom: '1px solid',
-        borderColor: 'grey.300',
+        borderColor: 'grey.400',
         '&:last-child': { borderBottom: 'none' },
       }}
     >
@@ -59,7 +59,7 @@ export const PosCartItem = ({
           borderRadius: 1,
           bgcolor: '#f5f5f5',
           border: '1px solid',
-          borderColor: 'grey.50',
+          borderColor: 'grey.300',
           p: 0.3,
           alignSelf: 'center',
         }}
@@ -69,26 +69,39 @@ export const PosCartItem = ({
       <Box sx={{ gridColumn: 2, gridRow: 1, minWidth: 0 }}>
         <Typography
           variant='body2'
-          fontWeight={600}
-          fontSize='0.78rem'
+          fontWeight={800}
+          fontSize='0.85rem'
+          color='grey.900'
           sx={{ wordBreak: 'break-word', lineHeight: 1.3 }}
         >
           {item.productName}
         </Typography>
         {variantLabel && (
-          <Typography
-            variant='caption'
-            color='text.secondary'
-            fontSize='0.68rem'
-            display='block'
-          >
-            {variantLabel}
-          </Typography>
+          <Box sx={{ mt: 0.5, mb: 0.5 }}>
+            <Typography
+              variant='caption'
+              color='grey.800'
+              fontWeight={600}
+              fontSize='0.72rem'
+              sx={{
+                display: 'inline-block',
+                backgroundColor: 'grey.100',
+                px: 0.8,
+                py: 0.2,
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'grey.300',
+              }}
+            >
+              {variantLabel}
+            </Typography>
+          </Box>
         )}
         <Typography
-          variant='caption'
+          variant='body2'
           color='primary.main'
-          fontWeight={700}
+          fontWeight={800}
+          fontSize='0.85rem'
           display='block'
         >
           ${subtotal.toLocaleString('es-AR')}
@@ -103,8 +116,8 @@ export const PosCartItem = ({
           gridColumn: 3,
           gridRow: 1,
           alignSelf: 'flex-start',
-          color: 'grey.400',
-          '&:hover': { color: 'error.main' },
+          color: 'grey.600',
+          '&:hover': { color: 'error.main', backgroundColor: 'error.light' },
           p: 0.3,
         }}
       >
@@ -129,16 +142,17 @@ export const PosCartItem = ({
             width: 26,
             height: 26,
             border: '1px solid',
-            borderColor: 'grey.300',
+            borderColor: 'grey.400',
             borderRadius: 1,
-            '&:hover': { borderColor: 'primary.main', color: 'primary.main' },
+            color: 'text.primary',
+            '&:hover': { borderColor: 'primary.main', color: 'primary.main', backgroundColor: 'rgba(0, 0, 0, 0.04)' },
           }}
         >
           <RemoveIcon sx={{ fontSize: 14 }} />
         </IconButton>
         <Typography
           variant='body2'
-          fontWeight={700}
+          fontWeight={800}
           fontSize='0.82rem'
           sx={{ minWidth: 22, textAlign: 'center' }}
         >
@@ -151,9 +165,10 @@ export const PosCartItem = ({
             width: 26,
             height: 26,
             border: '1px solid',
-            borderColor: 'grey.300',
+            borderColor: 'grey.400',
             borderRadius: 1,
-            '&:hover': { borderColor: 'primary.main', color: 'primary.main' },
+            color: 'text.primary',
+            '&:hover': { borderColor: 'primary.main', color: 'primary.main', backgroundColor: 'rgba(0, 0, 0, 0.04)' },
           }}
         >
           <AddIcon sx={{ fontSize: 14 }} />

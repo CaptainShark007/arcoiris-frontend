@@ -27,12 +27,12 @@ export const PosProductCard = ({ product, onSelect }: PosProductCardProps) => {
       elevation={0}
       sx={{
         border: '1px solid',
-        borderColor: 'grey.200',
+        borderColor: 'grey.400',
         borderRadius: 1,
         transition: 'all 200ms ease',
         '&:hover': {
           borderColor: 'primary.main',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
           transform: 'translateY(-2px)',
         },
       }}
@@ -53,15 +53,15 @@ export const PosProductCard = ({ product, onSelect }: PosProductCardProps) => {
         <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
           <Typography
             variant="body2"
-            fontWeight={600}
-            fontSize="0.72rem"
+            fontWeight={800}
+            fontSize="0.8rem"
             lineHeight={1.3}
             sx={{
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
-              color: 'text.primary',
+              color: 'grey.900',
               height: `calc(2 * 1.3em)`,
             }}
           >
