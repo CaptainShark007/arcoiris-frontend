@@ -2,6 +2,12 @@ import {
   Box,
   Card,
   CardContent,
+  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -16,6 +22,8 @@ import {
   useDashboardSalesByChannel,
   useDashboardSalesSeries,
   useDashboardStats,
+  useDashboardRecentOrders,
+  useDashboardTopProducts,
 } from '@features/admin/hooks';
 import {
   Area,
@@ -93,6 +101,10 @@ const DashboardOverviewPage = () => {
   const { series: seriesData } = useDashboardSalesSeries(rangeDays);
   const { channels: channelData, isLoading: isLoadingChannel } =
     useDashboardSalesByChannel(rangeDays);
+  const { orders: recentOrders, isLoading: isLoadingOrders } =
+    useDashboardRecentOrders(rangeDays, 8);
+  const { products: topProducts, isLoading: isLoadingTopProducts } =
+    useDashboardTopProducts(rangeDays, 8);
 
   const rangeLabel =
     rangeDays === 7 ? '7 días' : rangeDays === 30 ? '30 días' : '90 días';
@@ -489,6 +501,411 @@ const DashboardOverviewPage = () => {
                   Cargando...
                 </Typography>
               )}
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Tables */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '3fr 2fr' }, // lg en lugar de md para que no se apriete tanto en tablets
+            gap: 2.5,
+            mt: 3,
+          }}
+        >
+          {/* -----------------------------
+      TABLA 1: ÚLTIMAS ÓRDENES
+  ----------------------------- */}
+          <Card
+            elevation={0}
+            sx={{
+              border: '1px solid #e7e5e4',
+              borderRadius: 1, // Bordes más suaves y modernos
+              overflow: 'hidden', // Asegura que los bordes redondeados contengan todo
+              bgcolor: '#fff',
+            }}
+          >
+            {/* Cabecera de la tarjeta con fondo sutil */}
+            <Box
+              sx={{
+                p: 2.5,
+                borderBottom: '1px solid #e7e5e4',
+                bgcolor: '#fafaf9',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  color: '#1c1917',
+                  lineHeight: 1.2,
+                }}
+              >
+                Últimas órdenes registradas
+              </Typography>
+              <Typography
+                variant='caption'
+                sx={{ color: '#78716c', mt: 0.5, display: 'block' }}
+              >
+                Últimos {rangeLabel}
+              </Typography>
+            </Box>
+
+            <CardContent sx={{ p: '0 !important' }}>
+              <Table size='medium'>
+                <TableHead>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        fontWeight: 600,
+                        color: '#a8a29e',
+                        py: 2,
+                      }}
+                    >
+                      Origen
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        fontWeight: 600,
+                        color: '#a8a29e',
+                        py: 2,
+                      }}
+                    >
+                      Canal
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        fontWeight: 600,
+                        color: '#a8a29e',
+                        py: 2,
+                      }}
+                    >
+                      Estado
+                    </TableCell>
+                    <TableCell
+                      align='right'
+                      sx={{
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        fontWeight: 600,
+                        color: '#a8a29e',
+                        py: 2,
+                      }}
+                    >
+                      Total
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {recentOrders.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        align='center'
+                        sx={{ py: 6, color: '#a8a29e' }}
+                      >
+                        {isLoadingOrders
+                          ? 'Cargando órdenes...'
+                          : 'No hay datos para este período'}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    recentOrders.map((row) => {
+                      const isPos =
+                        (row.saleChannel || '').toLowerCase() === 'pos';
+                      const details = [row.originEmail, row.originPhone]
+                        .filter(Boolean)
+                        .join(' • ');
+                      const displayName =
+                        row.originName || (isPos ? 'Venta directa' : 'Cliente');
+
+                      // Extraer inicial para el avatar
+                      const initial = displayName.charAt(0).toUpperCase();
+
+                      return (
+                        <TableRow
+                          key={row.id}
+                          hover // Efecto visual al pasar el mouse
+                          sx={{
+                            transition: 'background-color 0.2s',
+                            '&:last-child td, &:last-child th': { border: 0 }, // Quita el borde de la última fila
+                          }}
+                        >
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1.5,
+                              }}
+                            >
+                              {/* Avatar sutil */}
+                              <Box
+                                sx={{
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: 1.5,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  bgcolor: isPos ? '#E6F1FB' : '#f5f5f4',
+                                  color: isPos ? '#185FA5' : '#57534e',
+                                  fontWeight: 600,
+                                  fontSize: '13px',
+                                }}
+                              >
+                                {initial}
+                              </Box>
+                              <Box>
+                                <Typography
+                                  variant='body2'
+                                  sx={{ fontWeight: 600, color: '#1c1917' }}
+                                >
+                                  {displayName}
+                                </Typography>
+                                <Typography
+                                  variant='caption'
+                                  sx={{
+                                    color: '#a8a29e',
+                                    display: 'block',
+                                    mt: 0.25,
+                                  }}
+                                >
+                                  {details || 'Sin datos de contacto'}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              size='small'
+                              label={isPos ? 'POS' : 'Tienda'}
+                              sx={{
+                                bgcolor: isPos ? '#E6F1FB' : '#EAF3DE',
+                                color: isPos ? '#185FA5' : '#3B6D11',
+                                fontWeight: 600,
+                                fontSize: '11px',
+                                height: 22, // Chip un poco más estilizado
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {/* Puedes mejorar esto dependiendo de tus estados reales */}
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: '50%',
+                                  bgcolor:
+                                    row.status === 'Pagado'
+                                      ? '#3B6D11'
+                                      : '#d6d3d1',
+                                }}
+                              />
+                              <Typography
+                                variant='body2'
+                                sx={{ color: '#57534e', fontWeight: 500 }}
+                              >
+                                {row.status || 'Pendiente'}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell
+                            align='right'
+                            sx={{ fontWeight: 600, color: '#1c1917' }}
+                          >
+                            {formatCurrency(row.totalAmount)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* -----------------------------
+      TABLA 2: TOP PRODUCTOS
+  ----------------------------- */}
+          <Card
+            elevation={0}
+            sx={{
+              border: '1px solid #e7e5e4',
+              borderRadius: 1,
+              overflow: 'hidden',
+              bgcolor: '#fff',
+              height: '100%', // Asegura que la tarjeta mida lo mismo que la de al lado
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Box
+              sx={{
+                p: 2.5,
+                borderBottom: '1px solid #e7e5e4',
+                bgcolor: '#fafaf9',
+              }}
+            >
+              <Typography
+                variant='h6'
+                sx={{
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  color: '#1c1917',
+                  lineHeight: 1.2,
+                }}
+              >
+                Top 8 productos
+              </Typography>
+              <Typography
+                variant='caption'
+                sx={{ color: '#78716c', mt: 0.5, display: 'block' }}
+              >
+                Últimos {rangeLabel}
+              </Typography>
+            </Box>
+
+            <CardContent sx={{ p: '0 !important', flexGrow: 1 }}>
+              <Table size='medium'>
+                <TableHead>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        fontWeight: 600,
+                        color: '#a8a29e',
+                        py: 2,
+                      }}
+                    >
+                      Ranking / Producto
+                    </TableCell>
+                    <TableCell
+                      align='right'
+                      sx={{
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        fontWeight: 600,
+                        color: '#a8a29e',
+                        py: 2,
+                      }}
+                    >
+                      Unidades
+                    </TableCell>
+                    <TableCell
+                      align='right'
+                      sx={{
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        fontWeight: 600,
+                        color: '#a8a29e',
+                        py: 2,
+                      }}
+                    >
+                      Ventas
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {topProducts.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={3}
+                        align='center'
+                        sx={{ py: 6, color: '#a8a29e' }}
+                      >
+                        {isLoadingTopProducts
+                          ? 'Cargando productos...'
+                          : 'No hay ventas'}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    topProducts.map((row, index) => {
+                      return (
+                        <TableRow
+                          key={row.productName}
+                          hover
+                          sx={{
+                            transition: 'background-color 0.2s',
+                            '&:last-child td, &:last-child th': { border: 0 },
+                            height: 73, // Fuerza a la fila a medir lo mismo que la tabla izquierda
+                          }}
+                        >
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                              }}
+                            >
+                              {/* Número de posición (Destaca el top 3) */}
+                              <Typography
+                                variant='caption'
+                                sx={{
+                                  fontWeight: 700,
+                                  color: index < 3 ? '#1c1917' : '#d6d3d1',
+                                  width: 14,
+                                  textAlign: 'center',
+                                }}
+                              >
+                                {index + 1}
+                              </Typography>
+
+                              {/* Nombre del producto */}
+                              <Typography
+                                variant='body2'
+                                sx={{ fontWeight: 600, color: '#1c1917' }}
+                              >
+                                {row.productName}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell align='right'>
+                            <Typography
+                              variant='body2'
+                              sx={{ color: '#57534e', fontWeight: 500 }}
+                            >
+                              {row.totalQuantity.toLocaleString('es-AR')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align='right'>
+                            <Typography
+                              variant='body2'
+                              sx={{ fontWeight: 600, color: '#3B6D11' }}
+                            >
+                              {formatCurrency(row.totalSales)}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </Box>
