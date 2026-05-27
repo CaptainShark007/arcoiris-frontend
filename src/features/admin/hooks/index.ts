@@ -25,3 +25,8 @@ export * from './partner/usePartners';
 
 // pos
 export * from './pos/usePosStore';
+
+// dashboard
+export * from './dashboard/useDashboardStats';
+export * from './dashboard/useDashboardSalesSeries';
+export * from './dashboard/useDashboardSalesByChannel';

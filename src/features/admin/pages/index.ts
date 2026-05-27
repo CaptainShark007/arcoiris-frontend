@@ -1,3 +1,4 @@
+export * from './DashboardOverviewPage';
 export * from './DashboardCategoriesPage';
 export * from './DashboardNewProductPage';
 export * from './DashboardOrderPage';

@@ -27,6 +27,7 @@ import {
   DashboardPosPage,
   DashboardCategoriesPage,
   DashboardInventoriesPage,
+  DashboardOverviewPage,
 } from './lazy';
 
 export default function Router() {
@@ -63,7 +64,7 @@ export default function Router() {
 
       {/* Paginas del administrador */}
       <Route path='panel' element={<DashboardLayout />}>
-        <Route index element={<Navigate to='productos' replace />} />
+        <Route index element={<DashboardOverviewPage />} />
         <Route path='productos' element={<DashboardProductsPage />} />
         <Route path='productos/nuevo' element={<DashboardNewProductPage />} />
         <Route path='productos/editar/:slug' element={<DashboardProductSlugPage />} />
