@@ -30,3 +30,6 @@ export * from './pos/usePosStore';
 export * from './dashboard/useDashboardStats';
 export * from './dashboard/useDashboardSalesSeries';
 export * from './dashboard/useDashboardSalesByChannel';
+export * from './dashboard/useDashboardOrdersByStatus';
+export * from './dashboard/useDashboardRecentOrders';
+export * from './dashboard/useDashboardTopProducts';
