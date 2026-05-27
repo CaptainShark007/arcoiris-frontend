@@ -287,7 +287,7 @@ const DashboardOverviewPage = () => {
                 Últimos {rangeLabel}
               </Typography>
               <Box sx={{ width: '100%', height: { xs: 220, md: 260 } }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer debounce={300}>
                   <AreaChart
                     data={seriesData || []}
                     margin={{ top: 4, right: 8, bottom: 0, left: -16 }}
@@ -374,7 +374,7 @@ const DashboardOverviewPage = () => {
                 Últimos {rangeLabel}
               </Typography>
               <Box sx={{ width: '100%', height: { xs: 220, md: 260 } }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer debounce={300}>
                   <BarChart
                     data={seriesData || []}
                     margin={{ top: 4, right: 8, bottom: 0, left: -20 }}
@@ -437,7 +437,7 @@ const DashboardOverviewPage = () => {
                 Últimos {rangeLabel}
               </Typography>
               <Box sx={{ width: '100%', height: { xs: 220, md: 260 } }}>
-                <ResponsiveContainer>
+                <ResponsiveContainer debounce={300}>
                   <BarChart
                     data={channelChartData}
                     layout='vertical'

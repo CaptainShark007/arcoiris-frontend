@@ -168,6 +168,7 @@ export const Sidebar = () => {
               <Box
                 component={NavLink}
                 to={link.href}
+                end={link.href === '/panel'}
                 onClick={closeOnMobile}
                 sx={navItemSx}
               >
