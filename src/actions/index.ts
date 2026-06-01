@@ -4,3 +4,4 @@ export * from './orders';
 export * from './categories';
 export * from './customer';
 export * from './payments';
+export * from './stats';

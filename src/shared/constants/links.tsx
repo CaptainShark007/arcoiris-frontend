@@ -3,8 +3,15 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import CategoryIcon from '@mui/icons-material/Category';
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 export const dashboardLinks = [
+	{
+		id: 1,
+		title: 'Resumen',
+		href: '/panel',
+		icon: <DashboardIcon />,
+	},
 	{
 		id: 3,
 		title: 'Productos',
