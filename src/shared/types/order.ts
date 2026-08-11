@@ -70,6 +70,7 @@ export interface OrderDetail {
   customer: {
     full_name: string;
     email: string;
+    phone: string | null;
   } | null;                     // ← hacer nullable
   address: {
     addressLine1: string;

@@ -43,7 +43,7 @@ export default tseslint.config(
       'react/react-in-jsx-scope': 'off',
       'react-refresh/only-export-components': [
         'warn',
-        { allowConstantExport: true },
+        { allowConstantExport: true, allowExportNames: ['SidebarContext'] },
       ],
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [

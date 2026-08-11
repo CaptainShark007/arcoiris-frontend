@@ -114,7 +114,7 @@ const CategoryModal = ({
       payload.image = null;
     }
 
-    if (isEditing) {
+    if (isEditing && categoryId) {
       updateCategory({ id: categoryId, data: payload }, { onSuccess: onClose });
     } else {
       createCategory(payload, { onSuccess: onClose });

@@ -8,11 +8,23 @@ import {
   TableRow,
   Typography,
   IconButton,
+  Button,
+  Tooltip,
+  TextField,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Person as PersonIcon, Store as StoreIcon } from '@mui/icons-material';
+import {
+  Person as PersonIcon,
+  Store as StoreIcon,
+  WhatsApp as WhatsAppIcon,
+  PictureAsPdf as PictureAsPdfIcon,
+  PhoneDisabled as PhoneDisabledIcon,
+} from '@mui/icons-material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import { useState } from 'react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Loader, SeoHead } from '@shared/components';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatPrice, formatDateLong } from '@/helpers';
@@ -20,12 +32,23 @@ import { useOrderAdmin } from '../hooks';
 
 const tableHeaders = ['Producto', 'Cantidad', 'Total'];
 
+// Normaliza un teléfono local argentino a formato internacional para wa.me
+// Ej: '3624049548' -> '5493624049548'
+const normalizePhoneForWhatsapp = (phone?: string | null): string => {
+  const digits = (phone || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('549')) return digits;
+  if (digits.startsWith('54')) return `9${digits}`;
+  return `549${digits}`;
+};
+
 const DashboardOrderPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { data: order, isLoading } = useOrderAdmin(Number(id));
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [manualPhone, setManualPhone] = useState('');
 
   if (isLoading || !order) {
     return (
@@ -38,6 +61,236 @@ const DashboardOrderPage = () => {
       </>
     );
   }
+
+  const isPos = order.sale_channel === 'pos';
+
+  const whatsappNumber = normalizePhoneForWhatsapp(
+    isPos ? manualPhone : order.customer?.phone
+  );
+
+  const buildWhatsappMessage = () => {
+    const itemsList = order.orderItems
+      .map(
+        (item) =>
+          `• ${item.quantity} u. - ${item.productName} (${[
+            item.storage,
+            item.color_name,
+            item.finish,
+          ]
+            .filter(Boolean)
+            .join(' - ')}) - ${formatPrice(item.price)}`
+      )
+      .join('\n');
+
+    const addressLines = order.address
+      ? [
+          order.address.addressLine1,
+          order.address.addressLine2,
+          `${order.address.city}, ${order.address.state}`,
+          order.address.postalCode,
+          order.address.country,
+        ]
+          .filter(Boolean)
+          .join(', ')
+      : null;
+
+    return (
+      `¡Hola ${order.customer?.full_name || ''}! Te compartimos el detalle de tu pedido.\n\n` +
+      `Nro de Pedido: #${order.id}\n` +
+      `Fecha: ${formatDateLong(order.created_at)}\n\n` +
+      `Detalle del pedido:\n${itemsList}\n\n` +
+      `Total: ${formatPrice(order.totalAmount)}\n` +
+      (addressLines ? `\nDirección de envío: ${addressLines}\n` : '') +
+      `\n¡Gracias por tu compra!`
+    );
+  };
+
+  const handleSendWhatsapp = () => {
+    if (!whatsappNumber) return;
+    window.open(
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        buildWhatsappMessage()
+      )}`,
+      '_blank'
+    );
+  };
+
+  const handleDownloadPdf = () => {
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+    const MARGIN_X = 15;
+    const PAGE_WIDTH = 210;
+    const BLUE: [number, number, number] = [0, 7, 215];
+    const GRAY: [number, number, number] = [107, 114, 128];
+
+    // Encabezado
+    doc.setFillColor(...BLUE);
+    doc.rect(0, 0, PAGE_WIDTH, 26, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('ARCOIRIS', MARGIN_X, 12);
+
+    doc.setFontSize(12);
+    doc.text(`Recibo — Pedido #${order.id}`, MARGIN_X, 20);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(formatDateLong(order.created_at), PAGE_WIDTH - MARGIN_X, 12, {
+      align: 'right',
+    });
+
+    let y = 36;
+
+    // Cliente
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Cliente', MARGIN_X, y);
+    y += 5;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 41, 59);
+    doc.text(order.customer?.full_name || '—', MARGIN_X, y);
+    y += 5;
+    doc.text(order.customer?.email || '—', MARGIN_X, y);
+    y += 5;
+
+    if (order.customer?.phone) {
+      doc.text(`Teléfono: ${order.customer.phone}`, MARGIN_X, y);
+      y += 5;
+    }
+
+    y += 4;
+
+    // Tabla de items
+    autoTable(doc, {
+      startY: y,
+      margin: { left: MARGIN_X, right: MARGIN_X },
+      head: [['Producto', 'Cant.', 'Precio', 'Total']],
+      body: order.orderItems.map((item) => {
+        const variant = [item.color_name, item.storage, item.finish]
+          .filter(Boolean)
+          .join(' • ');
+        return [
+          variant ? `${item.productName}\n${variant}` : item.productName,
+          String(item.quantity),
+          formatPrice(item.price),
+          formatPrice(item.price * item.quantity),
+        ];
+      }),
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        cellPadding: 2.5,
+        textColor: [30, 41, 59],
+        lineColor: [229, 231, 235],
+        lineWidth: 0.2,
+      },
+      headStyles: {
+        fillColor: BLUE,
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 9,
+      },
+      alternateRowStyles: {
+        fillColor: [249, 250, 251],
+      },
+      columnStyles: {
+        1: { halign: 'center' },
+        2: { halign: 'right' },
+        3: { halign: 'right' },
+      },
+    });
+
+    let endY = (doc as any).lastAutoTable.finalY as number;
+    y = endY + 8;
+
+    // Resumen
+    const summaryX = PAGE_WIDTH - MARGIN_X - 70;
+    const summaryWidth = 70;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...GRAY);
+    doc.text('Subtotal', summaryX, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(
+      formatPrice(order.totalAmount),
+      summaryX + summaryWidth,
+      y,
+      { align: 'right' }
+    );
+    y += 6;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...GRAY);
+    doc.text('Envío (Standard)', summaryX, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(formatPrice(0), summaryX + summaryWidth, y, { align: 'right' });
+    y += 7;
+
+    doc.setFillColor(229, 231, 235);
+    doc.rect(summaryX, y - 5, summaryWidth, 10, 'F');
+    doc.setFontSize(10);
+    doc.setTextColor(...BLUE);
+    doc.text('Total', summaryX + 3, y + 1);
+    doc.text(
+      formatPrice(order.totalAmount),
+      summaryX + summaryWidth - 3,
+      y + 1,
+      { align: 'right' }
+    );
+    y += 16;
+
+    // Dirección de envío
+    if (order.sale_channel !== 'pos' && order.address) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Dirección de envío', MARGIN_X, y);
+      y += 5;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      doc.text(order.address.addressLine1, MARGIN_X, y);
+      y += 5;
+      if (order.address.addressLine2) {
+        doc.text(order.address.addressLine2, MARGIN_X, y);
+        y += 5;
+      }
+      doc.text(
+        `${order.address.city}, ${order.address.state}`,
+        MARGIN_X,
+        y
+      );
+      y += 5;
+      if (order.address.postalCode) {
+        doc.text(order.address.postalCode, MARGIN_X, y);
+        y += 5;
+      }
+      doc.text(order.address.country, MARGIN_X, y);
+      y += 5;
+    }
+
+    // Pie
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...GRAY);
+    doc.text(
+      'Gracias por tu compra en Arcoiris',
+      PAGE_WIDTH / 2,
+      292,
+      { align: 'center' }
+    );
+
+    doc.save(`recibo-pedido-${order.id}.pdf`);
+  };
 
   // Vista móvil para items del pedido
   const MobileOrderItems = () => (
@@ -267,6 +520,112 @@ const DashboardOrderPage = () => {
         </Box>
 
         <Box sx={{ width: { xs: 32, sm: 48 }, flexShrink: 0 }} />
+      </Box>
+
+      {/* Acciones */}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          flexWrap: 'wrap',
+          gap: 1.5,
+          alignItems: 'center',
+        }}
+      >
+        {isPos ? (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: 1.5,
+              alignItems: { xs: 'stretch', sm: 'center' },
+              width: { xs: '100%', sm: 'auto' },
+            }}
+          >
+            <TextField
+              label='Número de WhatsApp del cliente'
+              placeholder='Ej: 3624049548'
+              value={manualPhone}
+              onChange={(e) => setManualPhone(e.target.value)}
+              size='small'
+              sx={{ width: { xs: '100%', sm: 260 } }}
+              inputProps={{ inputMode: 'numeric' }}
+            />
+            <Tooltip
+              title={
+                whatsappNumber
+                  ? 'Enviar el detalle del pedido por WhatsApp'
+                  : 'Ingresa un número de WhatsApp válido'
+              }
+              arrow
+            >
+              <span>
+                <Button
+                  variant='contained'
+                  startIcon={<WhatsAppIcon />}
+                  onClick={handleSendWhatsapp}
+                  disabled={!whatsappNumber}
+                  sx={{
+                    bgcolor: '#25D366',
+                    textTransform: 'none',
+                    whiteSpace: 'nowrap',
+                    '&:hover': {
+                      bgcolor: '#1EBE57',
+                    },
+                    '&.Mui-disabled': {
+                      bgcolor: 'rgba(37, 211, 102, 0.4)',
+                      color: 'rgba(255,255,255,0.8)',
+                    },
+                  }}
+                >
+                  Enviar por WhatsApp
+                </Button>
+              </span>
+            </Tooltip>
+          </Box>
+        ) : (
+          <Tooltip
+            title={
+              whatsappNumber
+                ? 'Enviar el detalle del pedido por WhatsApp'
+                : 'El cliente no tiene un número de teléfono registrado'
+            }
+            arrow
+          >
+            <span>
+              <Button
+                variant='contained'
+                startIcon={
+                  whatsappNumber ? <WhatsAppIcon /> : <PhoneDisabledIcon />
+                }
+                onClick={handleSendWhatsapp}
+                disabled={!whatsappNumber}
+                sx={{
+                  bgcolor: '#25D366',
+                  textTransform: 'none',
+                  '&:hover': {
+                    bgcolor: '#1EBE57',
+                  },
+                  '&.Mui-disabled': {
+                    bgcolor: 'rgba(37, 211, 102, 0.4)',
+                    color: 'rgba(255,255,255,0.8)',
+                  },
+                }}
+              >
+                Enviar por WhatsApp
+              </Button>
+            </span>
+          </Tooltip>
+        )}
+
+        <Button
+          variant='outlined'
+          startIcon={<PictureAsPdfIcon />}
+          onClick={handleDownloadPdf}
+          sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
+        >
+          Descargar recibo (PDF)
+        </Button>
       </Box>
 
       {/* Tabla de Items */}

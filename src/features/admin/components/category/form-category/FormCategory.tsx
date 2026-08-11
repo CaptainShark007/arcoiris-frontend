@@ -135,7 +135,7 @@ export const FormCategory = ({ titleForm }: Props) => {
       payload.image = null;
     }
 
-    if (isEditing) {
+    if (isEditing && id) {
       updateCategory({ id, data: payload });
     } else {
       createCategory(payload, {
@@ -210,10 +210,10 @@ export const FormCategory = ({ titleForm }: Props) => {
 
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2.5}>
-          <Grid item xs={12} lg={8}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             <SectionFormCategory titleSection="Información de la Categoría">
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Nombre de la categoría"
                     value={formData.name}
@@ -230,7 +230,7 @@ export const FormCategory = ({ titleForm }: Props) => {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     label="Slug (URL amigable)"
                     value={formData.slug}
@@ -242,7 +242,7 @@ export const FormCategory = ({ titleForm }: Props) => {
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     label="Descripción (opcional)"
                     value={formData.description}
@@ -259,7 +259,7 @@ export const FormCategory = ({ titleForm }: Props) => {
             </SectionFormCategory>
           </Grid>
 
-          <Grid item xs={12} lg={4}>
+          <Grid size={{ xs: 12, lg: 4 }}>
             <Stack spacing={2.5}>
               <SectionFormCategory titleSection="Estado">
                 <Box
