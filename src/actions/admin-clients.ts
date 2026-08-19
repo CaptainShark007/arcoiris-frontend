@@ -1,4 +1,5 @@
 import { supabase } from '@/supabase/client';
+import { Database } from '@/supabase/supabase';
 import { AdminClient, AdminClientInput } from '@shared/types/admin-client';
 
 // Obtener todos los clientes admin (con opción de buscar por texto)
@@ -28,7 +29,7 @@ export const getAdminClients = async (
   const { data, error } = await query;
 
   if (error) throw new Error(error.message);
-  return data || [];
+  return (data || []).map((c) => ({ ...c, is_active: c.is_active ?? true }));
 };
 
 // Obtener un cliente admin por ID
@@ -40,7 +41,7 @@ export const getAdminClientById = async (id: string): Promise<AdminClient> => {
     .single();
 
   if (error) throw new Error(error.message);
-  return data;
+  return { ...data, is_active: data.is_active ?? true };
 };
 
 // Crear un cliente admin
@@ -57,7 +58,7 @@ export const createAdminClient = async (input: AdminClientInput): Promise<AdminC
     .single();
 
   if (error) throw new Error(error.message);
-  return data;
+  return { ...data, is_active: data.is_active ?? true };
 };
 
 // Actualizar un cliente admin
@@ -65,7 +66,7 @@ export const updateAdminClient = async (
   id: string,
   input: Partial<AdminClientInput>
 ): Promise<AdminClient> => {
-  const updateData: Record<string, unknown> = {};
+  const updateData: Database['public']['Tables']['admin_clients']['Update'] = {};
   if (input.full_name !== undefined) updateData.full_name = input.full_name;
   if (input.phone !== undefined) updateData.phone = input.phone;
   if (input.email !== undefined) updateData.email = input.email || null;
@@ -79,7 +80,7 @@ export const updateAdminClient = async (
     .single();
 
   if (error) throw new Error(error.message);
-  return data;
+  return { ...data, is_active: data.is_active ?? true };
 };
 
 // Eliminar un cliente admin (hard delete)
@@ -108,5 +109,5 @@ export const searchAdminClientsForPos = async (
     .limit(5);
 
   if (error) throw new Error(error.message);
-  return data || [];
+  return (data || []).map((c) => ({ ...c, is_active: c.is_active ?? true }));
 };
