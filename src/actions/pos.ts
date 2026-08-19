@@ -32,6 +32,7 @@ export interface CreatePosOrderInput {
     };
   }[];
   totalAmount: number;
+  adminClientId: string | null;
 }
 
 const POS_PAGE_SIZE = 40;
@@ -91,6 +92,7 @@ export const createPosOrder = async (input: CreatePosOrderInput) => {
     .insert({
       customer_id: null,
       address_id: null,
+      admin_client_id: input.adminClientId || null,
       total_amount: input.totalAmount,
       status: 'completed',
       payment_method: 'efectivo',

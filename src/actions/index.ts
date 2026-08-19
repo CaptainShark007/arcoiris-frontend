@@ -5,3 +5,4 @@ export * from './categories';
 export * from './customer';
 export * from './payments';
 export * from './stats';
+export * from './admin-clients';

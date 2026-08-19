@@ -8,7 +8,7 @@ import { Suspense } from 'react';
 import { getSession, getUserRole } from '@/actions';
 import { Loader, SeoHead } from '@shared/components';
 import { useAuthStateChange } from '@features/auth/hooks';
-import { useSidebar } from '@/shared/contexts/SidebarContext';
+import { useSidebar } from '@/shared/contexts/useSidebar';
 
 const SIDEBAR_OPEN = 240;
 const SIDEBAR_CLOSED = 68;

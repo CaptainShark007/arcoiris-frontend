@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['dist', 'supabase/functions'] },
+  { ignores: ['dist', 'supabase/functions', 'netlify/edge-functions'] },
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
@@ -43,7 +43,7 @@ export default tseslint.config(
       'react/react-in-jsx-scope': 'off',
       'react-refresh/only-export-components': [
         'warn',
-        { allowConstantExport: true },
+        { allowConstantExport: true, allowExportNames: ['SidebarContext'] },
       ],
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getPosProducts, createPosOrder, PosProduct, PosVariant } from '@/actions/pos';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { AdminClient } from '@shared/types/admin-client';
 
 export interface CartItem {
   variantId: string;
@@ -19,6 +20,7 @@ export const usePosStore = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [selectedClient, setSelectedClient] = useState<AdminClient | null>(null);
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -117,9 +119,11 @@ export const usePosStore = () => {
           },
         })),
         totalAmount,
+        adminClientId: selectedClient?.id || null,
       }),
     onSuccess: () => {
       clearCart();
+      setSelectedClient(null);
     },
   });
 
@@ -144,6 +148,9 @@ export const usePosStore = () => {
     // Totales
     totalItems,
     totalAmount,
+    // Cliente seleccionado
+    selectedClient,
+    setSelectedClient,
     // Confirmar
     confirmSale,
     confirmingOrder,

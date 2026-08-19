@@ -26,6 +26,12 @@ export * from './partner/usePartners';
 // pos
 export * from './pos/usePosStore';
 
+// admin clients
+export * from './admin-client/useAdminClients';
+export * from './admin-client/useCreateAdminClient';
+export * from './admin-client/useUpdateAdminClient';
+export * from './admin-client/useDeleteAdminClient';
+
 // dashboard
 export * from './dashboard/useDashboardStats';
 export * from './dashboard/useDashboardSalesSeries';

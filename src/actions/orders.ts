@@ -201,7 +201,7 @@ export const getAllOrders = async (
   let query = supabase
     .from('orders')
     .select(
-      'id, total_amount, status, created_at, sale_channel, customers(full_name, email, phone), partners(name, code)',
+      'id, total_amount, status, created_at, sale_channel, admin_client_id, customers(full_name, email, phone), admin_clients(full_name, email, phone), partners(name, code)',
       { count: 'exact' }
     );
 
@@ -250,7 +250,7 @@ export const getOrderByIdAdmin = async (id: number) => {
   const { data: order, error } = await supabase
     .from('orders')
     .select(
-      '*, addresses(*), customers(full_name, email), order_items(quantity, price, product_snapshot), partners(name, code)'
+      '*, addresses(*), customers(full_name, email, phone), admin_clients(full_name, email, phone), order_items(quantity, price, product_snapshot), partners(name, code)'
     )
     .eq('id', id)
     .single();
@@ -258,11 +258,21 @@ export const getOrderByIdAdmin = async (id: number) => {
   if (error) throw new Error(error.message);
 
   return {
+    id: order.id,
     sale_channel: order.sale_channel,
+    admin_client_id: order.admin_client_id,
     customer: order.customers
       ? {
           email: order.customers.email,
           full_name: order.customers.full_name,
+          phone: order.customers.phone ?? null,
+        }
+      : null,
+    adminClient: order.admin_clients
+      ? {
+          full_name: order.admin_clients.full_name,
+          email: order.admin_clients.email ?? null,
+          phone: order.admin_clients.phone,
         }
       : null,
     partner: order.partners
