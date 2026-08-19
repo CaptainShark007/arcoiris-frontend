@@ -102,14 +102,6 @@ export const PosCart = ({
         )}
       </Box>
 
-      {/* Selector de cliente */}
-      <Box sx={{ px: 2, pt: 1.5, pb: 1, borderBottom: '1px solid', borderColor: 'grey.200' }}>
-        <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280', mb: 0.5, display: 'block' }}>
-          Cliente
-        </Typography>
-        <AdminClientSelector selectedClient={selectedClient} onSelect={onSelectClient} />
-      </Box>
-
       <Box sx={{ flex: 1, overflowY: 'auto', px: 2, py: isEmpty ? 0 : 1 }}>
         {isEmpty ? (
           <Box
@@ -141,6 +133,10 @@ export const PosCart = ({
             />
           ))
         )}
+      </Box>
+
+      <Box sx={{ px: 2, pb: 1 }}>
+        <AdminClientSelector selectedClient={selectedClient} onSelect={onSelectClient} />
       </Box>
 
       <Box sx={{ px: 2, pb: 2 }}>

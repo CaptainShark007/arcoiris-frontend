@@ -7,8 +7,6 @@ import {
   TextField,
   Button,
   Box,
-  FormControlLabel,
-  Switch,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -106,10 +104,6 @@ export const AdminClientFormDialog = ({
             helperText={errors.email?.message}
             fullWidth
             type="email"
-          />
-          <FormControlLabel
-            control={<Switch {...register('is_active')} color="primary" />}
-            label="Activo"
           />
         </Box>
       </DialogContent>

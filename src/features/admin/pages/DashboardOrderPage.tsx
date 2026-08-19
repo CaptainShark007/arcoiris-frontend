@@ -10,7 +10,6 @@ import {
   IconButton,
   Button,
   Tooltip,
-  TextField,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -22,7 +21,6 @@ import {
   PhoneDisabled as PhoneDisabledIcon,
 } from '@mui/icons-material';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Loader, SeoHead } from '@shared/components';
@@ -48,7 +46,6 @@ const DashboardOrderPage = () => {
   const { data: order, isLoading } = useOrderAdmin(Number(id));
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [manualPhone, setManualPhone] = useState('');
 
   if (isLoading || !order) {
     return (
@@ -77,7 +74,7 @@ const DashboardOrderPage = () => {
   const displayClientName = isPos && !hasAdminClient ? 'Cliente Anónimo' : clientName;
 
   const whatsappNumber = normalizePhoneForWhatsapp(
-    isPos ? (hasAdminClient ? order.adminClient!.phone : manualPhone) : order.customer?.phone
+    isPos ? (hasAdminClient ? order.adminClient!.phone : '') : order.customer?.phone
   );
 
   const buildWhatsappMessage = () => {
@@ -554,15 +551,6 @@ const DashboardOrderPage = () => {
               width: { xs: '100%', sm: 'auto' },
             }}
           >
-            <TextField
-              label='Número de WhatsApp del cliente'
-              placeholder='Ej: 3624049548'
-              value={manualPhone}
-              onChange={(e) => setManualPhone(e.target.value)}
-              size='small'
-              sx={{ width: { xs: '100%', sm: 260 } }}
-              inputProps={{ inputMode: 'numeric' }}
-            />
             <Tooltip
               title={
                 whatsappNumber
@@ -639,6 +627,41 @@ const DashboardOrderPage = () => {
           Descargar recibo (PDF)
         </Button>
       </Box>
+
+      {/* Cliente — mostrar solo en ventas POS */}
+      {order.sale_channel === 'pos' && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            p: 1.5,
+            mb: 1.5,
+            bgcolor: 'white',
+            borderRadius: 1,
+            border: '1px solid #e5e7eb',
+          }}
+        >
+          <PersonIcon sx={{ color: '#2563eb' }} />
+          <Box>
+            <Typography
+              sx={{ fontWeight: 600, color: '#1e3a8a', fontSize: '0.9rem' }}
+            >
+              {displayClientName}
+            </Typography>
+            {clientPhone && (
+              <Typography variant='caption' sx={{ color: '#3b82f6', fontWeight: 500 }}>
+                {clientPhone}
+              </Typography>
+            )}
+            {clientEmail && (
+              <Typography variant='caption' sx={{ color: '#6b7280', display: 'block' }}>
+                {clientEmail}
+              </Typography>
+            )}
+          </Box>
+        </Box>
+      )}
 
       {/* Tabla de Items */}
       <Card

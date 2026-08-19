@@ -4,7 +4,8 @@ import { AdminClient, AdminClientInput } from '@shared/types/admin-client';
 // Obtener todos los clientes admin (con opción de buscar por texto)
 export const getAdminClients = async (
   search: string = '',
-  onlyActive: boolean = false
+  onlyActive: boolean = false,
+  limit?: number
 ): Promise<AdminClient[]> => {
   let query = supabase
     .from('admin_clients')
@@ -18,6 +19,10 @@ export const getAdminClients = async (
   if (search.trim().length >= 2) {
     const term = search.trim();
     query = query.or(`full_name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`);
+  }
+
+  if (limit) {
+    query = query.limit(limit);
   }
 
   const { data, error } = await query;
@@ -100,7 +105,7 @@ export const searchAdminClientsForPos = async (
     .eq('is_active', true)
     .or(`full_name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`)
     .order('full_name', { ascending: true })
-    .limit(10);
+    .limit(5);
 
   if (error) throw new Error(error.message);
   return data || [];
