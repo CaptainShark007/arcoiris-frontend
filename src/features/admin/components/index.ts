@@ -20,6 +20,11 @@ export * from './category/CategoryFormModal';
 // Orders
 export * from './order/TableOrdersAdmin';
 
+// Admin Clients
+export * from './admin-client/AdminClientTable';
+export * from './admin-client/AdminClientFormDialog';
+export * from './admin-client/AdminClientSearch';
+
 // POS
 export * from './pos/products/PosProductGrid';
 export * from './pos/products/PosProductCard';

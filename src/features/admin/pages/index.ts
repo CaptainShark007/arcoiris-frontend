@@ -7,3 +7,4 @@ export * from './DashboardPartnersPage';
 export * from './DashboardPosPage';
 export * from './DashboardProductSlugPage';
 export * from './DashboardProductsPage';
+export * from './DashboardAdminClientsPage';

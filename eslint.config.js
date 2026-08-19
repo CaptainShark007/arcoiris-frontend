@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['dist', 'supabase/functions'] },
+  { ignores: ['dist', 'supabase/functions', 'netlify/edge-functions'] },
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
     languageOptions: {

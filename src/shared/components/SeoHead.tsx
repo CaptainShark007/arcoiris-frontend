@@ -25,6 +25,15 @@ export const SeoHead = ({
   const finalImage = image || defaultImage;
   const fullTitle = `${title} | ${siteName}`;
 
+  // Limpiar la descripción de posibles etiquetas HTML / contenido Tiptap
+  const cleanDescription = description
+    ? description
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 300)
+    : '';
+
   // --- NUEVO: Limpiador de duplicados para Lazy Loading ---
   useEffect(() => {
     // 1. Forzar el título en el navegador inmediatamente
@@ -46,37 +55,37 @@ export const SeoHead = ({
   return (
     <>
       <title key="title">{fullTitle}</title>
-      
-      <meta key="description" name="description" content={description} />
-      <link key="canonical" rel="canonical" href={url} />
+       
+       <meta key="description" name="description" content={cleanDescription} />
+       <link key="canonical" rel="canonical" href={url} />
 
-      {/* Open Graph */}
-      <meta key="og:type" property="og:type" content={type} />
-      <meta key="og:title" property="og:title" content={fullTitle} />
-      <meta key="og:description" property="og:description" content={description} />
+       {/* Open Graph */}
+       <meta key="og:type" property="og:type" content={type} />
+       <meta key="og:title" property="og:title" content={fullTitle} />
+       <meta key="og:description" property="og:description" content={cleanDescription} />
       <meta key="og:url" property="og:url" content={url} />
       <meta key="og:site_name" property="og:site_name" content={siteName} />
       <meta key="og:image" property="og:image" content={finalImage} />
 
       {/* Twitter */}
-      <meta key="tw:card" name="twitter:card" content="summary_large_image" />
-      <meta key="tw:title" name="twitter:title" content={fullTitle} />
-      <meta key="tw:desc" name="twitter:description" content={description} />
-      <meta key="tw:img" name="twitter:image" content={finalImage} />
+       <meta key="tw:card" name="twitter:card" content="summary_large_image" />
+       <meta key="tw:title" name="twitter:title" content={fullTitle} />
+       <meta key="tw:desc" name="twitter:description" content={cleanDescription} />
+       <meta key="tw:img" name="twitter:image" content={finalImage} />
 
-      {/* JSON-LD */}
-      {type === 'product' && price && (
-        <>
-          <meta key="product:price" property="product:price:amount" content={price.toString()} />
-          <meta key="product:currency" property="product:price:currency" content={currency} />
-          
-          <script type="application/ld+json">
-            {JSON.stringify({
-              "@context": "https://schema.org/",
-              "@type": "Product",
-              "name": title,
-              "image": [finalImage],
-              "description": description,
+       {/* JSON-LD */}
+       {type === 'product' && price && (
+         <>
+           <meta key="product:price" property="product:price:amount" content={price.toString()} />
+           <meta key="product:currency" property="product:price:currency" content={currency} />
+           
+           <script type="application/ld+json">
+             {JSON.stringify({
+               "@context": "https://schema.org/",
+               "@type": "Product",
+               "name": title,
+               "image": [finalImage],
+               "description": cleanDescription,
               "offers": {
                 "@type": "Offer",
                 "url": url,

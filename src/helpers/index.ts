@@ -196,3 +196,37 @@ export const normalizeText = (text: string | undefined | null) => {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };
+
+// Extrae texto plano a partir de una descripción (string o contenido Tiptap JSON)
+export const getPlainTextFromDescription = (
+  description: unknown
+): string => {
+  if (!description) return '';
+
+  if (typeof description === 'string') {
+    // Por si viene como HTML embebido
+    const withoutTags = description.replace(/<[^>]+>/g, ' ');
+    return withoutTags.replace(/\s+/g, ' ').trim();
+  }
+
+  if (typeof description === 'object') {
+    const node = description as {
+      type?: string;
+      text?: string;
+      content?: unknown[];
+    };
+
+    let text = '';
+    if (node.type === 'text' && node.text) {
+      text += node.text + ' ';
+    }
+    if (Array.isArray(node.content)) {
+      for (const child of node.content) {
+        text += getPlainTextFromDescription(child) + ' ';
+      }
+    }
+    return text.replace(/\s+/g, ' ').trim();
+  }
+
+  return '';
+};

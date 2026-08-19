@@ -4,6 +4,7 @@ import HandshakeIcon from '@mui/icons-material/Handshake';
 import CategoryIcon from '@mui/icons-material/Category';
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import PeopleIcon from '@mui/icons-material/People';
 
 export const dashboardLinks = [
 	{
@@ -41,5 +42,11 @@ export const dashboardLinks = [
 		title: 'Socios',
 		href: '/panel/socios',
 		icon: <HandshakeIcon />,
+	},
+	{
+		id: 8,
+		title: 'Clientes',
+		href: '/panel/clientes',
+		icon: <PeopleIcon />,
 	}
 ];

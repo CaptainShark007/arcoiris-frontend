@@ -39,11 +39,17 @@ export interface OrderWithCustomer {
 	total_amount: number;
 	created_at: string;
   sale_channel: string | null;
+  admin_client_id: string | null;
 	customers: {
 		full_name: string;
 		email: string;
     phone: string | null;
 	} | null;
+  admin_clients: {
+    full_name: string;
+    email: string | null;
+    phone: string;
+  } | null;
   partners?: {
     name: string;
     code: string;
@@ -66,12 +72,18 @@ export interface OrderDetail {
   created_at: string;
   status: string;
   totalAmount: number;
-  sale_channel: string | null;  // ← agregar
+  sale_channel: string | null;
+  admin_client_id: string | null;
   customer: {
     full_name: string;
     email: string;
     phone: string | null;
-  } | null;                     // ← hacer nullable
+  } | null;
+  adminClient: {
+    full_name: string;
+    email: string | null;
+    phone: string;
+  } | null;
   address: {
     addressLine1: string;
     addressLine2: string | null;
@@ -79,7 +91,7 @@ export interface OrderDetail {
     state: string;
     postalCode: string | null;
     country: string;
-  } | null;                     // ← hacer nullable
+  } | null;
   partner: {
     name: string;
     code: string;

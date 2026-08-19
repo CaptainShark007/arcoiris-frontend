@@ -4,6 +4,8 @@ import DeleteSweepOutlinedIcon from '@mui/icons-material/DeleteSweepOutlined';
 import { PosCartItem } from './PosCartItem';
 import { PosCartSummary } from './PosCartSummary';
 import { CartItem } from '@features/admin/hooks/pos/usePosStore';
+import { AdminClientSelector } from '../AdminClientSelector';
+import { AdminClient } from '@shared/types/admin-client';
 
 interface PosCartProps {
   cart: CartItem[];
@@ -14,6 +16,8 @@ interface PosCartProps {
   onClear: () => void;
   onConfirm: () => void;
   confirming: boolean;
+  selectedClient: AdminClient | null;
+  onSelectClient: (client: AdminClient | null) => void;
 }
 
 export const PosCart = ({
@@ -25,6 +29,8 @@ export const PosCart = ({
   onClear,
   onConfirm,
   confirming,
+  selectedClient,
+  onSelectClient,
 }: PosCartProps) => {
   const isEmpty = cart.length === 0;
 
@@ -94,6 +100,14 @@ export const PosCart = ({
             Vaciar
           </Button>
         )}
+      </Box>
+
+      {/* Selector de cliente */}
+      <Box sx={{ px: 2, pt: 1.5, pb: 1, borderBottom: '1px solid', borderColor: 'grey.200' }}>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280', mb: 0.5, display: 'block' }}>
+          Cliente
+        </Typography>
+        <AdminClientSelector selectedClient={selectedClient} onSelect={onSelectClient} />
       </Box>
 
       <Box sx={{ flex: 1, overflowY: 'auto', px: 2, py: isEmpty ? 0 : 1 }}>

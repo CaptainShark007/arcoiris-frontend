@@ -5,3 +5,4 @@ export * from './order';
 export * from './category';
 export * from './email';
 export * from './partner';
+export * from './admin-client';

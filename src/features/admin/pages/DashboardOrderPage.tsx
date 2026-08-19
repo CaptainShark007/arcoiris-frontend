@@ -63,9 +63,21 @@ const DashboardOrderPage = () => {
   }
 
   const isPos = order.sale_channel === 'pos';
+  const hasAdminClient = isPos && !!order.adminClient;
+  const clientName = hasAdminClient
+    ? order.adminClient!.full_name
+    : order.customer?.full_name || '';
+  const clientEmail = hasAdminClient
+    ? order.adminClient!.email
+    : order.customer?.email || '';
+  const clientPhone = hasAdminClient
+    ? order.adminClient!.phone
+    : order.customer?.phone;
+
+  const displayClientName = isPos && !hasAdminClient ? 'Cliente Anónimo' : clientName;
 
   const whatsappNumber = normalizePhoneForWhatsapp(
-    isPos ? manualPhone : order.customer?.phone
+    isPos ? (hasAdminClient ? order.adminClient!.phone : manualPhone) : order.customer?.phone
   );
 
   const buildWhatsappMessage = () => {
@@ -95,7 +107,7 @@ const DashboardOrderPage = () => {
       : null;
 
     return (
-      `¡Hola ${order.customer?.full_name || ''}! Te compartimos el detalle de tu pedido.\n\n` +
+      `¡Hola ${displayClientName}! Te compartimos el detalle de tu pedido.\n\n` +
       `Nro de Pedido: #${order.id}\n` +
       `Fecha: ${formatDateLong(order.created_at)}\n\n` +
       `Detalle del pedido:\n${itemsList}\n\n` +
@@ -153,13 +165,13 @@ const DashboardOrderPage = () => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(30, 41, 59);
-    doc.text(order.customer?.full_name || '—', MARGIN_X, y);
+    doc.text(displayClientName || '—', MARGIN_X, y);
     y += 5;
-    doc.text(order.customer?.email || '—', MARGIN_X, y);
+    doc.text(clientEmail || '—', MARGIN_X, y);
     y += 5;
 
-    if (order.customer?.phone) {
-      doc.text(`Teléfono: ${order.customer.phone}`, MARGIN_X, y);
+    if (clientPhone) {
+      doc.text(`Teléfono: ${clientPhone}`, MARGIN_X, y);
       y += 5;
     }
 
@@ -989,7 +1001,7 @@ const DashboardOrderPage = () => {
                     color: '#1e293b',
                   }}
                 >
-                  {order.customer?.full_name}
+                  {displayClientName}
                 </Typography>
               </Box>
               <Box>
