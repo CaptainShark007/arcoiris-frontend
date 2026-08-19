@@ -26,6 +26,8 @@
     "@tiptap/starter-kit": "^3.7.2",
     "axios": "^1.10.0",
     "framer-motion": "^12.23.26",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "jwt-decode": "^4.0.0",
     "react": "19.1.4",
     "react-dom": "19.1.4",

@@ -16,12 +16,20 @@ import {
   TableRow,
   Stack,
   CircularProgress,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import CategoryIcon from '@mui/icons-material/Category';
 import BadgeIcon from '@mui/icons-material/Badge';
 import LinkIcon from '@mui/icons-material/Link';
+import ShareIcon from '@mui/icons-material/Share';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import FacebookIcon from '@mui/icons-material/Facebook';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useGetProductById } from '@features/admin/hooks';
@@ -39,6 +47,7 @@ const DEFAULT_IMAGE = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/objec
 export const ProductDetailModal = ({ productId, open, onClose }: ProductDetailModalProps) => {
   const { product, isLoading, isError } = useGetProductById(productId ?? undefined);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [openShare, setOpenShare] = useState(false);
 
   if (!open) return null;
 
@@ -63,6 +72,50 @@ export const ProductDetailModal = ({ productId, open, onClose }: ProductDetailMo
 
   const totalStock = product?.variants?.reduce((sum: number, v: any) => sum + (v.stock ?? 0), 0) ?? 0;
 
+  const getShareUrl = () => {
+    if (!product?.slug) return '';
+    return `${BASE_URL}${product.slug}`;
+  };
+
+  const getShareText = () => {
+    if (!product) return '';
+    const prices = (product.variants || [])
+      .map((v: any) => v.price)
+      .filter((p: number) => p > 0);
+    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+    const priceText = minPrice > 0 ? ` - ${formatPrice(minPrice)}` : '';
+    return `¡Fijate este producto en Tienda Arcoiris! 💜 ${product.name}${priceText}`;
+  };
+
+  const handleNativeShare = async () => {
+    const url = getShareUrl();
+    if (!url) return;
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title: product!.name, text: getShareText(), url });
+        return;
+      } catch {
+        // El usuario canceló: abrimos el diálogo de respaldo
+      }
+    }
+    setOpenShare(true);
+  };
+
+  const handleShareWhatsApp = () => {
+    const url = getShareUrl();
+    if (!url) return;
+    const text = `${getShareText()} ${url}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    setOpenShare(false);
+  };
+
+  const handleShareFacebook = () => {
+    const url = getShareUrl();
+    if (!url) return;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    setOpenShare(false);
+  };
+
   const handleCopyLink = async () => {
     if (!product?.slug) return;
     
@@ -78,18 +131,19 @@ export const ProductDetailModal = ({ productId, open, onClose }: ProductDetailMo
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 2,
-          maxHeight: '90vh',
-        },
-      }}
-    >
+    <>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            maxHeight: '90vh',
+          },
+        }}
+      >
       <DialogTitle
         sx={{
           display: 'flex',
@@ -102,9 +156,20 @@ export const ProductDetailModal = ({ productId, open, onClose }: ProductDetailMo
         <Typography variant="h6" fontWeight={700} color="#111827">
           Detalle del Producto
         </Typography>
-        <IconButton onClick={onClose} size="small" sx={{ color: 'text.secondary' }}>
-          <CloseIcon />
-        </IconButton>
+        <Box>
+          <IconButton
+            onClick={handleNativeShare}
+            size="small"
+            disabled={!product?.slug}
+            aria-label="compartir"
+            sx={{ color: 'text.secondary', mr: 0.5 }}
+          >
+            <ShareIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: 'text.secondary' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
 
       <DialogContent sx={{ p: 0 }}>
@@ -423,7 +488,67 @@ export const ProductDetailModal = ({ productId, open, onClose }: ProductDetailMo
             </Box>
           </Box>
         )}
+        </DialogContent>
+    </Dialog>
+
+    <Dialog
+      open={openShare}
+      onClose={() => setOpenShare(false)}
+      maxWidth="xs"
+      fullWidth
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        Compartir producto
+        <IconButton onClick={() => setOpenShare(false)} size="small">
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent dividers>
+        <List sx={{ pt: 0 }}>
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={handleNativeShare}
+              sx={{ display: { xs: 'none', sm: 'flex' } }}
+            >
+              <ListItemIcon>
+                <ShareIcon color="primary" />
+              </ListItemIcon>
+              <ListItemText primary="Más opciones" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={handleShareWhatsApp}>
+              <ListItemIcon>
+                <WhatsAppIcon sx={{ color: '#25D366' }} />
+              </ListItemIcon>
+              <ListItemText primary="WhatsApp" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={handleShareFacebook}>
+              <ListItemIcon>
+                <FacebookIcon sx={{ color: '#1877F2' }} />
+              </ListItemIcon>
+              <ListItemText primary="Facebook" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={handleCopyLink}>
+              <ListItemIcon>
+                <LinkIcon color="primary" />
+              </ListItemIcon>
+              <ListItemText primary="Copiar Link" />
+            </ListItemButton>
+          </ListItem>
+        </List>
       </DialogContent>
     </Dialog>
+    </>
   );
 };

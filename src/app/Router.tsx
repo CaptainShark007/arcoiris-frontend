@@ -28,6 +28,7 @@ import {
   DashboardCategoriesPage,
   DashboardInventoriesPage,
   DashboardOverviewPage,
+  DashboardAdminClientsPage,
 } from './lazy';
 
 export default function Router() {
@@ -73,6 +74,7 @@ export default function Router() {
         <Route path='pedidos' element={<DashboardOrdersPage />} />
         <Route path='pedidos/:id' element={<DashboardOrderPage />} />
         <Route path='socios' element={<DashboardPartnersPage />} />
+        <Route path='clientes' element={<DashboardAdminClientsPage />} />
       </Route>
 
       {/* POS - layout sin sidebar */}

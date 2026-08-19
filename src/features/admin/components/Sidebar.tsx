@@ -8,7 +8,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 import { dashboardLinks } from '@shared/constants/links';
 import { useAuthStateChange, useLogout } from '@features/auth/hooks';
-import { useSidebar } from '@/shared/contexts/SidebarContext';
+import { useSidebar } from '@/shared/contexts/useSidebar';
 import { useMediaQuery, useTheme } from '@mui/material';
 
 const SIDEBAR_OPEN_WIDTH = 240;

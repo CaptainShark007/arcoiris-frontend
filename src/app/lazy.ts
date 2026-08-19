@@ -21,6 +21,7 @@ export const DashboardPartnersPage = lazy(() => import('../features/admin/pages/
 export const DashboardPosPage = lazy(() => import('../features/admin/pages/DashboardPosPage'));
 export const DashboardProductSlugPage = lazy(() => import('../features/admin/pages/DashboardProductSlugPage'));
 export const DashboardProductsPage = lazy(() => import('../features/admin/pages/DashboardProductsPage'));
+export const DashboardAdminClientsPage = lazy(() => import('../features/admin/pages/DashboardAdminClientsPage'));
 
 export const ForgotPasswordPage = lazy(() => import('../features/auth/pages/ForgotPasswordPage'));
 export const ResetPasswordPage = lazy(() => import('../features/auth/pages/ResetPasswordPage'));

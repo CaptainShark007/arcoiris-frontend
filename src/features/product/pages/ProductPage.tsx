@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useProduct } from '../hooks/useProduct';
 import { GridImages, ProductDescription } from '../components';
-import { calculateDiscount, formatPrice } from '@/helpers';
+import { calculateDiscount, formatPrice, getPlainTextFromDescription } from '@/helpers';
 import { Tag, Loader, SeoHead } from '@/shared/components';
 import { useCartStore } from '@/storage/useCartStore';
 
@@ -34,6 +34,7 @@ import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { RelatedProductsSection } from '../components/RelatedProductsSection';
 import ShareIcon from '@mui/icons-material/Share';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import FacebookIcon from '@mui/icons-material/Facebook';
 import LinkIcon from '@mui/icons-material/Link';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -52,28 +53,6 @@ const ProductPage = () => {
 
   // Estado para el modal de compartir
   const [openShare, setOpenShare] = useState(false);
-
-  // Función para WhatsApp
-  const handleShareWhatsApp = () => {
-    if (!product) return;
-    const currentUrl = window.location.href;
-    const text = `¡Fijate este producto en *Tienda Arcoiris*! 💜 ${product.name} ${currentUrl}`;
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-
-    window.open(whatsappUrl, '_blank');
-    setOpenShare(false);
-  };
-
-  // Función para Copiar Link
-  const handleCopyLink = () => {
-    navigator.clipboard
-      .writeText(window.location.href)
-      .then(() => {
-        toast.success('Link copiado al portapapeles');
-        setOpenShare(false);
-      })
-      .catch(() => toast.error('Error al copiar el link'));
-  };
 
   const { product, isLoading, isError } = useProduct(slug || '');
   const addItem = useCartStore((state) => state.addItem);
@@ -350,18 +329,67 @@ const ProductPage = () => {
 
   const totalSavings = (originalPrice - unitPrice) * quantity;
 
+  // --- Funciones de compartir ---
+  const getShareUrl = () => window.location.href;
+
+  const getShareText = () => {
+    const priceText = unitPrice > 0 ? ` - ${formatPrice(unitPrice)}` : '';
+    return `¡Fijate este producto en Tienda Arcoiris! 💜 ${product.name}${priceText}`;
+  };
+
+  // Comparte usando la API nativa del navegador si está disponible
+  const handleNativeShare = async () => {
+    const url = getShareUrl();
+    const text = getShareText();
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title: product.name, text, url });
+        return;
+      } catch {
+        // El usuario canceló o falló: abrimos el diálogo de respaldo
+      }
+    }
+    setOpenShare(true);
+  };
+
+  const handleShareWhatsApp = () => {
+    const text = `${getShareText()} ${getShareUrl()}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+    setOpenShare(false);
+  };
+
+  const handleShareFacebook = () => {
+    const url = encodeURIComponent(getShareUrl());
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    setOpenShare(false);
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard
+      .writeText(getShareUrl())
+      .then(() => {
+        toast.success('Link copiado al portapapeles');
+        setOpenShare(false);
+      })
+      .catch(() => toast.error('Error al copiar el link'));
+  };
+  // ---------------------------------
+
   return (
     <>
       <SeoHead
         title={product.name}
         description={
-          product.description
-            ? typeof product.description === 'string'
-              ? product.description
-              : ''
-            : 'Producto disponible en Arcoiris Tienda'
+          getPlainTextFromDescription(product.description) ||
+          `Comprá ${product.name}${product.brand ? ` de ${product.brand}` : ''} en Tienda Arcoiris.`
         }
         image={getProductImage()}
+        type='product'
+        price={unitPrice}
+        currency='ARS'
+        url={window.location.href}
       />
       <Box
         sx={{ p: { xs: 1.5, sm: 2, md: 4 }, maxWidth: 1400, margin: '0 auto' }}
@@ -397,7 +425,7 @@ const ProductPage = () => {
             <Box sx={{ mb: { xs: 2, md: 3 } }}>
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                 <IconButton
-                  onClick={() => setOpenShare(true)}
+                  onClick={handleNativeShare}
                   aria-label='compartir'
                   sx={{ 
                     mt: 0.5,
@@ -998,11 +1026,30 @@ const ProductPage = () => {
           <DialogContent dividers>
             <List sx={{ pt: 0 }}>
               <ListItem disablePadding>
+                <ListItemButton
+                  onClick={handleNativeShare}
+                  sx={{ display: { xs: 'none', sm: 'flex' } }}
+                >
+                  <ListItemIcon>
+                    <ShareIcon color='primary' />
+                  </ListItemIcon>
+                  <ListItemText primary='Más opciones' />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
                 <ListItemButton onClick={handleShareWhatsApp}>
                   <ListItemIcon>
                     <WhatsAppIcon sx={{ color: '#25D366' }} />
                   </ListItemIcon>
                   <ListItemText primary='WhatsApp' />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton onClick={handleShareFacebook}>
+                  <ListItemIcon>
+                    <FacebookIcon sx={{ color: '#1877F2' }} />
+                  </ListItemIcon>
+                  <ListItemText primary='Facebook' />
                 </ListItemButton>
               </ListItem>
               <ListItem disablePadding>

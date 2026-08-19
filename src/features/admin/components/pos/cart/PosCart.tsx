@@ -4,6 +4,8 @@ import DeleteSweepOutlinedIcon from '@mui/icons-material/DeleteSweepOutlined';
 import { PosCartItem } from './PosCartItem';
 import { PosCartSummary } from './PosCartSummary';
 import { CartItem } from '@features/admin/hooks/pos/usePosStore';
+import { AdminClientSelector } from '../AdminClientSelector';
+import { AdminClient } from '@shared/types/admin-client';
 
 interface PosCartProps {
   cart: CartItem[];
@@ -14,6 +16,8 @@ interface PosCartProps {
   onClear: () => void;
   onConfirm: () => void;
   confirming: boolean;
+  selectedClient: AdminClient | null;
+  onSelectClient: (client: AdminClient | null) => void;
 }
 
 export const PosCart = ({
@@ -25,6 +29,8 @@ export const PosCart = ({
   onClear,
   onConfirm,
   confirming,
+  selectedClient,
+  onSelectClient,
 }: PosCartProps) => {
   const isEmpty = cart.length === 0;
 
@@ -127,6 +133,10 @@ export const PosCart = ({
             />
           ))
         )}
+      </Box>
+
+      <Box sx={{ px: 2, pb: 1 }}>
+        <AdminClientSelector selectedClient={selectedClient} onSelect={onSelectClient} />
       </Box>
 
       <Box sx={{ px: 2, pb: 2 }}>

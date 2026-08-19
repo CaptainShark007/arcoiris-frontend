@@ -28,6 +28,8 @@ const DashboardPosPage = () => {
     setPage,
     totalProducts,
     fetchingProducts,
+    selectedClient,
+    setSelectedClient,
   } = usePosStore();
 
   const handleConfirm = () => {
@@ -113,6 +115,8 @@ const DashboardPosPage = () => {
             onClear={clearCart}
             onConfirm={handleConfirm}
             confirming={confirmingOrder}
+            selectedClient={selectedClient}
+            onSelectClient={setSelectedClient}
           />
         </Box>
       </Box>
