@@ -52,7 +52,7 @@ import { ProductDetailModal } from './ProductDetailModal';
 import CustomPagination from '@shared/components/CustomPagination';
 import Menu from '@mui/material/Menu';
 import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
-import { Link as RouterLink, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { BudgetCart } from '../budget/BudgetCart';
 import { useCreateBudget } from '../../hooks/budget/useCreateBudget';
 import { BudgetCartLine, CreateBudgetInput, AdminClient } from '@shared/types';
@@ -79,7 +79,6 @@ export const TableProduct = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   // --- Modo presupuesto ---
-  const navigate = useNavigate();
   const [budgetMode, setBudgetMode] = useState(false);
   const [cart, setCart] = useState<BudgetCartLine[]>([]);
   const [notes, setNotes] = useState('');
@@ -88,7 +87,13 @@ export const TableProduct = () => {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
 
   const { mutate: createBudgetMutation, isPending: saving } = useCreateBudget({
-    onSuccess: (id) => navigate(`/panel/presupuestos/${id}`),
+    onSuccess: () => {
+      setBudgetMode(false);
+      setCart([]);
+      setSelectedClient(null);
+      setNotes('');
+      setExpandedProducts(new Set());
+    },
   });
 
   const isProductSelected = (productId: string) =>
@@ -694,54 +699,56 @@ export const TableProduct = () => {
             overflow: 'visible',
           }}
         >
-          {/* Encabezado Principal y Botón Nuevo Producto */}
+          {/* Encabezado Principal y Botones */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
             <Typography variant="h6" fontWeight="700" color="#111827">
               Gestión de Productos
             </Typography>
 
-            <Button
-              onClick={handleToggleBudgetMode}
-              variant={budgetMode ? 'contained' : 'outlined'}
-              color={budgetMode ? 'primary' : 'inherit'}
-              startIcon={<RequestQuoteIcon />}
-              sx={{
-                py: { xs: 1, sm: 1 },
-                px: { xs: 2, sm: 2.5 },
-                fontSize: { xs: '0.8rem', md: '0.875rem' },
-                fontWeight: 600,
-                textTransform: 'none',
-                borderRadius: 1,
-                whiteSpace: 'nowrap',
-                borderColor: budgetMode ? 'primary.main' : '#E5E7EB',
-              }}
-            >
-              {budgetMode ? 'Presupuesto activo' : 'Modo presupuesto'}
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+              <Button
+                onClick={handleToggleBudgetMode}
+                variant={budgetMode ? 'contained' : 'outlined'}
+                color={budgetMode ? 'primary' : 'inherit'}
+                startIcon={<RequestQuoteIcon />}
+                sx={{
+                  py: { xs: 1, sm: 1 },
+                  px: { xs: 2, sm: 2.5 },
+                  fontSize: { xs: '0.8rem', md: '0.875rem' },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  borderRadius: 1,
+                  whiteSpace: 'nowrap',
+                  borderColor: budgetMode ? 'primary.main' : '#E5E7EB',
+                }}
+              >
+                Presupuesto
+              </Button>
 
-            <Button
-              component={RouterLink}
-              to="/panel/productos/nuevo"
-              variant="contained"
-              startIcon={<AddCircleIcon />}
-              sx={{
-                backgroundColor: '#0007d7ff',
-                py: { xs: 1, sm: 1 },
-                px: { xs: 2, sm: 2.5 },
-                fontSize: { xs: '0.8rem', md: '0.875rem' },
-                fontWeight: 600,
-                textTransform: 'none',
-                boxShadow: 'none',
-                borderRadius: 1,
-                whiteSpace: 'nowrap',
-                '&:hover': {
-                  backgroundColor: '#0005a0ff',
-                  boxShadow: '0px 4px 12px rgba(0, 7, 215, 0.2)',
-                },
-              }}
-            >
-              Nuevo Producto
-            </Button>
+              <Button
+                component={RouterLink}
+                to="/panel/productos/nuevo"
+                variant="contained"
+                startIcon={<AddCircleIcon />}
+                sx={{
+                  backgroundColor: '#0007d7ff',
+                  py: { xs: 1, sm: 1 },
+                  px: { xs: 2, sm: 2.5 },
+                  fontSize: { xs: '0.8rem', md: '0.875rem' },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: 'none',
+                  borderRadius: 1,
+                  whiteSpace: 'nowrap',
+                  '&:hover': {
+                    backgroundColor: '#0005a0ff',
+                    boxShadow: '0px 4px 12px rgba(0, 7, 215, 0.2)',
+                  },
+                }}
+              >
+                Nuevo Producto
+              </Button>
+            </Box>
           </Box>
 
           {/* Filtros */}

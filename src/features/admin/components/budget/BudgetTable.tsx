@@ -1,5 +1,4 @@
 import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, IconButton, Tooltip } from '@mui/material';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import { BudgetListItem } from '@shared/types';
 import { BudgetStatusChip } from './BudgetStatusChip';
@@ -17,7 +16,7 @@ export const BudgetTable = ({ budgets, onView, onDownloadPdf }: BudgetTableProps
   return (
     <Box sx={{ width: '100%', overflow: 'auto' }}>
       <Table sx={{ minWidth: 720 }}>
-        <TableHead>
+        <TableHead sx={{ bgcolor: '#F9FAFB' }}>
           <TableRow>
             {headers.map((header, i) => (
               <TableCell
@@ -26,10 +25,12 @@ export const BudgetTable = ({ budgets, onView, onDownloadPdf }: BudgetTableProps
                   height: 48,
                   px: 2,
                   textAlign: i >= 4 ? 'center' : 'left',
-                  fontWeight: 'bold',
-                  fontSize: '0.8rem',
-                  borderBottom: '1px solid #e5e7eb',
-                  backgroundColor: '#f3f4f6',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  color: '#6B7280',
+                  borderBottom: '1px solid #E5E7EB',
                 }}
               >
                 {header}
@@ -41,31 +42,32 @@ export const BudgetTable = ({ budgets, onView, onDownloadPdf }: BudgetTableProps
           {budgets.map((b) => (
             <TableRow
               key={b.id}
-              sx={{ borderBottom: '1px solid #f3f4f6', '&:hover': { backgroundColor: '#f9fafb' } }}
+              sx={{
+                borderBottom: '1px solid #E5E7EB',
+                transition: 'background-color 0.2s',
+                '&:hover': { bgcolor: '#f1f1f1' },
+                cursor: 'pointer',
+              }}
+              onClick={() => onView(b.id)}
             >
-              <TableCell sx={{ p: 2, fontWeight: 700, fontSize: '0.85rem' }}>#{b.id}</TableCell>
-              <TableCell sx={{ p: 2, fontSize: '0.85rem' }}>
+              <TableCell sx={{ py: 1.5, px: 2, fontWeight: 700, fontSize: '0.85rem', borderBottom: '1px solid #E5E7EB' }}>#{b.id}</TableCell>
+              <TableCell sx={{ py: 1.5, px: 2, fontSize: '0.85rem', borderBottom: '1px solid #E5E7EB' }}>
                 {b.admin_clients?.full_name ?? '—'}
               </TableCell>
-              <TableCell sx={{ p: 2, fontSize: '0.85rem', color: '#6b7280' }}>
+              <TableCell sx={{ py: 1.5, px: 2, fontSize: '0.85rem', color: '#6B7280', borderBottom: '1px solid #E5E7EB' }}>
                 {formatDateLong(b.created_at)}
               </TableCell>
-              <TableCell sx={{ p: 2, fontSize: '0.85rem', color: '#6b7280', textAlign: 'center' }}>
+              <TableCell sx={{ py: 1.5, px: 2, fontSize: '0.85rem', color: '#6B7280', textAlign: 'center', borderBottom: '1px solid #E5E7EB' }}>
                 {b.valid_until ? formatDateLong(b.valid_until) : '—'}
               </TableCell>
-              <TableCell sx={{ p: 2, fontSize: '0.85rem', fontWeight: 700, textAlign: 'center' }}>
+              <TableCell sx={{ py: 1.5, px: 2, fontSize: '0.85rem', fontWeight: 700, textAlign: 'center', borderBottom: '1px solid #E5E7EB' }}>
                 {formatPrice(b.total_amount)}
               </TableCell>
-              <TableCell sx={{ p: 2, textAlign: 'center' }}>
+              <TableCell sx={{ py: 1.5, px: 2, textAlign: 'center', borderBottom: '1px solid #E5E7EB' }}>
                 <BudgetStatusChip status={b.status} />
               </TableCell>
-              <TableCell sx={{ p: 2, textAlign: 'center' }}>
+              <TableCell sx={{ py: 1.5, px: 2, textAlign: 'center', borderBottom: '1px solid #E5E7EB' }}>
                 <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                  <Tooltip title="Ver detalle" arrow>
-                    <IconButton size="small" onClick={() => onView(b.id)} sx={{ color: '#2563eb' }}>
-                      <VisibilityOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
                   <Tooltip title="Descargar PDF" arrow>
                     <IconButton size="small" onClick={() => onDownloadPdf(b.id)} sx={{ color: '#6b7280' }}>
                       <PictureAsPdfOutlinedIcon fontSize="small" />
@@ -78,10 +80,15 @@ export const BudgetTable = ({ budgets, onView, onDownloadPdf }: BudgetTableProps
 
           {budgets.length === 0 && (
             <TableRow>
-              <TableCell colSpan={headers.length} sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
-                  No hay presupuestos para mostrar
-                </Typography>
+              <TableCell colSpan={headers.length} sx={{ py: 8, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                    No se encontraron presupuestos
+                  </Typography>
+                  <Typography variant="body2" color="text.disabled">
+                    Intenta cambiar el filtro de estado.
+                  </Typography>
+                </Box>
               </TableCell>
             </TableRow>
           )}

@@ -61,9 +61,7 @@ const DashboardBudgetPage = () => {
 
   const { data: budget, isLoading } = useBudget(budgetId);
   const { mutate: updateStatus, isPending: updatingStatus } = useUpdateBudgetStatus(budgetId);
-  const { mutate: convert, isPending: converting } = useConvertBudget(budgetId, {
-    onSuccess: (orderId) => navigate(`/panel/pedidos/${orderId}`),
-  });
+  const { mutate: convert, isPending: converting } = useConvertBudget(budgetId);
 
   if (isLoading || !budget) {
     return (
