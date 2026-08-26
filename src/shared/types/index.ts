@@ -6,3 +6,4 @@ export * from './category';
 export * from './email';
 export * from './partner';
 export * from './admin-client';
+export * from './budget';

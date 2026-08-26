@@ -358,7 +358,7 @@ export const getProducts = async ({
     images,
     slug,
     category:categories(id, name),
-    variants(stock)
+    variants(id, price, stock, color, color_name, storage, finish, is_active)
   `;
 
   const LOW_STOCK_SELECT = `
@@ -368,7 +368,7 @@ export const getProducts = async ({
     images,
     slug,
     category:categories(id, name),
-    variants!inner(stock)
+    variants!inner(id, price, stock, color, color_name, storage, finish, is_active)
   `;
 
   const selectFields = status === 'low_stock' ? LOW_STOCK_SELECT : BASE_SELECT;
@@ -414,6 +414,7 @@ export const getProducts = async ({
     thumbnail: Array.isArray(images) ? images[0] ?? null : null,
     totalStock: variants?.reduce((sum: number, v: { stock: number }) => sum + (v.stock ?? 0), 0) ?? 0,
     variantCount: variants?.length ?? 0,
+    variants: variants ?? [],
   }));
 
   return { products, count };
