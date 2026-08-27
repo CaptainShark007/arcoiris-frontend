@@ -5,6 +5,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote';
 
 export const dashboardLinks = [
 	{
@@ -48,5 +49,11 @@ export const dashboardLinks = [
 		title: 'Clientes',
 		href: '/panel/clientes',
 		icon: <PeopleIcon />,
+	},
+	{
+		id: 9,
+		title: 'Presupuestos',
+		href: '/panel/presupuestos',
+		icon: <RequestQuoteIcon />,
 	}
 ];

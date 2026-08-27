@@ -93,7 +93,7 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
                   #{order.id}
                 </Typography>
                 <Typography sx={{ fontSize: '0.85rem', color: '#4b5563', fontWeight: 500 }}>
-                  {order.customers?.full_name}
+                  {order.admin_clients?.full_name ?? order.customers?.full_name ?? 'Cliente Anónimo'}
                 </Typography>
                 <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af', mt: 0.5 }}>
                   {formatDateLong(order.created_at)}
@@ -183,44 +183,58 @@ export const TableOrdersAdmin = ({ orders }: Props) => {
               </TableCell>
               {/* Cliente */}
               <TableCell sx={{ p: 2 }}>
-                {order.sale_channel === 'pos' ? (
-                  <Chip
-                    label="Venta POS"
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: '0.7rem',
-                      backgroundColor: '#f0fdf4',
-                      color: '#16a34a',
-                      border: '1px solid #86efac',
-                    }}
-                  />
-                ) : (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                      {order.customers?.full_name}
-                    </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                    {order.admin_clients?.full_name ?? order.customers?.full_name ?? 'Cliente Anónimo'}
+                  </Typography>
+                  {[order.customers?.email, order.admin_clients?.email, order.customers?.phone, order.admin_clients?.phone]
+                    .filter(Boolean).length > 0 && (
                     <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                      {[order.customers?.email, order.customers?.phone]
+                      {[order.customers?.email ?? order.admin_clients?.email, order.customers?.phone ?? order.admin_clients?.phone]
                         .filter(Boolean)
                         .join(' | ')}
                     </Typography>
-                  </Box>
-                )}
+                  )}
+                </Box>
               </TableCell>
 
               {/* Canal */}
               <TableCell sx={{ p: 2 }}>
-                {order.sale_channel === 'pos' ? (
+                {order.sale_channel === 'online' ? (
                   <Chip
-                    label="POS"
+                    label="ONLINE"
                     size="small"
                     sx={{
                       fontWeight: 700,
                       fontSize: '0.7rem',
-                      backgroundColor: '#f0fdf4',
-                      color: '#16a34a',
-                      border: '1px solid #86efac',
+                      backgroundColor: '#EFF6FF',
+                      color: '#2563EB',
+                      border: '1px solid #BFDBFE',
+                    }}
+                  />
+                ) : order.sale_channel === 'presupuesto' ? (
+                    <Chip
+                      label="Presupuesto"
+                      size="small"
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: '0.7rem',
+                        backgroundColor: '#F0FDF4',
+                        color: '#16A34A',
+                        border: '1px solid #86EFAC',
+                        minWidth: 104,
+                      }}
+                    />
+                ) : order.sale_channel === 'pos' ? (
+                  <Chip
+                    label="PdV"
+                    size="small"
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '0.7rem',
+                      backgroundColor: '#F0FDF4',
+                      color: '#16A34A',
+                      border: '1px solid #86EFAC',
                     }}
                   />
                 ) : order.partners ? (
