@@ -10,8 +10,8 @@ const DEFAULT_DATA = {
   address: "Av. Edison 352 – Resistencia, Chaco",
   schedule: (
     <>
-      <strong>Lunes a Viernes:</strong> 8:00 a 20:00 hs<br />
-      <strong>Sábados:</strong> 8:00 a 12:00 hs
+      <strong>Lunes a Viernes:</strong> 7:00 a 19:00 hs<br />
+      <strong>Sábados:</strong> 8:00 a 14:00 hs
     </>
   ),
   phone: "3624049548",
