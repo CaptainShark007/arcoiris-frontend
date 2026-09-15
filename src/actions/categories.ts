@@ -1,5 +1,6 @@
 import { extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
+import { imagenUrl } from '@/utils/imagenUrl';
 import { CategoryInput } from '@shared/types';
 
 // Obtner todas las categorías (administrador)
@@ -41,13 +42,16 @@ export const createCategory = async (
     // Si hay imagen, subirla a storage
     if (categoryInput.image && typeof categoryInput.image !== 'string') {
       const imageFile = categoryInput.image as any;
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${imageFile.name}`;
+      const extension = imageFile.name.includes('.')
+        ? imageFile.name.slice(imageFile.name.lastIndexOf('.'))
+        : '';
+      const fileName = `${crypto.randomUUID()}${extension}`;
       const folderPath = `categories/${fileName}`;
 
       const { data, error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(folderPath, imageFile, {
-          cacheControl: '3600',
+          cacheControl: '31536000',
           upsert: false,
         });
 
@@ -56,12 +60,7 @@ export const createCategory = async (
         throw new Error(`Error subiendo imagen: ${uploadError.message}`);
       }
 
-      // Obtener URL pública
-      const { data: publicUrlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(data.path);
-
-      imageUrl = publicUrlData.publicUrl;
+      imageUrl = imagenUrl('product-images', data.path);
     }
 
     // Crear categoría en BD con la URL de la imagen
@@ -124,19 +123,22 @@ export const updateCategory = async (
           await supabase.storage.from('product-images').remove([oldImagePath]);
         } catch (deleteError) {
           console.error('Error deleting old image:', deleteError);
-          // No lanzar error aquí, continuar con la actualización
+          throw new Error('No se pudo eliminar la imagen anterior de la categoría.');
         }
       }
 
       // Subir la nueva imagen
       const imageFile = categoryInput.image as any;
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${imageFile.name}`;
+      const extension = imageFile.name.includes('.')
+        ? imageFile.name.slice(imageFile.name.lastIndexOf('.'))
+        : '';
+      const fileName = `${crypto.randomUUID()}${extension}`;
       const folderPath = `categories/${fileName}`;
 
       const { data, error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(folderPath, imageFile, {
-          cacheControl: '3600',
+          cacheControl: '31536000',
           upsert: false,
         });
 
@@ -145,11 +147,7 @@ export const updateCategory = async (
         throw new Error(`Error subiendo imagen: ${uploadError.message}`);
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(data.path);
-
-      updateData.image = publicUrlData.publicUrl;
+      updateData.image = imagenUrl('product-images', data.path);
     } else if (categoryInput.image === null) {
       // Si explícitamente se pasa null, borrar la imagen
       if (oldCategory?.image) {
@@ -158,6 +156,7 @@ export const updateCategory = async (
           await supabase.storage.from('product-images').remove([oldImagePath]);
         } catch (deleteError) {
           console.error('Error deleting image:', deleteError);
+          throw new Error('No se pudo eliminar la imagen de la categoría.');
         }
       }
       updateData.image = null;
@@ -206,15 +205,12 @@ export const deleteCategory = async (id: string, imageUrl?: string | null) => {
     // 2. Si hay imagen, eliminarla del storage
     if (imageUrl) {
       try {
-        // Extraer el path relativo de la URL
-        const urlParts = imageUrl.split(
-          '/storage/v1/object/public/product-images/'
-        );
-        if (urlParts.length === 2) {
-          const filePath = urlParts[1];
+        const filePath = extractFilePath(imageUrl);
+        const { error: storageError } = await supabase.storage
+          .from('product-images')
+          .remove([filePath]);
 
-          await supabase.storage.from('product-images').remove([filePath]);
-        }
+        if (storageError) throw storageError;
       } catch (storageError) {
         console.error('Error deleting image from storage:', storageError);
         // Continuar con la eliminación aunque falle la imagen

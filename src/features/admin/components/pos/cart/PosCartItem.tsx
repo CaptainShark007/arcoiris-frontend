@@ -4,6 +4,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import CloseIcon from '@mui/icons-material/Close';
 import { CartItem } from '@features/admin/hooks/pos/usePosStore';
 import { useState } from 'react';
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface PosCartItemProps {
   item: CartItem;
@@ -28,8 +29,8 @@ export const PosCartItem = ({
 
   const imageSrc =
     imageError || !item.image
-      ? 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
-      : item.image;
+      ? imagenUrl('product-images', 'img-default.png')
+      : imagenUrl('product-images', item.image);
 
   return (
     <Box

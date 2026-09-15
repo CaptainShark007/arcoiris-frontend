@@ -14,6 +14,7 @@ import { ProductBadge, VariantSelectModal } from '@shared/components';
 import { Link } from 'react-router';
 import { calculateDiscount, formatPrice } from '@/helpers';
 import { useProductVariants } from '@features/home/hooks';
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface ProductCardProps {
   product: Product;
@@ -32,9 +33,9 @@ export const ProductCard = ({
 
   const getProductImage = () => {
     if (imageError || !product.images[0]) {
-      return 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+      return imagenUrl('product-images', 'img-default.png');
     }
-    return product.images[0];
+    return imagenUrl('product-images', product.images[0]);
   };
 
   const handleImageError = () => {

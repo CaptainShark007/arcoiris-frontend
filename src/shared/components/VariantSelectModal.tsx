@@ -25,6 +25,7 @@ import { Product, VariantProduct } from "@shared/types";
 import { useState, useMemo, useEffect } from "react";
 import toast from "react-hot-toast";
 import { formatPrice } from "@/helpers";
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface VariantModalProps {
   open: boolean;
@@ -62,9 +63,9 @@ export const VariantSelectModal = ({
   
   const getProductImage = () => {
     if (imageError || !product.images[0]) {
-      return "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png";
+      return imagenUrl('product-images', 'img-default.png');
     }
-    return product.images[0];
+    return imagenUrl('product-images', product.images[0]);
   }
   
   const handleImageError = () => {

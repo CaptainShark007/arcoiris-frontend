@@ -26,8 +26,8 @@ interface ProductRow {
 
 const SITE_NAME = 'Arcoiris';
 
-const DEFAULT_IMAGE =
-  'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+const CDN = 'https://cdn.tiendaarcoiris.net';
+const DEFAULT_IMAGE = `${CDN}/product-images/img-default.png`;
 
 // Extrae texto plano desde contenido Tiptap (JSON) o string/HTML.
 const extractPlainText = (content: unknown): string => {

@@ -1,5 +1,6 @@
 import { compressImage, extractFilePath } from '@/helpers';
 import { supabase } from '@/supabase/client';
+import { imagenUrl } from '@/utils/imagenUrl';
 import { CreateProductRPCResult, ProductInput, ProductSearch } from '@shared/types';
 
 export const getFilteredProducts = async ({
@@ -545,13 +546,16 @@ export const createProduct = async (productInput: ProductInput) => {
     // 3. Subir las imagenes al storage
     const uploadedImages = await Promise.allSettled(
       productInput.images.map(async (image) => {
-        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${image.name}`;
+        const extension = image.name.includes('.')
+          ? image.name.slice(image.name.lastIndexOf('.'))
+          : '';
+        const fileName = `${crypto.randomUUID()}${extension}`;
         const filePath = `${productId}/${fileName}`;
 
         const { data, error } = await supabase.storage
           .from('product-images')
           .upload(filePath, image, {
-            cacheControl: '3600',
+            cacheControl: '31536000',
             upsert: false,
           });
 
@@ -560,11 +564,7 @@ export const createProduct = async (productInput: ProductInput) => {
           throw new Error(`Error subiendo imagen: ${error.message}`);
         }
 
-        const { data: publicUrlData } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(data.path);
-
-        return publicUrlData.publicUrl;
+        return imagenUrl('product-images', data.path);
       })
     );
 
@@ -657,12 +657,7 @@ export const deleteProduct = async (productId: string) => {
 
     // 3. Eliminar archivos del Storage
     if (product?.images?.length > 0) {
-      const folder = productId;
-
-      const paths = product.images.map((url) => {
-        const fileName = url.split('/').pop();
-        return `${folder}/${fileName}`;
-      });
+      const paths = product.images.map(extractFilePath);
 
       const { error: storageError } = await supabase.storage
         .from('product-images')
@@ -796,20 +791,22 @@ export const updateProduct = async (
     // 4. Subir solo las imágenes nuevas
     const uploadedNewImagesResponses = await Promise.allSettled(
       newFiles.map(async (file) => {
-        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+        const extension = file.name.includes('.')
+          ? file.name.slice(file.name.lastIndexOf('.'))
+          : '';
+        const fileName = `${crypto.randomUUID()}${extension}`;
         const filePath = `${productId}/${fileName}`;
 
         const { data, error } = await supabase.storage
           .from('product-images')
-          .upload(filePath, file);
+          .upload(filePath, file, {
+            cacheControl: '31536000',
+            upsert: false,
+          });
 
         if (error) throw new Error(`Error subiendo imagen: ${error.message}`);
 
-        const { data: publicUrlData } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(data.path);
-
-        return publicUrlData.publicUrl;
+        return imagenUrl('product-images', data.path);
       })
     );
 
@@ -829,7 +826,11 @@ export const updateProduct = async (
 
     // 7. Eliminar imágenes obsoletas del storage
     if (filesToDelete.length > 0) {
-      await supabase.storage.from('product-images').remove(filesToDelete);
+      const { error: storageError } = await supabase.storage
+        .from('product-images')
+        .remove(filesToDelete);
+
+      if (storageError) throw storageError;
     }
 
     // 8. Llamar al stored procedure

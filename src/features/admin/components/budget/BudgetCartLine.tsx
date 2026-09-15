@@ -4,9 +4,9 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
 import { BudgetCartLine as BudgetCartLineType } from '@shared/types/budget';
+import { imagenUrl } from '@/utils/imagenUrl';
 
-const DEFAULT_IMAGE =
-  'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+const DEFAULT_IMAGE = imagenUrl('product-images', 'img-default.png');
 
 const getVariantLabel = (v: {
   color_name: string | null;
@@ -31,7 +31,9 @@ export const BudgetCartLine = ({
   const subtotal = line.price * line.quantity;
 
   const imageSrc =
-    imageError || !line.image ? DEFAULT_IMAGE : line.image;
+    imageError || !line.image
+      ? DEFAULT_IMAGE
+      : imagenUrl('product-images', line.image);
 
   const variantLabel = getVariantLabel(line);
 

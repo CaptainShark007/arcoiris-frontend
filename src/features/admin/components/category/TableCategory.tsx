@@ -34,8 +34,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CloseIcon from '@mui/icons-material/Close';
 import ImageIcon from '@mui/icons-material/Image';
-
-const DEFAULT_IMAGE = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface CategoryFormValues {
   name: string;
@@ -424,7 +423,7 @@ export const TableCategory = () => {
               <TableRow key={category.id} sx={{ transition: 'background-color 0.2s', '&:hover': { bgcolor: '#F8FAFC' }, '&:last-child td, &:last-child th': { border: 0 } }}>
                 <TableCell sx={{ py: 1.5, borderBottom: '1px solid #F3F4F6' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box component="img" src={category.image || DEFAULT_IMAGE} sx={{ width: 48, height: 48, borderRadius: 1, objectFit: 'cover', display: 'block', flexShrink: 0, border: '1px solid #E5E7EB', bgcolor: '#FFFFFF' }} />
+                    <Box component="img" src={imagenUrl('product-images', category.image || 'img-default.png')} sx={{ width: 48, height: 48, borderRadius: 1, objectFit: 'cover', display: 'block', flexShrink: 0, border: '1px solid #E5E7EB', bgcolor: '#FFFFFF' }} />
                     <Typography variant="body2" fontWeight={600} color="#111827">{category.name}</Typography>
                   </Box>
                 </TableCell>
@@ -463,7 +462,7 @@ export const TableCategory = () => {
         {paginatedCategories.map((category) => (
           <Card key={category.id} sx={{ p: 2, border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', borderRadius: 1 }}>
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-              <Box component="img" src={category.image || DEFAULT_IMAGE} sx={{ width: 56, height: 56, borderRadius: 1, objectFit: 'cover', flexShrink: 0, border: '1px solid #E5E7EB' }} />
+              <Box component="img" src={imagenUrl('product-images', category.image || 'img-default.png')} sx={{ width: 56, height: 56, borderRadius: 1, objectFit: 'cover', flexShrink: 0, border: '1px solid #E5E7EB' }} />
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography variant="subtitle2" fontWeight={600} color="#111827" noWrap>{category.name}</Typography>
                 <Typography variant="caption" color="text.secondary" noWrap>{category.description || 'Sin descripción'}</Typography>

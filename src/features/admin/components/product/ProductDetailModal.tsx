@@ -33,6 +33,7 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useGetProductById } from '@features/admin/hooks';
+import { imagenUrl } from '@/utils/imagenUrl';
 
 const BASE_URL = 'https://www.tiendaarcoiris.net/tienda/';
 
@@ -41,8 +42,6 @@ interface ProductDetailModalProps {
   open: boolean;
   onClose: () => void;
 }
-
-const DEFAULT_IMAGE = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
 
 export const ProductDetailModal = ({ productId, open, onClose }: ProductDetailModalProps) => {
   const { product, isLoading, isError } = useGetProductById(productId ?? undefined);
@@ -189,7 +188,7 @@ export const ProductDetailModal = ({ productId, open, onClose }: ProductDetailMo
             <Box sx={{ display: 'flex', gap: 3, mb: 4 }}>
               <Box
                 component="img"
-                src={product.images?.[0] ?? DEFAULT_IMAGE}
+                src={imagenUrl('product-images', product.images?.[0] ?? 'img-default.png')}
                 alt={product.name}
                 sx={{
                   width: 160,

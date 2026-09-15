@@ -37,6 +37,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import LinkIcon from '@mui/icons-material/Link';
 import CloseIcon from '@mui/icons-material/Close';
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface SelectedOptions {
   color: string | null;
@@ -61,9 +62,9 @@ const ProductPage = () => {
 
   const getProductImage = () => {
     if (imageError || !product?.images[0]) {
-      return 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+      return imagenUrl('product-images', 'img-default.png');
     }
-    return product.images[0];
+    return imagenUrl('product-images', product.images[0]);
   };
 
   const handleImageError = () => {
