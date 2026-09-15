@@ -56,8 +56,9 @@ import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 import { BudgetCart } from '../budget/BudgetCart';
 import { useCreateBudget } from '../../hooks/budget/useCreateBudget';
 import { BudgetCartLine, CreateBudgetInput, AdminClient } from '@shared/types';
+import { imagenUrl } from '@/utils/imagenUrl';
 
-const DEFAULT_IMAGE = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+const DEFAULT_IMAGE = imagenUrl('product-images', 'img-default.png');
 
 export const TableProduct = () => {
   const theme = useTheme();
@@ -264,7 +265,9 @@ export const TableProduct = () => {
   }, [searchTerm, searchParams]);
 
   const getImage = (id: string, thumbnail: string | null) =>
-    imageErrors[id] || !thumbnail ? DEFAULT_IMAGE : thumbnail;
+    imageErrors[id] || !thumbnail
+      ? DEFAULT_IMAGE
+      : imagenUrl('product-images', thumbnail);
 
   const isDefaultState =
     searchTerm === '' && statusFilter === 'all' && categoryIdFilter === 'all' && sortFilter === 'newest';

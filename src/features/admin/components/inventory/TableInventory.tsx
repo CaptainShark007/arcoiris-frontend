@@ -22,8 +22,9 @@ import { useSearchParams } from 'react-router-dom';
 import { Loader } from '@shared/components';
 import CustomPagination from '@shared/components/CustomPagination';
 import { useInventory } from '../../hooks/inventory/useInventory';
+import { imagenUrl } from '@/utils/imagenUrl';
 
-const DEFAULT_IMAGE = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+const DEFAULT_IMAGE = imagenUrl('product-images', 'img-default.png');
 
 export const TableInventory = () => {
   const theme = useTheme();
@@ -175,7 +176,7 @@ export const TableInventory = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box
                       component="img"
-                      src={imageErrors[v.id] || !v.thumbnail ? DEFAULT_IMAGE : v.thumbnail}
+                      src={imageErrors[v.id] || !v.thumbnail ? DEFAULT_IMAGE : imagenUrl('product-images', v.thumbnail)}
                       loading="lazy"
                       onError={() => handleImageError(v.id)}
                       sx={{ 
@@ -269,7 +270,7 @@ export const TableInventory = () => {
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
               <Box
                 component="img"
-                src={imageErrors[v.id] || !v.thumbnail ? DEFAULT_IMAGE : v.thumbnail}
+                src={imageErrors[v.id] || !v.thumbnail ? DEFAULT_IMAGE : imagenUrl('product-images', v.thumbnail)}
                 sx={{ width: 56, height: 56, borderRadius: 1, objectFit: 'contain', flexShrink: 0, border: '1px solid #E5E7EB', p: 0.5, bgcolor: '#FFFFFF' }}
               />
               <Box sx={{ flex: 1, minWidth: 0 }}>

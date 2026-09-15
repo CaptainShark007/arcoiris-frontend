@@ -1,6 +1,7 @@
 import { Card, CardActionArea, CardMedia, CardContent, Typography } from '@mui/material';
 import { PosProduct, PosVariant } from '@/actions/pos';
 import { useState } from 'react';
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface PosProductCardProps {
   product: PosProduct;
@@ -11,8 +12,8 @@ export const PosProductCard = ({ product, onSelect }: PosProductCardProps) => {
   const [imageError, setImageError] = useState(false);
   
   const imageSrc = imageError || !product.image
-    ? 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
-    : product.image;
+    ? imagenUrl('product-images', 'img-default.png')
+    : imagenUrl('product-images', product.image);
 
   const handleClick = () => {
     if (product.hasVariants) {

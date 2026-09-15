@@ -22,6 +22,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import { imagenUrl } from '@/utils/imagenUrl';
 import { useDeleteCategory, useAllCategories, useCountProductsByCategory } from '@features/admin/hooks';
 import { CategoryFormModal } from './CategoryFormModal';
 import { DeleteCategoryModal } from '@shared/components';
@@ -140,9 +141,10 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
                         <Box
                           component="img"
                           src={
-                            category.image
-                              ? category.image
-                              : "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png"
+                            imagenUrl(
+                              'product-images',
+                              category.image || 'img-default.png'
+                            )
                           }
                           alt={category.name}
                           sx={{
@@ -219,9 +221,10 @@ export const CategoriesModal = ({ open, onClose }: CategoriesModalProps) => {
                           <Box
                             component="img"
                             src={
-                              category.image
-                                ? category.image
-                                : "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png"
+                              imagenUrl(
+                                'product-images',
+                                category.image || 'img-default.png'
+                              )
                             }
                             alt={category.name}
                             sx={{

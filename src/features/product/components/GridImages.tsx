@@ -1,6 +1,7 @@
 // /src/features/product/components/GridImages.tsx
 import { useState } from "react";
 import { Box, IconButton, CardMedia } from "@mui/material";
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface Props {
   images: string[];
@@ -8,20 +9,22 @@ interface Props {
 }
 
 export const GridImages = ({ images, onImageError }: Props) => {
-  const defaultImage = "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png";
+  const defaultImage = imagenUrl('product-images', 'img-default.png');
   
   // Rastrear errores por índice de imagen
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
   
   // Estado inicial: primera imagen o por defecto
-  const [activeImage, setActiveImage] = useState(images[0] || defaultImage);
+  const [activeImage, setActiveImage] = useState(
+    images[0] ? imagenUrl('product-images', images[0]) : defaultImage
+  );
 
   // Obtiene la imagen correcta considerando si hubo error
   const getImage = (imageUrl: string, index: number) => {
     if (imageErrors[index] || !imageUrl) {
       return defaultImage;
     }
-    return imageUrl;
+    return imagenUrl('product-images', imageUrl);
   };
 
   // Maneja error de una imagen específica

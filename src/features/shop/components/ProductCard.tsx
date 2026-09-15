@@ -21,6 +21,7 @@ import {
 } from '@shared/components';
 import { Product } from '@shared/types';
 import { useProductVariants } from '@features/home/hooks';
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface ProductCardProps {
   product: Product;
@@ -39,9 +40,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const [imageError, setImageError] = useState(false);
   const getProductImage = () => {
     if (imageError || !product.images[0]) {
-      return 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png';
+      return imagenUrl('product-images', 'img-default.png');
     }
-    return product.images[0];
+    return imagenUrl('product-images', product.images[0]);
   };
   const handleImageError = () => setImageError(true);
 
