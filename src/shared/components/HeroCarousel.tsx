@@ -3,6 +3,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { CarouselSlide } from "@shared/types";
 import { useCarousel } from "@shared/hooks";
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface HeroCarouselProps {
   slides: CarouselSlide[];
@@ -30,18 +31,22 @@ export const HeroCarousel = ({ slides, mobileSlides }: HeroCarouselProps) => {
 
   const getImageSource = (slide: CarouselSlide) => {
     
-    const defaultMobile = "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerMobile.png";
-    const defaultDesktop = "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/BannerDesktop.png";
+    const defaultMobile = imagenUrl('product-images', 'BannerMobile.png');
+    const defaultDesktop = imagenUrl('product-images', 'BannerDesktop.png');
 
     // 1. Si es móvil
     if (isMobile) {
       // Retorna la imagen móvil si existe, sino, el fallback móvil
-     return slide.mobileImage ? slide.mobileImage : defaultMobile;
+     return slide.mobileImage
+       ? imagenUrl('product-images', slide.mobileImage)
+       : defaultMobile;
     }
 
     // 2. Si es escritorio
     // Retorna la imagen desktop si existe, sino, el fallback desktop
-    return slide.image ? slide.image : defaultDesktop;
+    return slide.image
+      ? imagenUrl('product-images', slide.image)
+      : defaultDesktop;
   
   };
 

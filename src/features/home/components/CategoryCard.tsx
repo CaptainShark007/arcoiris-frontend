@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography, CardActionArea } from '@mui/material';
 import { Category } from '@shared/types';
 import { useNavigate } from 'react-router';
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface CategoryCardProps {
   category: Category;
@@ -37,10 +38,10 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
       >
         <Box
           component='img'
-          src={
-            category.image ??
-            'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/img-default.png'
-          }
+          src={imagenUrl(
+            'product-images',
+            category.image ?? 'img-default.png'
+          )}
           alt={category.name}
           sx={{
             width: '100%',

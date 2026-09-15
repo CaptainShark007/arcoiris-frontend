@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { imagenUrl } from '@/utils/imagenUrl';
 
 interface SeoHeadProps {
   title: string;
@@ -21,8 +22,10 @@ export const SeoHead = ({
 }: SeoHeadProps) => {
 
   const siteName = "Arcoiris";
-  const defaultImage = "https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/logo_comercio_v2.png"; 
-  const finalImage = image || defaultImage;
+  const finalImage = imagenUrl(
+    'product-images',
+    image || 'logo_comercio_v2.png'
+  );
   const fullTitle = `${title} | ${siteName}`;
 
   // Limpiar la descripción de posibles etiquetas HTML / contenido Tiptap

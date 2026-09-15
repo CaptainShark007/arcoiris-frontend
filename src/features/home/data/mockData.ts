@@ -14,13 +14,15 @@ const bannerMobile1 = 'http://127.0.0.1:54321/storage/v1/object/public/product-i
 const bannerMobile2 = 'http://127.0.0.1:54321/storage/v1/object/public/product-images/imagen2.jpeg';
 const bannerMobile3 = 'http://127.0.0.1:54321/storage/v1/object/public/product-images/imagen3.jpeg'; */
 
-const bannerDesktop1 = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/banners/imagen2.jpeg';
-const bannerDesktop2 = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/banners/imagen1.jpeg';
-const bannerDesktop3 = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/banners/imagen3.jpeg';
+import { imagenUrl } from '@/utils/imagenUrl';
 
-const bannerMobile1 = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/banners/imagen2.jpeg';
-const bannerMobile2 = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/banners/imagen1.jpeg';
-const bannerMobile3 = 'https://xtfkrazrpzbucxirunqe.supabase.co/storage/v1/object/public/product-images/banners/imagen3.jpeg';
+const bannerDesktop1 = imagenUrl('product-images', 'banners/imagen2.jpeg');
+const bannerDesktop2 = imagenUrl('product-images', 'banners/imagen1.jpeg');
+const bannerDesktop3 = imagenUrl('product-images', 'banners/imagen3.jpeg');
+
+const bannerMobile1 = imagenUrl('product-images', 'banners/imagen2.jpeg');
+const bannerMobile2 = imagenUrl('product-images', 'banners/imagen1.jpeg');
+const bannerMobile3 = imagenUrl('product-images', 'banners/imagen3.jpeg');
 
 import { CarouselSlide } from '@shared/types';
 

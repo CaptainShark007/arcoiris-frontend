@@ -1,3 +1,5 @@
+import { extractStoragePath } from '@/utils/imagenUrl';
+
 export const formatPrice = (price?: number | null): string => {
   const safePrice = Number(price ?? 0);
   return new Intl.NumberFormat("es-AR", {
@@ -61,17 +63,7 @@ export const generateSlug = (name: string): string => {
 
 // Funcion para extraer el path relativo al bucket de una URL
 export const extractFilePath = (url: string) => {
-	
-	const parts = url.split('/storage/v1/object/public/product-images/');
-
-	// ejemplo parts: ['storage/v1/object/public/product-images/', '0225462168945612664-latex-interior-texolatex.jpg']
-
-	if (parts.length !== 2) {
-		throw new Error(`URL de imagen no válida: ${url}`);
-	}
-
-	return parts[1];
-
+  return extractStoragePath('product-images', url);
 }
 
 // Función para comprimir imagen
