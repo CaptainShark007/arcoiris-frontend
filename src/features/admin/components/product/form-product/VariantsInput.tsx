@@ -41,6 +41,7 @@ interface VariantsProps {
 
 const headersVariants = [
   'Stock*',
+  'Código de barras',
   'Oferta',
   'Precio Final*',
   'Precio Antes',
@@ -267,6 +268,25 @@ export const VariantsInput = ({
               </Box>
 
               {/* Fila Stock y Precio */}
+              <Box>
+                <Typography
+                  sx={{ fontSize: '0.75rem', fontWeight: 600, mb: 0.5 }}
+                >
+                  Código de barras
+                </Typography>
+                <TextField
+                  type='text'
+                  placeholder='Opcional'
+                  size='small'
+                  fullWidth
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') event.preventDefault();
+                  }}
+                  {...register(`variants.${index}.barcode`)}
+                  sx={{ '& .MuiOutlinedInput-root': { fontSize: '0.8rem' } }}
+                />
+              </Box>
+
               <Box>
                 <Typography
                   sx={{ fontSize: '0.75rem', fontWeight: 600, mb: 0.5 }}
@@ -537,7 +557,7 @@ export const VariantsInput = ({
         </Box>
       </Alert>
       <Paper variant='outlined' sx={{ overflowX: 'auto' }}>
-        <Table sx={{ minWidth: 850 }}>
+        <Table sx={{ minWidth: 950 }}>
           <TableHead sx={{ backgroundColor: '#f9fafb' }}>
             <TableRow>
               {headersVariants.map((header, index) => (
@@ -582,7 +602,21 @@ export const VariantsInput = ({
                     />
                   </TableCell>
 
-                  {/* 2. Checkbox Oferta */}
+                  {/* 2. Código de barras */}
+                  <TableCell sx={{ p: { xs: 0.5, sm: 1 }, width: '150px' }}>
+                    <TextField
+                      type='text'
+                      placeholder='Opcional'
+                      size='small'
+                      fullWidth
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') event.preventDefault();
+                      }}
+                      {...register(`variants.${index}.barcode`)}
+                    />
+                  </TableCell>
+
+                  {/* 3. Checkbox Oferta */}
                   <TableCell
                     align='center'
                     sx={{ p: { xs: 0.5, sm: 1 }, width: '60px' }}

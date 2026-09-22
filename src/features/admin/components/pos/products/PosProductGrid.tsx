@@ -1,5 +1,5 @@
 // src/features/pos/components/products/PosProductGrid.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   TextField,
@@ -30,6 +30,7 @@ interface PosProductGridProps {
   totalProducts: number;
   onPageChange: (page: number) => void;
   fetching: boolean;
+  onDialogStateChange?: (open: boolean) => void;
 }
 
 export const PosProductGrid = ({
@@ -44,8 +45,13 @@ export const PosProductGrid = ({
   totalProducts,
   onPageChange,
   fetching,
+  onDialogStateChange,
 }: PosProductGridProps) => {
   const [modalProduct, setModalProduct] = useState<PosProduct | null>(null);
+
+  useEffect(() => {
+    onDialogStateChange?.(!!modalProduct);
+  }, [modalProduct, onDialogStateChange]);
 
   const handleProductSelect = (product: PosProduct, variant?: PosVariant) => {
     if (variant) {
@@ -57,6 +63,7 @@ export const PosProductGrid = ({
 
   const handleVariantSelect = (product: PosProduct, variant: PosVariant) => {
     onAddToCart(product, variant);
+    setModalProduct(null);
   };
 
   return (

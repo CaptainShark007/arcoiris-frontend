@@ -74,6 +74,7 @@ export const FormProduct = ({ titleForm }: Props) => {
           color: v.color || '',
           colorName: v.color_name || '',
           finish: v.finish || '',
+          barcode: v.barcode || '',
         }))
       );
     }
@@ -96,6 +97,7 @@ export const FormProduct = ({ titleForm }: Props) => {
           color: v.color,
           color_name: normalizeText(v.colorName),
           finish: normalizeText(v.finish || null),
+          barcode: v.barcode?.replace(/[\s-]/g, '') || null,
         };
       }) ?? [];
 
