@@ -115,6 +115,12 @@ export const productSchema = yup.object().shape({
 					.string()
 					//.required('La terminación es requerida')
 					.typeError('La terminación debe ser un texto'),
+				barcode: yup
+					.string()
+					.transform((value) => value?.replace(/[\s-]/g, '') || null)
+					.nullable()
+					.notRequired()
+					.matches(/^\d*$/, 'El código de barras solo puede contener números'),
 			})
 		)
 		.min(1, 'Debe haber al menos una variante')

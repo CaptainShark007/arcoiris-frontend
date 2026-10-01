@@ -16,6 +16,7 @@ export interface PosVariant {
   storage: string | null;
   finish: string | null;
   color: string | null;
+  barcode: string | null;
 }
 
 export interface CreatePosOrderInput {
@@ -37,6 +38,38 @@ export interface CreatePosOrderInput {
 
 const POS_PAGE_SIZE = 40;
 
+export const normalizeBarcode = (barcode: string) =>
+  barcode.replace(/[\s-]/g, '');
+
+export const getPosProductByBarcode = async (
+  barcode: string
+): Promise<PosProduct | null> => {
+  const normalizedBarcode = normalizeBarcode(barcode);
+  if (!normalizedBarcode || !/^\d+$/.test(normalizedBarcode)) return null;
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('id, name, images, variants!inner(id, price, stock, color_name, storage, finish, color, barcode)')
+    .eq('is_active', true)
+    .eq('is_deleted', false)
+    .eq('variants.is_active', true)
+    .gt('variants.stock', 0)
+    .eq('variants.barcode', normalizedBarcode)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new Error('Error al buscar el código de barras');
+  if (!data || !data.variants?.[0]) return null;
+
+  return {
+    id: data.id,
+    name: data.name,
+    image: data.images?.[0] ?? '/assets/images/img-default.png',
+    hasVariants: data.variants.length > 1,
+    variants: data.variants,
+  };
+};
+
 export const getPosProducts = async (
   search: string = '',
   categoryId: string | null = null,
@@ -47,7 +80,7 @@ export const getPosProducts = async (
 
   let query = supabase
     .from('products')
-    .select('id, name, images, variants!inner(id, price, stock, color_name, storage, finish, color)', { count: 'exact' })
+    .select('id, name, images, variants!inner(id, price, stock, color_name, storage, finish, color, barcode)', { count: 'exact' })
     .eq('is_active', true)
     .eq('is_deleted', false)
     .eq('variants.is_active', true)

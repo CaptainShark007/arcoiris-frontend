@@ -16,6 +16,7 @@ export interface VariantProduct {
 	color: string | null;
 	color_name: string | null;
   finish: string | null;
+	barcode?: string | null;
   is_active: boolean;
 }
 
@@ -111,6 +112,7 @@ export interface VariantInput {
 	storage?: string;
 	color_name?: string;
 	finish?: string | null;
+	barcode?: string | null;
 }
 
 export type CreateProductRPCResult = {

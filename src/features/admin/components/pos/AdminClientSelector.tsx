@@ -36,11 +36,13 @@ import { useDeleteAdminClient } from '@features/admin/hooks/admin-client/useDele
 interface AdminClientSelectorProps {
   selectedClient: AdminClient | null;
   onSelect: (client: AdminClient | null) => void;
+  onDialogStateChange?: (open: boolean) => void;
 }
 
 export const AdminClientSelector = ({
   selectedClient,
   onSelect,
+  onDialogStateChange,
 }: AdminClientSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -166,6 +168,10 @@ export const AdminClientSelector = ({
   };
 
   const formLoading = createClient.isPending || updateClient.isPending;
+
+  useEffect(() => {
+    onDialogStateChange?.(open || formOpen || !!deleteTarget);
+  }, [deleteTarget, formOpen, onDialogStateChange, open]);
 
   return (
     <>

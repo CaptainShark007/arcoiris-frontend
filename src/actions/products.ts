@@ -526,6 +526,7 @@ export const createProduct = async (productInput: ProductInput) => {
           color: v.color || null,
           color_name: v.color_name || null,
           finish: v.finish || null,
+          barcode: v.barcode || null,
         })),
       }
     );
@@ -856,6 +857,7 @@ export const updateProduct = async (
           color: v.color || null,
           color_name: v.color_name || null,
           finish: v.finish || null,
+          barcode: v.barcode || null,
         })),
       }
     );

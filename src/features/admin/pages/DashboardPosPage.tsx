@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { Box, Typography, IconButton, Tooltip } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router';
 import toast from 'react-hot-toast';
 import { usePosStore } from '../hooks';
-import { PosCart, PosProductGrid } from '../components';
+import { CartScanner, PosCart, PosProductGrid } from '../components';
 
 const DashboardPosPage = () => {
   const navigate = useNavigate();
+  const [hasOpenDialog, setHasOpenDialog] = useState(false);
 
   const {
     search,
@@ -28,6 +30,8 @@ const DashboardPosPage = () => {
     setPage,
     totalProducts,
     fetchingProducts,
+    scanBarcode,
+    isScanning,
     selectedClient,
     setSelectedClient,
   } = usePosStore();
@@ -74,6 +78,11 @@ const DashboardPosPage = () => {
         <Typography variant="subtitle1" fontWeight={700}>
           Punto de Venta
         </Typography>
+        <CartScanner
+          enabled={!hasOpenDialog && !isScanning && !confirmingOrder}
+          onScan={scanBarcode}
+          scanning={isScanning}
+        />
       </Box>
 
       {/* Contenido principal — split panel */}
@@ -101,6 +110,7 @@ const DashboardPosPage = () => {
             totalProducts={totalProducts}
             onPageChange={setPage}
             fetching={fetchingProducts}
+            onDialogStateChange={setHasOpenDialog}
           />
         </Box>
 
@@ -117,6 +127,7 @@ const DashboardPosPage = () => {
             confirming={confirmingOrder}
             selectedClient={selectedClient}
             onSelectClient={setSelectedClient}
+            onDialogStateChange={setHasOpenDialog}
           />
         </Box>
       </Box>

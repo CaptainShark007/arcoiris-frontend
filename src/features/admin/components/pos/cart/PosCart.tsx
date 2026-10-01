@@ -18,6 +18,7 @@ interface PosCartProps {
   confirming: boolean;
   selectedClient: AdminClient | null;
   onSelectClient: (client: AdminClient | null) => void;
+  onDialogStateChange?: (open: boolean) => void;
 }
 
 export const PosCart = ({
@@ -31,6 +32,7 @@ export const PosCart = ({
   confirming,
   selectedClient,
   onSelectClient,
+  onDialogStateChange,
 }: PosCartProps) => {
   const isEmpty = cart.length === 0;
 
@@ -136,7 +138,11 @@ export const PosCart = ({
       </Box>
 
       <Box sx={{ px: 2, pb: 1 }}>
-        <AdminClientSelector selectedClient={selectedClient} onSelect={onSelectClient} />
+        <AdminClientSelector
+          selectedClient={selectedClient}
+          onSelect={onSelectClient}
+          onDialogStateChange={onDialogStateChange}
+        />
       </Box>
 
       <Box sx={{ px: 2, pb: 2 }}>
