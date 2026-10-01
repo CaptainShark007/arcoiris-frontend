@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { getPosProducts, createPosOrder, PosProduct, PosVariant } from '@/actions/pos';
+import { getPosProducts, getPosProductByBarcode, createPosOrder, normalizeBarcode, PosProduct, PosVariant } from '@/actions/pos';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { AdminClient } from '@shared/types/admin-client';
 
@@ -24,6 +24,7 @@ export const usePosStore = () => {
 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -82,6 +83,21 @@ export const usePosStore = () => {
     });
   }, []);
 
+  const scanBarcode = useCallback(async (barcode: string): Promise<PosProduct> => {
+    const normalizedBarcode = normalizeBarcode(barcode);
+    if (!normalizedBarcode) throw new Error('Ingresa un código de barras');
+
+    setIsScanning(true);
+    try {
+      const product = await getPosProductByBarcode(normalizedBarcode);
+      if (!product) throw new Error('No se encontró un producto con ese código o no tiene stock');
+      if (!product.hasVariants) addToCart(product, product.variants[0]);
+      return product;
+    } finally {
+      setIsScanning(false);
+    }
+  }, [addToCart]);
+
   const removeFromCart = useCallback((variantId: string) => {
     setCart((prev) => prev.filter((item) => item.variantId !== variantId));
   }, []);
@@ -135,6 +151,8 @@ export const usePosStore = () => {
     products,
     loadingProducts: isLoading,
     fetchingProducts: isFetching,
+    scanBarcode,
+    isScanning,
     totalProducts,
     // Paginación
     page,

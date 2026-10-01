@@ -25,6 +25,7 @@ export * from './partner/usePartners';
 
 // pos
 export * from './pos/usePosStore';
+export * from './pos/useBarcodeScanner';
 
 // admin clients
 export * from './admin-client/useAdminClients';

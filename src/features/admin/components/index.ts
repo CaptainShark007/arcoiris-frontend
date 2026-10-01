@@ -32,3 +32,4 @@ export * from './pos/products/PosVariantModal';
 export * from './pos/cart/PosCart';
 export * from './pos/cart/PosCartItem';
 export * from './pos/cart/PosCartSummary';
+export * from './pos/cart/CartScanner';
